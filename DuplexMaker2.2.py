@@ -150,14 +150,14 @@ for line in bamEntry:
 						a.seq=str(tmpSeq.reverse_complement())
 					else:
 						a.seq = consensus
-						a.rname = readDict[dictTag][1]
-						a.pos = readDict[dictTag][2]
-						a.mapq = 255
-						a.cigar = cigDum
-						a.mrnm = readDict[dictTag][3]
-						a.mpos=readDict[dictTag][4]
-						a.isize = readDict[dictTag][5]
-						a.qual = qualScore
+					a.rname = readDict[dictTag][1]
+					a.pos = readDict[dictTag][2]
+					a.mapq = 255
+					a.cigar = cigDum
+					a.mrnm = readDict[dictTag][3]
+					a.mpos=readDict[dictTag][4]
+					a.isize = readDict[dictTag][5]
+					a.qual = qualScore
 
 	##########################################################################################################################
 	#Write SSCSs to output BAM file in read pairs.			    							 #
