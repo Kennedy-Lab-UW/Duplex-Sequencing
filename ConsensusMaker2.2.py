@@ -3,7 +3,7 @@ Consensus Maker
 Version 2.2
 By Brendan Kohrn and Scott Kennedy(1)
 (1) Department of Pathology, University of Washington School of Medicine, Seattle, WA 98195
-August 29, 2013
+September 09, 2013
 
 
 Written for Python 2.7.3
