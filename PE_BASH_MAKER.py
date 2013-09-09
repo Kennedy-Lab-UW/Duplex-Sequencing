@@ -1,7 +1,7 @@
 #write a bash script to run the process
-#bash PE_DCS_Calc.txt (ref) (r1src) (r2src) (min) (max) (cut) (Ncut) (rlength)
+#This program makes a shell script so that the user will not need to enter the commands for all the programs himself.  When using it, navigate to the folder with your data, with all the programs in a different folder, and enter a relative path to that folder from the folder with your data.  This way, the program will be able to auto-build the path to the programs.  
 
-import sys
+import sys, os
 import re
 from argparse import ArgumentParser
 
@@ -13,9 +13,17 @@ parser.add_argument("--min", action="store", dest="minMem", help="Minimum member
 parser.add_argument("--max", action="store", dest="maxMem", help="Maximum members for SSCS consensus", default="1000")
 parser.add_argument("--cut", action="store", dest="cutOff", help="Mimimum percent matching for base choice in SSCS consensus", default=".8")
 parser.add_argument("--Ncut", action="store", dest="Ncut", help="Maxumum percent N's allowed", default=".1")
-parser.add_argument("--rlength", action="store", dest="rlength", help="Length of a single read", default="80")
+parser.add_argument("--rlength", type=int, action="store", dest="rlength", help="Length of a single read", default="80")
+parser.add_argument("--read_type", type=str, action="store", dest="read_type", default="dual_map", help="Type of read.  Options: dual_map: both reads map propperly.  Doesn't consider read pairs where only one read maps.  mono_map: considers any read pair where one read maps.  hairpin: only use for hairpin sequence.")
+parser.add_argument("--spacers", type=str, dest='spacers', default='', help="Potential spacers in hairpin, in format 'spacer1, spacer2, spacer3, ...'.  Only necessary for hairpin sequencing.  ")
+parser.add_argument("--slength", type=int, dest='slength', default=0, help="Length of the spacer sequence.  Only necessary for hairpin sequencing.  ")
+parser.add_argument("--blength", type=int, dest='blength',default=0, help="Length of the barcode sequence.  Only necessary for hairpin sequencing.  ")
+parser.add_argument("--plengths", type=str, dest='plengths', default='', help="Length of each primer, coresponds directly to length trimmed off.  Takes the form 'Read1PrimerLength Read2PrimerLength'.  Only necessary for hairpin sequencing.  ")
 o = parser.parse_args()
- 
+
+spath="".join((repr(os.getcwd()).replace("'",'')+"/"+repr(sys.argv[0]).replace("'","")))
+spath=spath.replace("PE_BASH_MAKER.py","")
+
 #Set up basic file naming protocols
 r1 = o.r1src.replace(".fq", "")
 r2 = o.r2src.replace(".fq", "")
@@ -27,10 +35,18 @@ outBash.write("#!/bin/bash \n\n")
 
 outBash.write("#Filter for reads with a properly located duplex tag, then move the tag into the header \n\n")
 
-out1 = r1 + ".fq.smi"
-out2 = r2 + ".fq.smi"
+out1 = "head." + r1 + ".fq"
+out2 = "head." + r2 + ".fq"
 
-outBash.write("python tag_to_header.py --infile1 " + o.r1src + " --infile2 " + o.r2src + " --outfile1 " + out1 + " --outfile2 " + out2 + "\n\n")
+readlength=0
+
+if o.read_type == "hairpin":
+	outPrefix="head"
+	outBash.write("python " + spath + "hairpin_header.py --inRead2 " + o.r1src + " --inRead2 " + o.r2src + " --out_prefix " + outPrefix + " --spacers " + o.spacers + " --slength " + str(o.slength) + " --blength " + str(o.blength) + "--plengths " + o.plengths + "\n\n")
+	readlength=str(o.rlength - o.blength - o.slength - int(o.plengths.split(" ")[0])-int(o.plengths.split(" ")[1]))
+else:
+	outBash.write("python " + spath + "tag_to_header.py --infile1 " + o.r1src + " --infile2 " + o.r2src + " --outfile1 " + out1 + " --outfile2 " + out2 + "\n\n")
+	readlength=str(o.rlength)
 
 aln1 = r1 + ".aln"
 aln2 = r2 + ".aln"
@@ -54,39 +70,40 @@ SSCSout = "SSCS." + r1 + "." + r2 + ".bam"
 
 outBash.write("#Find SSCSs\n\n")
 
-outBash.write("python ConsensusMaker2.py --infile " + PEsort + " --tagfile " + tagF + " --outfile " + SSCSout + " --minmem " + o.minMem + " --maxmem " + o.maxMem + " --cutoff " + o.cutOff + " --Ncutoff " + o.Ncut + " --readlength " + o.rlength + "\n\n")
+outBash.write("python " + spath + "ConsensusMaker2.2.py --infile " + PEsort + ".bam --tagfile " + tagF + " --outfile " + SSCSout + " --minmem " + o.minMem + " --maxmem " + o.maxMem + " --cutoff " + o.cutOff + " --Ncutoff " + o.Ncut + " --readlength " + readlength + " --read_type " + o.read_type + "\n\n")
 
 
-SSCSsort = "SSCS." + r1 + "." + r2 + ".sort"
+SSCSsort = SSCSout.replace(".bam",".sort")
 
 outBash.write("#Resort the SSCSs \n\n")
 
 outBash.write("samtools view -bu " + SSCSout + " | samtools sort - " + SSCSsort + "\n\n")
 
 
-DCSout = "DCS." + r1 + "." + r2 + ".bam"
-
+DCSout = SSCSout.replace("SSCS","DCS")
+isHairpin = "True" if o.read_type=="hairpin" else "False"
 outBash.write("#Find the DCSs \n\n")
 
-outBash.write("python DuplexMaker.py --infile " + SSCSsort + " --outfile " + DCSout + " --Ncutoff " + o.Ncut + " --readlength " + o.rlength + "\n\n")
+outBash.write("python " + spath + "DuplexMaker2.2.py --infile " + SSCSsort + ".bam --outfile " + DCSout + " --Ncutoff " + o.Ncut + " --readlength " + readlength + " --hairpin " + isHairpin + "\n\n")
 
 
-DCSr1 = "DCS." + r1 + "." + r2 + "r1.aln"
-DCSr2 = "DCS." + r1 + "." + r2 + "r2.aln"
-DCSaln="DCS." + r1 + "." + r2 + ".aln.sam"
+DCSr1 = DCSout.replace(".bam",".r1.fq")
+DCSr1aln = DCSr1.replace(".fq",".aln")
+DCSr2 = DCSout.replace(".bam",".r2.fq")
+DCSr2aln=DCSr2.replace(".fq",".aln")
+DCSaln=DCSout.replace(".bam",".aln.sam")
 
-outBash.write("bwa aln -b1 " + o.ref + " " + DCSout  + " > " + DCSr1 + "\n")
-outBash.write("bwa aln -b2 " + o.ref + " " + DCSout  + " > " + DCSr2 + "\n")
-outBash.write("bwa sampe" + o.ref + " " + DCSr1 + " " + DCSr2 + " " + DCSout + " " + DCSout + " > " + DCSaln + "\n\n")
+outBash.write("bwa aln " + o.ref + " " + DCSr1  + " > " + DCSr1aln + "\n")
+outBash.write("bwa aln " + o.ref + " " + DCSr2  + " > " + DCSr2aln + "\n")
+outBash.write("bwa sampe " + o.ref + " " + DCSr1aln + " " + DCSr2aln + " " + DCSr1 + " " + DCSr2 + " > " + DCSaln + "\n\n")
 
 DCSsort = "DCS." + r1 + "." + r2 + ".aln.sort"
 
 outBash.write("samtools view -Sbu " + DCSaln + " | samtools sort - " + DCSsort + "\n")
 outBash.write("samtools index " + DCSsort + "\n")
-outBash.write("samtools view -F4 " + DCSsort + ".bam \n\n")
+outBash.write("samtools view -F4 " + DCSsort +  ".bam \n\n")
 
 
 outBash.write("rm *.sam \n")
 
 outBash.close()
-

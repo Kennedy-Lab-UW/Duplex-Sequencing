@@ -1,47 +1,51 @@
 '''
-##########################################################################################################################
-##########################################################################################################################
-##							Consensus Maker							##
-##							  Version 2.2							##
-##					      By Brendan Kohrn and Scott Kennedy(1)					##
-##		(1) Department of Pathology, University of Washington School of Medicine, Seattle, WA 98195		##
-##							August 29, 2013							##
-##########################################################################################################################
-##########################################################################################################################
-##															##
-##					   	    Written for Python 2.7.3						##
-##					       Required modules: Pysam, Samtools					##
-##															##
-##	This program is intended to be run on a paired-end BAM file, sorted by read position, with duplex tags in the 	##
-##header and constant read length.  It will output a paired-end BAM file with single strand consensus sequences 	##
-##(SSCSs), and a .tagcounts file which contains the different tags (on both strands) and how many times they occur, 	##
-##even if they are not used in SSCS generation, in order by read.  In addition, it will output a BAM file of SSCSs 	##
-##which are unpaired, either because one of the pair didn't match the criteria for allignment, or because of some other ##
-##reason, and a BAM file of all unconsidered sequences in the original file.  Quality scores on the output BAM files are meaningless.  The file produced by this program ##
-##is meant to be realigned to the reference genome afterwards.								##
-##															##
-##	The program starts at the position of the first good read (A good read is mapped in a propper pair, the two 	##
-##reads don't overlap, and the barcode is non-repetitive.)  It then goes through the file until it finds a new 	##
-##position, saving all reads as it goes.  When it finds a new position, it sends the saved reads to the consensus 	##
-##maker, one tag at a time, untill it runs out of tags.  Consensus sequences are saved until their mates come up, at 	##
-##which point both are written to the output BAM file, first read first.  After emptying the reads from the first 	##
-##position, it continues on through the origional file until it finds another new position, sends those reads to the 	##
-##consensus maker, and so on until the end of the file.  At the end of the file, any remaining reads are sent through 	##
-##the consensus maker, and any unpaired consensuses are written to extraConsensus.bam.  				##
-##															##
-##In the future, the program may be able to autodetect read length.							##
-##															##
-##########################################################################################################################
-##########################################################################################################################
-##															##
-##To use, imput:  													##
-##															##
-##python consensusMaker2.1.py --infile <inBamFile.bam> --tagFile  <outTagFile.tagcounts> --outfile <outBamFile.bam> --minmem <minMem> --maxmem <maxMem> --cutoff <cutoffPercent> --Ncutoff <Ncutoff> --readlength <readLength> 								      ##
-##															##
-##and replace <> with parameters.  -p is optional.												##
-##															##
-##########################################################################################################################
-##########################################################################################################################
+Consensus Maker
+Version 2.2
+By Brendan Kohrn and Scott Kennedy(1)
+(1) Department of Pathology, University of Washington School of Medicine, Seattle, WA 98195
+August 29, 2013
+
+
+Written for Python 2.7.3
+Required modules: Pysam, Samtools
+
+This program is intended to be run on a paired-end BAM file, sorted by read position, with duplex tags in the header and constant read length.  It will output a paired-end BAM file with single strand consensus sequences (SSCSs), and a .tagcounts file which contains the different tags (on both strands) and how many times they occur, even if they are not used in SSCS generation, in order by read.  In addition, it will output a BAM file of SSCSs which are unpaired, either because one of the pair didn't match the criteria for allignment, or because of some other reason, and a BAM file of all unconsidered sequences in the original file.  Quality scores on the output BAM files are meaningless.  The file produced by this program is meant to continue on through the duplex maker.  
+
+Alternativly, this program can process hairpin sequences into SSCSs that can be used by the duplex maker.
+
+The program starts at the position of the first good read, determined by the type of read specified on startup.  It then goes through the file until it finds a new position, saving all reads as it goes.  When it finds a new position, it sends the saved reads to the consensus maker, one tag at a time, untill it runs out of tags.  Consensus sequences are saved until their mates come up, at which point both are written to the output BAM file, first read first.  After emptying the reads from the first position, it continues on through the origional file until it finds another new position, sends those reads to the consensus maker, and so on until the end of the file.  At the end of the file, any remaining reads are sent through the consensus maker, and any unpaired consensuses are written to extraConsensus.bam.  
+
+In the future, the program may be able to autodetect read length.  
+
+usage: ConsensusMaker2.2.py [-h] [--infile INFILE] [--tagfile TAGFILE]
+                            [--outfile OUTFILE] [--rep_filt REP_FILT]
+                            [--minmem MINMEM] [--maxmem MAXMEM]
+                            [--cutoff CUTOFF] [--Ncutoff NCUTOFF]
+                            [--readlength READ_LENGTH] [--read_type READ_TYPE]
+
+arguments:
+  -h, --help            show this help message and exit
+  --infile INFILE       input BAM file
+  --tagfile TAGFILE     output tagcounts file
+  --outfile OUTFILE     output BAM file
+  --rep_filt REP_FILT   Remove tags with homomeric runs of nucleotides of
+                        length x [9]
+  --minmem MINMEM       Minimum number of reads allowed to comprise a
+                        consensus. [0]
+  --maxmem MAXMEM       Maximum number of reads allowed to comprise a
+                        consensus. [100]
+  --cutoff CUTOFF       Percentage of nucleotides at a given position in a
+                        read that must be identical in order for a consensus
+                        to be called at that position. [0]
+  --Ncutoff NCUTOFF     Maximum percentage of Ns allowed in a consensus [1]
+  --readlength READ_LENGTH
+                        Length of the input read that is being used. [80]
+  --read_type READ_TYPE
+                        Type of read. 
+                        Options: 
+							dual_map: both reads map propperly.  Doesn't consider read pairs where only one read maps. 
+							mono_map: considers any read pair where one read maps. 
+							hairpin: only use for hairpin sequence.
 '''
 
 '''

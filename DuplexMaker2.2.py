@@ -1,21 +1,29 @@
-##########################################################################################################################
-##########################################################################################################################
-##							   DCS Filter							##
-##							  Version 2.2							##
-##					      By Brendan Kohrn and Scott Kennedy(1)					##
-##		(1) Department of Pathology, University of Washington School of Medicine, Seattle, WA 98195		##
-##							August 23, 2013							##
-##########################################################################################################################
-##########################################################################################################################
-##															##
-##					   	    Written for Python 2.7.3						##
-##					       Required modules: Pysam, Samtools, BioPython					##
-##															##
-##	This program is intended to be run on a paired-end BAM file, sorted by read position, which has already been 	##
-##through the consensus maker.  											##
-##															##
-##########################################################################################################################
-##########################################################################################################################
+'''
+DCS Filter
+Version 2.2
+By Brendan Kohrn and Scott Kennedy(1)
+(1) Department of Pathology, University of Washington School of Medicine, Seattle, WA 98195	
+August 23, 2013	
+
+Written for Python 2.7.3
+Required modules: Pysam, Samtools, BioPython
+
+This program is intended to be run on a paired-end BAM file, sorted by read position, which has already been through the consensus maker.  It alligns SSCS's to their switchtag, and outputs a paired-end BAM file containing Duplex Consensus Sequences (DCS's) and a BAM file containing unpaired duplex consensus sequences.  
+
+usage: DuplexMaker2.2.py [-h] [--infile INFILE] [--outfile OUTFILE]
+                         [--Ncutoff NCUTOFF] [--readlength READ_LENGTH]
+                         [--hairpin HAIRPIN]
+
+arguments:
+  -h, --help            show this help message and exit
+  --infile INFILE       input BAM file
+  --outfile OUTFILE     output BAM file
+  --Ncutoff NCUTOFF     Maximum percentage of Ns allowed in a consensus [1]
+  --readlength READ_LENGTH
+                        Length of the input read that is being used.  [80]
+  --hairpin HAIRPIN     is this hairpin sequencing? [False]
+
+'''
 
 import sys
 import pysam
