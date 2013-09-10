@@ -179,6 +179,12 @@ while readOne==False:
 	elif firstRead.pos==firstRead.mpos and int( firstRead.flag ) in ( 83, 99, 147, 163):
 		overlap=True
 
+    softClip=False
+    if firstRead.cigar != None:
+        for tupple in firstRead.cigar:
+            if tupple[0]==4:
+                softClip=True
+
 	try:
 		tag = firstRead	.qname.split('#')[1] + (":1" if firstRead.is_read1 == True else (":2" if firstRead.is_read2 == True else ":se")) #extract the barcode
 		tagDict[tag]+=1
@@ -235,6 +241,12 @@ for line in bamEntry:
 		elif line.pos==line.mpos and int( firstRead.flag ) in ( 83, 99, 147, 163):
 			overlap=True
 		readNum +=1
+
+        softClip=False
+        if line.cigar != None:
+            for tupple in line.cigar:
+                if tupple[0]==4:
+                    softClip=True
 
 		tag = line.qname.split('#')[1] + (":1" if line.is_read1 == True else (":2" if line.is_read2 == True else ":se"))
 		tagDict[tag] += 1
