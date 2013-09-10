@@ -285,11 +285,11 @@ while readOne == False:
     overlap = False
     if readNum % 100000 == 0:
         sys.stderr.write("Reads processed:" + str(readNum) + "\n")
-    if firstRead.pos < firstRead.mpos 
-            and firstRead.mpos < firstRead.pos + o.read_length:
+    if firstRead.pos < firstRead.mpos and \
+            firstRead.mpos < firstRead.pos + o.read_length:
         overlap = True
-    elif firstRead.pos > firstRead.mpos 
-            and firstRead.pos < firstRead.mpos + o.read_length:
+    elif firstRead.pos > firstRead.mpos and \
+            firstRead.pos < firstRead.mpos + o.read_length:
         overlap = True
     elif firstRead.pos==firstRead.mpos:
         overlap = True
@@ -297,7 +297,7 @@ while readOne == False:
     softClip=False
     if line.cigar != None:
         for tupple in line.cigar:
-            if tupple[0]=4:
+            if tupple[0]==4:
                 softClip=True
 
     try:
@@ -305,18 +305,19 @@ while readOne == False:
                 firstRead.qname.split('#')[1] + 
                 (":1" if firstRead.is_read1 == True 
                 else (":2" if firstRead.is_read2 == True 
-                else ":se")) #extract the barcode
+                else ":se"))
+                ) #extract the barcode
         tagDict[tag]+=1
     except:
         exit()
     
-    if int( firstRead.flag ) in goodFlag  
-            and overlap==False and softClip==False: #check if the given read is good data
+    if int( firstRead.flag ) in goodFlag and \
+            overlap==False and softClip==False: #check if the given read is good data
         
-        if ('A'*o.rep_filt in tag) 
-                or ('C'*o.rep_filt in tag) 
-                or ('G'*o.rep_filt in tag) 
-                or ('C'*o.rep_filt in tag) :    
+        if ('A'*o.rep_filt in tag) or \
+                ('C'*o.rep_filt in tag) or \
+                ('G'*o.rep_filt in tag) or \
+                ('C'*o.rep_filt in tag) :    
             #check for bad barcodes
             pass 
         else :
@@ -361,38 +362,38 @@ for line in bamEntry:
             sys.stderr.write("Reads processed:" + str(readNum) + "\n")
         lineFlag = 0
         overlap = False
-        if line.pos < line.mpos 
-                and line.mpos < line.pos + o.read_length 
-                and int( firstRead.flag ) in ( 83, 99, 147, 163):
+        if line.pos < line.mpos and \
+                line.mpos < line.pos + o.read_length and \
+                int( firstRead.flag ) in ( 83, 99, 147, 163):
             overlap = True
-        elif line.pos > line.mpos 
-                and line.pos < line.mpos + o.read_length 
-                and int( firstRead.flag ) in ( 83, 99, 147, 163):
+        elif line.pos > line.mpos and \
+                line.pos < line.mpos + o.read_length and \
+                int( firstRead.flag ) in ( 83, 99, 147, 163):
             overlap = True
-        elif line.pos == line.mpos 
-                and int(firstRead.flag) in (83, 99, 147, 163):
+        elif line.pos == line.mpos and \
+                int(firstRead.flag) in (83, 99, 147, 163):
             overlap=True
         readNum +=1
         
     softClip=False
     if line.cigar != None:
         for tupple in line.cigar:
-            if tupple[0]=4:
+            if tupple[0]==4:
                 softClip=True
         
         tag = (
                 line.qname.split('#')[1] + 
-                (":1" if line.is_read1 == True 
-                else (":2" if line.is_read2 == True 
-                else ":se"))
+                (":1" if line.is_read1 == True else 
+                (":2" if line.is_read2 == True else 
+                ":se"))
                 )
         tagDict[tag] += 1
         
-        if int( line.flag ) in goodFlag 
-                and overlap==False and softClip==False: #check if the given read is good data
-            if ('A'*o.rep_filt in tag) 
-                    or ('C'*o.rep_filt in tag) 
-                    or ('G'*o.rep_filt in tag) 
+        #check if the given read is good data
+        if int( line.flag ) in goodFlag and overlap==False and softClip==False: 
+            if ('A'*o.rep_filt in tag) \
+                    or ('C'*o.rep_filt in tag) \
+                    or ('G'*o.rep_filt in tag) \
                     or ('C'*o.rep_filt in tag) : 
                 #check for bad barcodes
                 pass 
@@ -425,10 +426,10 @@ for line in bamEntry:
         #store the present line for the next group of lines
         firstRead = line 
         firstTag = (
-                firstRead.qname.split('#')[1] + 
-                (":1" if firstRead.is_read1 == True 
-                else (":2" if firstRead.is_read2 == True 
-                else ":se"))
+                firstRead.qname.split('#')[1] + \
+                (":1" if firstRead.is_read1 == True else \
+                (":2" if firstRead.is_read2 == True else \
+                ":se"))
                 )
         readOne=True
         #extract sequences to send to the consensus maker
@@ -526,9 +527,9 @@ extraBam.close()
 sys.stderr.write("Reads processed:" + str(readNum) + "\n")
 
 tagFile = open( o.tagfile, "w" )
-tagFile.write ( "\n".join( [ "%s\t%d" % 
-        ( SMI, tagDict[SMI] ) for SMI 
-        in sorted( tagDict.keys(), key = lambda 
-        x: tagDict[x], reverse = True ) ] )
+tagFile.write (
+        "\n".join( "%s\t%d" % (SMI, tagDict[SMI]) for \
+        SMI in sorted(tagDict.keys(), key = lambda x: tagDict[x], \
+        reverse = True))
         )
 tagFile.close()
