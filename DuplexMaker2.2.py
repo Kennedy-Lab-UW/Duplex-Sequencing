@@ -46,34 +46,10 @@ from argparse import ArgumentParser
 #######################################################################
 
 parser=ArgumentParser()
-parser.add_argument(
-        "--infile", 
-        action="store", 
-        dest="infile", 
-        help="input BAM file", 
-        default='sys.stdin'
-        )
-parser.add_argument(
-        "--outfile",  
-        action="store", 
-        dest="outfile", 
-        help="output BAM file",  
-        default='sys.stdout'
-        )
-parser.add_argument(
-        '--Ncutoff', 
-        type=float, 
-        default=1, 
-        dest='Ncutoff', 
-        help="Maximum percentage of Ns allowed in a consensus"
-        )
-parser.add_argument(
-        '--readlength', 
-        type=int, 
-        default=81, 
-        dest='read_length', 
-        help="Length of the input read that is being used."
-        )
+parser.add_argument("--infile", action="store", dest="infile", help="input BAM file", default='sys.stdin')
+parser.add_argument("--outfile", action="store", dest="outfile", help="output BAM file", default='sys.stdout')
+parser.add_argument('--Ncutoff', type=float, default=1, dest='Ncutoff', help="Maximum percentage of Ns allowed in a consensus")
+parser.add_argument('--readlength', type=int, default=81, dest='read_length', help="Length of the input read that is being used.")
 o = parser.parse_args()
 
 #######################################################################
@@ -81,13 +57,7 @@ o = parser.parse_args()
 #######################################################################
 
 def printRead(readIn):
-    print(str(readIn.qname) +  "\t" + str(readIn.flag) + "\t" + 
-            str(readIn.tid) + "\t" + str(readIn.pos) + "\t" + 
-            str(readIn.mapq) + "\t" + str(readIn.cigar) + "\t" + 
-            str(readIn.mrnm) + "\t" + str(readIn.mpos) + "\t" + 
-            str(readIn.isize) + "\t" + str(readIn.seq) + "\t" + 
-            str(readIn.qual) + "\t" + str(readIn.tags)
-            )
+    print(str(readIn.qname) +  "\t" + str(readIn.flag) + "\t" + str(readIn.tid) + "\t" + str(readIn.pos) + "\t" + str(readIn.mapq) + "\t" + str(readIn.cigar) + "\t" + str(readIn.mrnm) + "\t" + str(readIn.mpos) + "\t" + str(readIn.isize) + "\t" + str(readIn.seq) + "\t" + str(readIn.qual) + "\t" + str(readIn.tags))
 
 
 def DSCMaker (groupedReadsList,  readLength) :
@@ -145,10 +115,7 @@ cigDum = firstRead.cigar #set a dummy cigar score
 for line in bamEntry:
     #reinitialize first line
     if readOne==True:
-        readDict[firstTag] = [firstRead.flag, firstRead.rname, 
-            firstRead.pos, firstRead.mrnm, firstRead.mpos, 
-            firstRead.isize, firstRead.seq
-            ]
+        readDict[firstTag] = [firstRead.flag, firstRead.rname, firstRead.pos, firstRead.mrnm, firstRead.mpos, firstRead.isize, firstRead.seq]
         readOne=False
     while line.pos == firstRead.pos and fileDone==False:
         if readNum % 100000 == 0:
@@ -186,10 +153,7 @@ for line in bamEntry:
         for dictTag in readDict.keys(): 
             switchtag = dictTag[12:24] + dictTag[:12]
             try:
-                consensus = DSCMaker(
-                        [readDict[dictTag][6], readDict[switchtag][6]], 
-                        o.read_length
-                        )
+                consensus = DSCMaker([readDict[dictTag][6], readDict[switchtag][6]], o.read_length)
                 #Filter out consensuses with too many Ns in them
                 if consensus.count("N" )/ len(consensus) < o.Ncutoff:
                     #write a line to the consensusDictionary
@@ -215,23 +179,14 @@ for line in bamEntry:
     ###################################################################
                     if dictTag in consensusDict:
                         if a.is_read1 == True:
-                            fastqFile1.write('@:%s\n%s\n+\n%s\n' %
-                                    (a.qname, a.seq, a.qual))
+                            fastqFile1.write('@:%s\n%s\n+\n%s\n' % (a.qname, a.seq, a.qual))
                             outBam.write(a)
-                            fastqFile2.write('@:%s\n%s\n+\n%s\n' %
-                                    (consensusDict[dictTag].qname, 
-                                    consensusDict[dictTag].seq, 
-                                    consensusDict[dictTag].qual))
+                            fastqFile2.write('@:%s\n%s\n+\n%s\n' % (consensusDict[dictTag].qname, consensusDict[dictTag].seq, consensusDict[dictTag].qual))
                             outBam.write(consensusDict.pop(dictTag))
                         else:
-                            fastqFile1.write('@:%s\n%s\n+\n%s\n' %
-                                    (consensusDict[dictTag].qname, 
-                                    consensusDict[dictTag].seq, 
-                                    consensusDict[dictTag].qual)
-                                    )
+                            fastqFile1.write('@:%s\n%s\n+\n%s\n' % (consensusDict[dictTag].qname, consensusDict[dictTag].seq, consensusDict[dictTag].qual))
                             outBam.write(consensusDict.pop(dictTag))
-                            fastqFile2.write('@:%s\n%s\n+\n%s\n' %
-                                    (a.qname, a.seq, a.qual))
+                            fastqFile2.write('@:%s\n%s\n+\n%s\n' % (a.qname, a.seq, a.qual))
                             outBam.write(a)
                     else:
                         consensusDict[dictTag]=a
@@ -246,9 +201,7 @@ for line in bamEntry:
 #Write unpaired SSCSs to extraConsensus.bam                           #
 #######################################################################
 
-extraBam=pysam.Samfile(o.outfile.replace(".bam","_UP.bam"), "wb", 
-        template = inBam
-        )
+extraBam=pysam.Samfile(o.outfile.replace(".bam","_UP.bam"), "wb", template = inBam)
 #close BAM files
 inBam.close()
 outBam.close()
