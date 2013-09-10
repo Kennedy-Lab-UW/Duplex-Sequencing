@@ -92,82 +92,16 @@ from argparse import ArgumentParser
 ########################################################################
 
 parser=ArgumentParser()
-parser.add_argument(
-        "--infile", 
-        action="store", 
-        dest="infile", 
-        help="input BAM file", 
-        default='sys.stdin'
-        )
-parser.add_argument(
-        "--tagfile",  
-        action="store",  
-        dest="tagfile", 
-        help="output tagcounts file",  
-        default='sys.stdout'
-        )
-parser.add_argument(
-        "--outfile",  
-        action="store", 
-        dest="outfile", 
-        help="output BAM file",  
-        default='sys.stdout'
-        )
-parser.add_argument(
-        "--rep_filt", 
-        action="store",  
-        type=int, 
-        dest='rep_filt', 
-        help="Remove tags with homomeric runs of nucleotides of length x", 
-        default=9 
-        )
-parser.add_argument(
-        '--minmem', 
-        type=int, 
-        default=0, 
-        dest='minmem', 
-        help="Minimum number of reads allowed to comprise a consensus."
-        )
-parser.add_argument(
-        '--maxmem', 
-        type=int, 
-        default=100, 
-        dest='maxmem', 
-        help="Maximum number of reads allowed to comprise a consensus."
-        )
-parser.add_argument(
-        '--cutoff', 
-        type=float, 
-        default=0, 
-        dest='cutoff', 
-        help="Percentage of nucleotides at a given position in a read that \
-            must be identical in order for a consensus to be called at that \
-            position."
-        )
-parser.add_argument(
-        '--Ncutoff', 
-        type=float, 
-        default = 1, 
-        dest = 'Ncutoff', 
-        help = "Maximum percentage of Ns allowed in a consensus"
-        )
-parser.add_argument(
-        '--readlength', 
-        type = int, 
-        default = 80, 
-        dest = 'read_length', 
-        help = "Length of the input read that is being used."
-        )
-parser.add_argument(
-        '--read_type', 
-        type = str,  
-        action = "store", 
-        default = "dual_map", 
-        help = "Type of read.  Options: \
-            dual_map: both reads map properly.  Doesn't consider read pairs \
-            where only one read maps.  \
-            mono_map: considers any read pair where one read maps."
-        )
+parser.add_argument("--infile", action="store", dest="infile", help="input BAM file", default='sys.stdin')
+parser.add_argument("--tagfile",action="store", dest="tagfile", help="output tagcounts file", default='sys.stdout')
+parser.add_argument("--outfile", action="store", dest="outfile", help="output BAM file", default='sys.stdout')
+parser.add_argument("--rep_filt", action="store",  type=int, dest='rep_filt', help="Remove tags with homomeric runs of nucleotides of length x", default=9)
+parser.add_argument('--minmem', type=int, default=0, dest='minmem', help="Minimum number of reads allowed to comprise a consensus.")
+parser.add_argument('--maxmem', type=int, default=100, dest='maxmem', help="Maximum number of reads allowed to comprise a consensus.")
+parser.add_argument('--cutoff', type=float, default=0, dest='cutoff', help="Percentage of nucleotides at a given position in a read that must be identical in order for a consensus to be called at that position.")
+parser.add_argument('--Ncutoff', type=float, default = 1, dest = 'Ncutoff', help = "Maximum percentage of Ns allowed in a consensus")
+parser.add_argument('--readlength', type = int, default = 80, dest = 'read_length', help = "Length of the input read that is being used.")
+parser.add_argument('--read_type', type = str,  action = "store", default = "dual_map", help = "Type of read.  Options: dual_map: both reads map properly.  Doesn't consider read pairs where only one read maps.  mono_map: considers any read pair where one read maps.")
 o = parser.parse_args()
 
 ########################################################################
@@ -176,14 +110,7 @@ o = parser.parse_args()
 ########################################################################
 
 def printRead(readIn):
-    sys.stderr.write(
-            str(readIn.qname) +  "  " + str(readIn.flag) + "    " + 
-            str(readIn.tid) + " " + str(readIn.pos) + " " + str(readIn.mapq) + 
-            "   " + str(readIn.cigar) + "   " + str(readIn.mrnm) + "    " + 
-            str(readIn.mpos) + "    " + str(readIn.isize) + "   " + 
-            str(readIn.seq) + " " + str(readIn.qual) + "    " + 
-            str(readIn.tags) + "\n"
-            )
+    sys.stderr.write(str(readIn.qname) +  "  " + str(readIn.flag) + "    " + str(readIn.tid) + " " + str(readIn.pos) + " " + str(readIn.mapq) + "   " + str(readIn.cigar) + "   " + str(readIn.mrnm) + "    " + str(readIn.mpos) + "    " + str(readIn.isize) + "   " + str(readIn.seq) + " " + str(readIn.qual) + "    " + str(readIn.tags) + "\n")
 
 def consensusMaker (groupedReadsList,  cutoff,  readLength) :
     '''The consensus maker uses a simple "majority rules" algorithm to 
@@ -254,12 +181,8 @@ elif o.read_type == "mono_map":
 
 inBam = pysam.Samfile(o.infile, "rb" ) 
 outBam = pysam.Samfile(o.outfile, "wb", template = inBam) 
-outNC1 = pysam.Samfile(
-        o.outfile.replace(".bam","_LCC.bam"),"wb", template = inBam
-        )
-nonMap = pysam.Samfile(
-        o.outfile.replace(".bam","_NM.bam"), "wb", template = inBam
-        ) 
+outNC1 = pysam.Samfile(o.outfile.replace(".bam","_LCC.bam"),"wb", template = inBam)
+nonMap = pysam.Samfile(o.outfile.replace(".bam","_NM.bam"), "wb", template = inBam) 
 
 readNum=0
 
@@ -284,42 +207,32 @@ while readOne == False:
     readNum += 1
     overlap = False
     if readNum % 100000 == 0:
-        sys.stderr.write("Reads processed:" + str(readNum) + ":1\n")
-    if firstRead.pos < firstRead.mpos and \
-            firstRead.mpos < firstRead.pos + o.read_length:
+        sys.stderr.write("Reads processed:" + str(readNum) + "\n")
+    if firstRead.pos < firstRead.mpos and firstRead.mpos < firstRead.pos + o.read_length:
         overlap = True
-    elif firstRead.pos > firstRead.mpos and \
-            firstRead.pos < firstRead.mpos + o.read_length:
+    elif firstRead.pos > firstRead.mpos and firstRead.pos < firstRead.mpos + o.read_length:
         overlap = True
     elif firstRead.pos==firstRead.mpos:
         overlap = True
-    
-    print(2)
 
     softClip=False
     if firstRead.cigar != None:
         for tupple in firstRead.cigar:
             if tupple[0]==4:
                 softClip=True
-    print(3)
     try:
-        tag = (firstRead.qname.split('#')[1] + (":1" if firstRead.is_read1 == True else (":2" if firstRead.is_read2 == True else ":se"))
-                ) #extract the barcode
+        tag = (firstRead.qname.split('#')[1] + (":1" if firstRead.is_read1 == True else (":2" if firstRead.is_read2 == True else ":se"))) #extract the barcode
         tagDict[tag]+=1
-        print(4)
     except:
         exit()
     
-    if int( firstRead.flag ) in goodFlag and \
-            overlap==False and softClip==False: #check if the given read is good data
-        print(5)
+    if int(firstRead.flag) in goodFlag and overlap==False and softClip==False: #check if the given read is good data
+
         #check for bad barcodes
         if ('A'*o.rep_filt in tag) or ('C'*o.rep_filt in tag) or ('G'*o.rep_filt in tag) or ('C'*o.rep_filt in tag) :    
             pass 
-            print("5a")
         else :
             #Found a good line
-            print("5b")
             firstTag = tag
             readOne = True
             tagDict[firstTag] -= 1
@@ -333,8 +246,7 @@ while readOne == False:
                 fileDone = True 
         else:
             #Oops...no good reads!
-            sys.stderr.write("Oops!  There are no good reads in this BAM \
-                    file!  Sorry!\n")
+            sys.stderr.write("Oops!  There are no good reads in this BAM file!  Sorry!\n")
             finished = True
             readOne = True
 
@@ -348,28 +260,19 @@ for line in bamEntry:
     #reinitialize first line
     if readOne == True:
         #firstCig = {firstRead.cigar:[1,firstRead.seq]}
-        readDict[firstTag] = [
-                firstRead.flag, firstRead.rname, firstRead.pos, 
-                firstRead.mrnm, firstRead.mpos, firstRead.isize, 
-                {str(firstRead.cigar): [1,firstRead.cigar,firstRead.seq]}
-                ]
+        readDict[firstTag] = [firstRead.flag, firstRead.rname, firstRead.pos, firstRead.mrnm, firstRead.mpos, firstRead.isize, {str(firstRead.cigar): [1,firstRead.cigar,firstRead.seq]}]
         tagDict[firstTag] += 1
         readOne = False
     while line.pos == firstRead.pos and fileDone==False:
         if readNum % 100000 == 0:
-            sys.stderr.write("Reads processed:" + str(readNum) + ":2\n")
+            sys.stderr.write("Reads processed:" + str(readNum) + "\n")
         lineFlag = 0
         overlap = False
-        if line.pos < line.mpos and \
-                line.mpos < line.pos + o.read_length and \
-                int( firstRead.flag ) in ( 83, 99, 147, 163):
+        if line.pos < line.mpos and line.mpos < line.pos + o.read_length and int( firstRead.flag ) in ( 83, 99, 147, 163):
             overlap = True
-        elif line.pos > line.mpos and \
-                line.pos < line.mpos + o.read_length and \
-                int( firstRead.flag ) in ( 83, 99, 147, 163):
+        elif line.pos > line.mpos and line.pos < line.mpos + o.read_length and int( firstRead.flag ) in ( 83, 99, 147, 163):
             overlap = True
-        elif line.pos == line.mpos and \
-                int(firstRead.flag) in (83, 99, 147, 163):
+        elif line.pos == line.mpos and int(firstRead.flag) in (83, 99, 147, 163):
             overlap=True
         readNum +=1
         
@@ -379,12 +282,7 @@ for line in bamEntry:
         #        if tupple[0]==4:
         #            softClip=True
         
-        tag = (
-                line.qname.split('#')[1] + 
-                (":1" if line.is_read1 == True else 
-                (":2" if line.is_read2 == True else 
-                ":se"))
-                )
+        tag = (line.qname.split('#')[1] + (":1" if line.is_read1 == True else (":2" if line.is_read2 == True else ":se")))
         tagDict[tag] += 1
         
         #check if the given read is good data
@@ -395,11 +293,7 @@ for line in bamEntry:
             else :
                 #add the sequence to the read dictionary
                 if tag not in readDict:
-                    readDict[tag] = [
-                            line.flag, line.rname, line.pos, line.mrnm, 
-                            line.mpos, line.isize,
-                            {str(line.cigar):[0,line.cigar]}
-                            ]
+                    readDict[tag] = [line.flag, line.rname, line.pos, line.mrnm, line.mpos, line.isize, {str(line.cigar):[0,line.cigar]}]
 
                 if str(line.cigar) not in readDict[tag][6]:
                     readDict[tag][6][str(line.cigar)] = [0,line.cigar]
@@ -420,11 +314,7 @@ for line in bamEntry:
         
         #store the present line for the next group of lines
         firstRead = line 
-        firstTag = (
-                firstRead.qname.split('#')[1] + \
-                (":1" if firstRead.is_read1 == True else \
-                (":2" if firstRead.is_read2 == True else \
-                ":se"))
+        firstTag = (firstRead.qname.split('#')[1] + (":1" if firstRead.is_read1 == True else (":2" if firstRead.is_read2 == True else ":se"))
                 )
         readOne=True
         #extract sequences to send to the consensus maker
@@ -437,10 +327,7 @@ for line in bamEntry:
 
             
             if cigComp[maxCig] <= o.maxmem and cigComp[maxCig] >= o.minmem:
-                consensus = consensusMaker(
-                                            readDict[dictTag][6][maxCig][2:],  
-                                            o.cutoff,  o.read_length
-                                            )
+                consensus = consensusMaker(readDict[dictTag][6][maxCig][2:], o.cutoff,  o.read_length)
                 
                 for cigStr in readDict[dictTag][6].keys():
                     if cigStr != maxCig:
@@ -481,10 +368,7 @@ for line in bamEntry:
 #Write SSCSs to output BAM file in read pairs.                         #
 ########################################################################
                     
-                    altTag = dictTag.replace(
-                                            ("1" if "1" in dictTag else "2"), 
-                                            ("2" if "1" in dictTag else "1")
-                                            )
+                    altTag = dictTag.replace(("1" if "1" in dictTag else "2"), ("2" if "1" in dictTag else "1"))
                     
                     if altTag in consensusDict:
                         if a.is_read1 == True:
@@ -502,9 +386,7 @@ for line in bamEntry:
 #Write unpaired SSCSs to extraConsensus.bam                            #
 ########################################################################
 
-extraBam = pysam.Samfile(
-        o.outfile.replace(".bam","_UP.bam"), "wb", template = inBam
-        )
+extraBam = pysam.Samfile(o.outfile.replace(".bam","_UP.bam"), "wb", template = inBam)
 #close BAM files
 inBam.close()
 outBam.close()
@@ -522,9 +404,5 @@ extraBam.close()
 sys.stderr.write("Reads processed:" + str(readNum) + "\n")
 
 tagFile = open( o.tagfile, "w" )
-tagFile.write (
-        "\n".join( "%s\t%d" % (SMI, tagDict[SMI]) for \
-        SMI in sorted(tagDict.keys(), key = lambda x: tagDict[x], \
-        reverse = True))
-        )
+tagFile.write ("\n".join( "%s\t%d" % (SMI, tagDict[SMI]) for SMI in sorted(tagDict.keys(), key = lambda x: tagDict[x], reverse = True)))
 tagFile.close()
