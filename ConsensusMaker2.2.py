@@ -294,6 +294,12 @@ while readOne == False:
     elif firstRead.pos==firstRead.mpos:
         overlap = True
 
+    softClip=False
+    if line.cigar != None:
+        for tupple in line.cigar:
+            if tupple[0]=4:
+                softClip=True
+
     try:
         tag = (
                 firstRead.qname.split('#')[1] + 
@@ -305,7 +311,7 @@ while readOne == False:
         exit()
     
     if int( firstRead.flag ) in goodFlag  
-            and overlap==False: #check if the given read is good data
+            and overlap==False and softClip==False: #check if the given read is good data
         
         if ('A'*o.rep_filt in tag) 
                 or ('C'*o.rep_filt in tag) 
@@ -368,6 +374,12 @@ for line in bamEntry:
             overlap=True
         readNum +=1
         
+    softClip=False
+    if line.cigar != None:
+        for tupple in line.cigar:
+            if tupple[0]=4:
+                softClip=True
+        
         tag = (
                 line.qname.split('#')[1] + 
                 (":1" if line.is_read1 == True 
@@ -377,7 +389,7 @@ for line in bamEntry:
         tagDict[tag] += 1
         
         if int( line.flag ) in goodFlag 
-                and overlap==False: #check if the given read is good data
+                and overlap==False and softClip==False: #check if the given read is good data
             if ('A'*o.rep_filt in tag) 
                     or ('C'*o.rep_filt in tag) 
                     or ('G'*o.rep_filt in tag) 

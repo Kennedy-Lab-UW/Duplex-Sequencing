@@ -124,7 +124,7 @@ fileDone=False #initialize end of file bool
 finished=False
 readOne=True
 
-bamEntry = inBam.fetch( until_eof = True ) #initialize the iterator
+bamEntry = inBam.fetch(until_eof = True) #initialize the iterator
 firstRead = bamEntry.next() #get the first read
 readDict = {} #initialize the read dictionary
 firstTag=firstRead.qname.split(":")[0]
