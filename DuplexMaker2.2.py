@@ -112,7 +112,7 @@ def DSCMaker (groupedReadsList,  readLength) :
 #######################################################################
 
 #open the input BAM file
-inBam = pysam.Samfile( o.infile, "rb" ) 
+inBam = pysam.Samfile(o.infile, "rb") 
 #open the output BAM file
 outBam = pysam.Samfile( o.outfile, "wb", template = inBam ) 
 fastqFile1 = open(o.outfile.replace('.bam','')+".r1.fq",'w')
@@ -145,10 +145,10 @@ cigDum = firstRead.cigar #set a dummy cigar score
 for line in bamEntry:
     #reinitialize first line
     if readOne==True:
-            readDict[firstTag] = [firstRead.flag, firstRead.rname, 
-                    firstRead.pos, firstRead.mrnm, firstRead.mpos, 
-                    firstRead.isize, firstRead.seq
-                    ]
+        readDict[firstTag] = [firstRead.flag, firstRead.rname, 
+            firstRead.pos, firstRead.mrnm, firstRead.mpos, 
+            firstRead.isize, firstRead.seq
+            ]
         readOne=False
     while line.pos == firstRead.pos and fileDone==False:
         if readNum % 100000 == 0:
@@ -157,9 +157,10 @@ for line in bamEntry:
         tag = line.qname.split(":")[0] #extract the barcode
         #add the sequence to the read dictionary
         if tag not in readDict:
-                readDict[tag] = [line.flag, line.rname, line.pos, 
-                        line.mrnm, line.mpos, line.isize, line.seq
-                        ]
+            readDict[tag] = [
+                line.flag, line.rname, line.pos, 
+                line.mrnm, line.mpos, line.isize, line.seq
+                ]
         #if fileDone==False:
         try: #keep StopIteration error from happening
             line = bamEntry.next() #iterate the line
@@ -185,8 +186,9 @@ for line in bamEntry:
         for dictTag in readDict.keys(): 
             switchtag = dictTag[12:24] + dictTag[:12]
             try:
-                consensus = DSCMaker( [readDict[dictTag][6], 
-                        readDict[switchtag][6]],  o.read_length 
+                consensus = DSCMaker(
+                        [readDict[dictTag][6], readDict[switchtag][6]], 
+                        o.read_length
                         )
                 #Filter out consensuses with too many Ns in them
                 if consensus.count("N" )/ len(consensus) < o.Ncutoff:
@@ -229,8 +231,7 @@ for line in bamEntry:
                                     )
                             outBam.write(consensusDict.pop(dictTag))
                             fastqFile2.write('@:%s\n%s\n+\n%s\n' %
-                                    (a.qname, a.seq, a.qual)
-                                    )
+                                    (a.qname, a.seq, a.qual))
                             outBam.write(a)
                     else:
                         consensusDict[dictTag]=a
