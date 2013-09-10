@@ -154,7 +154,7 @@ parser.add_argument(
 parser.add_argument(
         '--readlength', 
         type = int, 
-        default = 81, 
+        default = 80, 
         dest = 'read_length', 
         help = "Length of the input read that is being used."
         )
