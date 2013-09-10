@@ -14,11 +14,7 @@ parser.add_argument("--max", action="store", dest="maxMem", help="Maximum member
 parser.add_argument("--cut", action="store", dest="cutOff", help="Mimimum percent matching for base choice in SSCS consensus", default=".8")
 parser.add_argument("--Ncut", action="store", dest="Ncut", help="Maxumum percent N's allowed", default=".1")
 parser.add_argument("--rlength", type=int, action="store", dest="rlength", help="Length of a single read", default="80")
-parser.add_argument("--read_type", type=str, action="store", dest="read_type", default="dual_map", help="Type of read.  Options: dual_map: both reads map propperly.  Doesn't consider read pairs where only one read maps.  mono_map: considers any read pair where one read maps.  hairpin: only use for hairpin sequence.")
-parser.add_argument("--spacers", type=str, dest='spacers', default='', help="Potential spacers in hairpin, in format 'spacer1, spacer2, spacer3, ...'.  Only necessary for hairpin sequencing.  ")
-parser.add_argument("--slength", type=int, dest='slength', default=0, help="Length of the spacer sequence.  Only necessary for hairpin sequencing.  ")
-parser.add_argument("--blength", type=int, dest='blength',default=0, help="Length of the barcode sequence.  Only necessary for hairpin sequencing.  ")
-parser.add_argument("--plengths", type=str, dest='plengths', default='', help="Length of each primer, coresponds directly to length trimmed off.  Takes the form 'Read1PrimerLength Read2PrimerLength'.  Only necessary for hairpin sequencing.  ")
+parser.add_argument("--read_type", type=str, action="store", dest="read_type", default="dual_map", help="Type of read.  Options: dual_map: both reads map propperly.  Doesn't consider read pairs where only one read maps.  mono_map: considers any read pair where one read maps.")
 o = parser.parse_args()
 
 spath="".join((repr(os.getcwd()).replace("'",'')+"/"+repr(sys.argv[0]).replace("'","")))
@@ -40,10 +36,6 @@ out2 = "head." + r2 + ".fq"
 
 readlength=0
 
-if o.read_type == "hairpin":
-	outPrefix="head"
-	outBash.write("python " + spath + "hairpin_header.py --inRead2 " + o.r1src + " --inRead2 " + o.r2src + " --out_prefix " + outPrefix + " --spacers " + o.spacers + " --slength " + str(o.slength) + " --blength " + str(o.blength) + "--plengths " + o.plengths + "\n\n")
-	readlength=str(o.rlength - o.blength - o.slength - int(o.plengths.split(" ")[0])-int(o.plengths.split(" ")[1]))
 else:
 	outBash.write("python " + spath + "tag_to_header.py --infile1 " + o.r1src + " --infile2 " + o.r2src + " --outfile1 " + out1 + " --outfile2 " + out2 + "\n\n")
 	readlength=str(o.rlength)
@@ -81,10 +73,9 @@ outBash.write("samtools view -bu " + SSCSout + " | samtools sort - " + SSCSsort 
 
 
 DCSout = SSCSout.replace("SSCS","DCS")
-isHairpin = "True" if o.read_type=="hairpin" else "False"
 outBash.write("#Find the DCSs \n\n")
 
-outBash.write("python " + spath + "DuplexMaker2.2.py --infile " + SSCSsort + ".bam --outfile " + DCSout + " --Ncutoff " + o.Ncut + " --readlength " + readlength + " --hairpin " + isHairpin + "\n\n")
+outBash.write("python " + spath + "DuplexMaker2.2.py --infile " + SSCSsort + ".bam --outfile " + DCSout + " --Ncutoff " + o.Ncut + " --readlength " + readlength + "\n\n")
 
 
 DCSr1 = DCSout.replace(".bam",".r1.fq")

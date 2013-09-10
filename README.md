@@ -70,19 +70,7 @@ arguments:
                         Type of read. Options: 
 							dual_map: both reads map propperly. Doesn't consider read pairs where only one maps. 
 							mono_map: considers any read pair where one read maps. 
-							hairpin: only use for hairpin sequence.
 							[dual_map]
-  --spacers SPACERS     Potential spacers in hairpin, in format 'spacer1,
-                        spacer2, spacer3, ...'. Only necessary for hairpin
-                        sequencing.
-  --slength SLENGTH     Length of the spacer sequence. Only necessary for
-                        hairpin sequencing.
-  --blength BLENGTH     Length of the barcode sequence. Only necessary for
-                        hairpin sequencing.
-  --plengths PLENGTHS   Length of each primer, coresponds directly to length
-                        trimmed off. Takes the form 'Read1PrimerLength
-                        Read2PrimerLength'. Only necessary for hairpin
-                        sequencing.		
 
 ConsensusMaker2.2.py
 
@@ -97,8 +85,6 @@ Written for Python 2.7.3
 Required modules: Pysam, Samtools
 
 This program is intended to be run on a paired-end BAM file, sorted by read position, with duplex tags in the header and constant read length.  It will output a paired-end BAM file with single strand consensus sequences (SSCSs), and a .tagcounts file which contains the different tags (on both strands) and how many times they occur, even if they are not used in SSCS generation, in order by read.  In addition, it will output a BAM file of SSCSs which are unpaired, either because one of the pair didn't match the criteria for allignment, or because of some other reason, and a BAM file of all unconsidered sequences in the original file.  Quality scores on the output BAM files are meaningless.  The file produced by this program is meant to continue on through the duplex maker.  
-
-Alternativly, this program can process hairpin sequences into SSCSs that can be used by the duplex maker.
 
 The program starts at the position of the first good read, determined by the type of read specified on startup.  It then goes through the file until it finds a new position, saving all reads as it goes.  When it finds a new position, it sends the saved reads to the consensus maker, one tag at a time, untill it runs out of tags.  Consensus sequences are saved until their mates come up, at which point both are written to the output BAM file, first read first.  After emptying the reads from the first position, it continues on through the origional file until it finds another new position, sends those reads to the consensus maker, and so on until the end of the file.  At the end of the file, any remaining reads are sent through the consensus maker, and any unpaired consensuses are written to extraConsensus.bam.  
 
@@ -132,7 +118,6 @@ arguments:
                         Options: 
 							dual_map: both reads map propperly.  Doesn't consider read pairs where only one read maps. 
 							mono_map: considers any read pair where one read maps. 
-							hairpin: only use for hairpin sequence.
 
 
 DuplexMaker2.2.py
@@ -150,7 +135,6 @@ This program is intended to be run on a paired-end BAM file, sorted by read posi
 
 usage: DuplexMaker2.2.py [-h] [--infile INFILE] [--outfile OUTFILE]
                          [--Ncutoff NCUTOFF] [--readlength READ_LENGTH]
-                         [--hairpin HAIRPIN]
 
 arguments:
   -h, --help            show this help message and exit
@@ -159,4 +143,3 @@ arguments:
   --Ncutoff NCUTOFF     Maximum percentage of Ns allowed in a consensus [1]
   --readlength READ_LENGTH
                         Length of the input read that is being used.  [80]
-  --hairpin HAIRPIN     is this hairpin sequencing? [False]
