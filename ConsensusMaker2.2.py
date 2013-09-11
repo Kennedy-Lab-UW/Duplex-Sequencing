@@ -188,7 +188,7 @@ for line in bamEntry:
         tag = readWin[winPos%2].qname.split('#')[1] + (":1" if readWin[winPos%2].is_read1 == True else (":2" if readWin[winPos%2].is_read2 == True else ":se"))
         tagDict[tag] += 1
 
-        if int( readWin[winPos%2].flag ) in goodFlag and overlap==False: #check if the given read is good data
+        if int( readWin[winPos%2].flag ) in goodFlag and overlap==False and softClip==False: #check if the given read is good data
             if ('A'*o.rep_filt in tag) or ('C'*o.rep_filt in tag) or ('G'*o.rep_filt in tag) or ('C'*o.rep_filt in tag) : 
                 #check for bad barcodes
                 pass 
