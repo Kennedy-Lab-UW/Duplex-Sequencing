@@ -5,7 +5,6 @@ By Brendan Kohrn and Scott Kennedy(1)
 (1) Department of Pathology, University of Washington School of Medicine, Seattle, WA 98195
 September 09, 2013
 
-
 Written for Python 2.7.3
 Required modules: Pysam, Samtools
 
