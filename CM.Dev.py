@@ -172,9 +172,9 @@ for line in bamEntry:
         if readNum % 100000 == 0:
             sys.stderr.write("Reads processed:" + str(readNum) + "\n")
         overlap=False
-        if readWin[winPos%2].pos < readWin[winPos%2].mpos and readWin[winPos%2].mpos < readWin[winPos%2].pos + o.read_length and int(readWin[winPos%2]) in (83, 99, 147, 163):
+        if readWin[winPos%2].pos < readWin[winPos%2].mpos and readWin[winPos%2].mpos < readWin[winPos%2].pos + o.read_length and int(readWin[winPos%2].flag) in (83, 99, 147, 163):
             overlap=True
-        elif readWin[winPos%2].pos > readWin[winPos%2].mpos and readWin[winPos%2].pos < readWin[winPos%2].mpos + o.read_length and int(readWin[winPos%2]) in (83, 99, 147, 163):
+        elif readWin[winPos%2].pos > readWin[winPos%2].mpos and readWin[winPos%2].pos < readWin[winPos%2].mpos + o.read_length and int(readWin[winPos%2].flag) in (83, 99, 147, 163):
             overlap=True
         elif readWin[winPos%2].pos==readWin[winPos%2].mpos and int(readWin[winPos%2].flag) in (83, 99, 147, 163):
             overlap=True
