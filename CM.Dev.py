@@ -219,9 +219,6 @@ for line in bamEntry:
 #Send reads to consensusMaker                                                #
 ##########################################################################################################################
 
-
-        firstRead = line #store the present line for the next group of lines
-        firstTag = firstRead.qname.split('#')[1] + (":1" if firstRead.is_read1 == True else (":2" if firstRead.is_read2 == True else ":se"))
         readOne=True
         for dictTag in readDict.keys(): #extract sequences to send to the consensus maker
 
