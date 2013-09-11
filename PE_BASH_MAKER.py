@@ -99,23 +99,21 @@ outBash = open("PE_DCS_CALC." + r1 + "." + r2 + ".sh", "w")
 outBash.write("#!/bin/bash \n\n")
 
 
-outBash.write(
-        "#Filter for reads with a properly located duplex tag, \
-        then move the tag into the header \n\n"
-        )
+outBash.write("#Filter for reads with a properly located duplex tag, ")
+outBash.write("then move the tag into the header \n\n")
 
 out1 = "head." + r1 + ".fq"
 out2 = "head." + r2 + ".fq"
 
 readlength = 0
 
-else:
-	outBash.write(
-            "python " + spath + "tag_to_header.py --infile1 " + 
-            o.r1src + " --infile2 " + o.r2src + " --outfile1 " + out1 + 
-            " --outfile2 " + out2 + "\n\n"
-            )
-	readlength = str(o.rlength)
+
+outBash.write(
+        "python " + spath + "tag_to_header.py --infile1 " + 
+        o.r1src + " --infile2 " + o.r2src + " --outfile1 " + out1 + 
+        " --outfile2 " + out2 + "\n\n"
+        )
+readlength = str(o.rlength)
 
 aln1 = r1 + ".aln"
 aln2 = r2 + ".aln"
