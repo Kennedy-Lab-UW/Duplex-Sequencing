@@ -142,7 +142,6 @@ outNC1 = pysam.Samfile( o.outfile.replace(".bam","_LCC.bam"),"wb", template = in
 nonMap = pysam.Samfile( o.outfile.replace(".bam","_NM.bam"), "wb", template = inBam ) #file for reads with strange flags
 #outStd = pysam.Samfile('-', 'wb', template = inBam ) #open the stdOut writer
 
-
 readNum=0
 
 fileDone=False #initialize end of file bool
@@ -152,119 +151,67 @@ readOne=False
 qualScore = 'i'*o.read_length #set a dummy quality score
 
 bamEntry = inBam.fetch( until_eof = True ) #initialize the iterator
-firstRead = bamEntry.next() #get the first read
+readWin = [bamEntry.next(), ''] #get the first read
+winPos = 0
 
-firstTag=''
 readDict = {} #initialize the read dictionary
 tagDict = defaultdict( lambda: 0 ) #initialize the tag dictionary
 
-##########################################################################################################################
-#Find the first good read to serve as a start point for analysis.                                #
-##########################################################################################################################
-
-while readOne==False:
-    readNum +=1
-    overlap=False
-    if readNum % 100000 == 0:
-        sys.stderr.write("Reads processed:" + str(readNum) + "\n")
-    if firstRead.pos < firstRead.mpos and firstRead.mpos < firstRead.pos + o.read_length and int( firstRead.flag ) in ( 83, 99, 147, 163):
-        overlap=True
-    elif firstRead.pos > firstRead.mpos and firstRead.pos < firstRead.mpos + o.read_length and int( firstRead.flag ) in ( 83, 99, 147, 163):
-        overlap=True
-    elif firstRead.pos==firstRead.mpos and int( firstRead.flag ) in ( 83, 99, 147, 163):
-        overlap=True
-
-    softClip=False
-    if firstRead.cigar != None:
-        for tupple in firstRead.cigar:
-            if tupple[0]==4:
-                softClip=True
-
-    try:
-        tag = firstRead .qname.split('#')[1] + (":1" if firstRead.is_read1 == True else (":2" if firstRead.is_read2 == True else ":se")) #extract the barcode
-        tagDict[tag]+=1
-    except:
-        exit()
-
-    if int( firstRead.flag ) in goodFlag  and overlap==False: #check if the given read is good data
-
-        if ('A'*o.rep_filt in tag) or ('C'*o.rep_filt in tag) or ('G'*o.rep_filt in tag) or ('C'*o.rep_filt in tag) :   
-            #check for bad barcodes
-            pass 
-        else :
-            #Found a good line
-            firstTag=tag
-            readOne=True
-            tagDict[firstTag] -= 1
-    else:
-        nonMap.write(firstRead)
-        if fileDone==False:
-            try: #keep StopIteration error from happening
-                firstRead = bamEntry.next() #iterate the line
-
-            except:
-                fileDone = True #tell the program that it has reached the end of the file
-        else:
-            #Oops...no good reads!
-            sys.stderr.write("Oops!  There are no good reads in this BAM file!  Sorry!\n")
-            finished=True
-            readOne=True
-
 consensusDict={}
-
-cigDum = firstRead.cigar #set a dummy cigar score
 
 ##########################################################################################################################
 #Start going through the input BAM file, one position at a time.                                 #
 ##########################################################################################################################
 for line in bamEntry:
+    winPos += 1
+    readWin[winPos%2] = line
     #reinitialize first line
     if readOne==True:
-        #firstCig = {firstRead.cigar:[1,firstRead.seq]}
-        readDict[firstTag] = [firstRead.flag, firstRead.rname, firstRead.pos, firstRead.mrnm, firstRead.mpos, firstRead.isize, {str(firstRead.cigar): [1,firstRead.cigar,firstRead.seq]}]
-        tagDict[firstTag] += 1
-        readOne=False
-    while line.pos == firstRead.pos and fileDone==False:
+        winPos -= 1
+    while (readWin[winPos%2].pos == readWin[(winPos-1)%2].pos and fileDone==False and readOne==False) or readOne == True:
         if readNum % 100000 == 0:
             sys.stderr.write("Reads processed:" + str(readNum) + "\n")
-        lineFlag = 0
         overlap=False
-        if line.pos < line.mpos and line.mpos < line.pos + o.read_length and int( firstRead.flag ) in ( 83, 99, 147, 163):
+        if readWin[winPos%2].pos < readWin[winPos%2].mpos and readWin[winPos%2].mpos < readWin[winPos%2].pos + o.read_length and int(readWin[winPos%2].flag) in (83, 99, 147, 163):
             overlap=True
-        elif line.pos > line.mpos and line.pos < line.mpos + o.read_length and int( firstRead.flag ) in ( 83, 99, 147, 163):
+        elif readWin[winPos%2].pos > readWin[winPos%2].mpos and readWin[winPos%2].pos < readWin[winPos%2].mpos + o.read_length and int(readWin[winPos%2].flag) in (83, 99, 147, 163):
             overlap=True
-        elif line.pos==line.mpos and int( firstRead.flag ) in ( 83, 99, 147, 163):
+        elif readWin[winPos%2].pos==readWin[winPos%2].mpos and int(readWin[winPos%2].flag) in (83, 99, 147, 163):
             overlap=True
         readNum +=1
 
         softClip=False
-        if line.cigar != None:
-            for tupple in line.cigar:
+        if readWin[winPos%2].cigar != None:
+            for tupple in readWin[winPos%2].cigar:
                 if tupple[0]==4:
                     softClip=True
 
-        tag = line.qname.split('#')[1] + (":1" if line.is_read1 == True else (":2" if line.is_read2 == True else ":se"))
+        tag = readWin[winPos%2].qname.split('#')[1] + (":1" if readWin[winPos%2].is_read1 == True else (":2" if readWin[winPos%2].is_read2 == True else ":se"))
         tagDict[tag] += 1
 
-        if int( line.flag ) in goodFlag and overlap==False: #check if the given read is good data
+        if int( readWin[winPos%2].flag ) in goodFlag and overlap==False: #check if the given read is good data
             if ('A'*o.rep_filt in tag) or ('C'*o.rep_filt in tag) or ('G'*o.rep_filt in tag) or ('C'*o.rep_filt in tag) : 
                 #check for bad barcodes
                 pass 
             else :
                 #add the sequence to the read dictionary
                 if tag not in readDict:
-                    readDict[tag] = [line.flag, line.rname, line.pos, line.mrnm, line.mpos, line.isize,{str(line.cigar):[0,line.cigar]}]
+                    readDict[tag] = [readWin[winPos%2].flag, readWin[winPos%2].rname, readWin[winPos%2].pos, readWin[winPos%2].mrnm, readWin[winPos%2].mpos, readWin[winPos%2].isize,{str(readWin[winPos%2].cigar):[0,readWin[winPos%2].cigar]}]
 
-                if str(line.cigar) not in readDict[tag][6]:
-                    readDict[tag][6][str(line.cigar)]=[0,line.cigar]
-                readDict[tag][6][str(line.cigar)].append(line.seq)
-                readDict[tag][6][str(line.cigar)][0]+=1
+                if str(readWin[winPos%2].cigar) not in readDict[tag][6]:
+                    readDict[tag][6][str(readWin[winPos%2].cigar)]=[0,readWin[winPos%2].cigar]
+                readDict[tag][6][str(readWin[winPos%2].cigar)].append(readWin[winPos%2].seq)
+                readDict[tag][6][str(readWin[winPos%2].cigar)][0]+=1
         else:
-            nonMap.write(line)
-        try: #keep StopIteration error from happening
-            line = bamEntry.next() #iterate the line
-        except:
-            fileDone = True #tell the program that it has reached the end of the file
+            nonMap.write(readWin[winPos%2])
+        winPos += 1
+        if readOne == False:
+            try: #keep StopIteration error from happening
+                readWin[winPos%2] = bamEntry.next() #iterate the line
+            except:
+                fileDone = True #tell the program that it has reached the end of the file
+        else:
+            readOne = False
 
     else:
 
@@ -272,9 +219,6 @@ for line in bamEntry:
 #Send reads to consensusMaker                                                #
 ##########################################################################################################################
 
-
-        firstRead = line #store the present line for the next group of lines
-        firstTag = firstRead.qname.split('#')[1] + (":1" if firstRead.is_read1 == True else (":2" if firstRead.is_read2 == True else ":se"))
         readOne=True
         for dictTag in readDict.keys(): #extract sequences to send to the consensus maker
 
