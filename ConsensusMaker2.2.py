@@ -11,8 +11,6 @@ Required modules: Pysam, Samtools
 
 This program is intended to be run on a paired-end BAM file, sorted by read position, with duplex tags in the header and constant read length.  It will output a paired-end BAM file with single strand consensus sequences (SSCSs), and a .tagcounts file which contains the different tags (on both strands) and how many times they occur, even if they are not used in SSCS generation, in order by read.  In addition, it will output a BAM file of SSCSs which are unpaired, either because one of the pair didn't match the criteria for allignment, or because of some other reason, and a BAM file of all unconsidered sequences in the original file.  Quality scores on the output BAM files are meaningless.  The file produced by this program is meant to continue on through the duplex maker.  
 
-Alternativly, this program can process hairpin sequences into SSCSs that can be used by the duplex maker.
-
 The program starts at the position of the first good read, determined by the type of read specified on startup.  It then goes through the file until it finds a new position, saving all reads as it goes.  When it finds a new position, it sends the saved reads to the consensus maker, one tag at a time, untill it runs out of tags.  Consensus sequences are saved until their mates come up, at which point both are written to the output BAM file, first read first.  After emptying the reads from the first position, it continues on through the origional file until it finds another new position, sends those reads to the consensus maker, and so on until the end of the file.  At the end of the file, any remaining reads are sent through the consensus maker, and any unpaired consensuses are written to extraConsensus.bam.  
 
 In the future, the program may be able to autodetect read length.  
@@ -45,7 +43,6 @@ arguments:
                         Options: 
                             dual_map: both reads map propperly.  Doesn't consider read pairs where only one read maps. 
                             mono_map: considers any read pair where one read maps. 
-                            hairpin: only use for hairpin sequence.
 '''
 
 '''
@@ -75,7 +72,7 @@ parser.add_argument('--maxmem', type=int, default=100, dest='maxmem', help="Maxi
 parser.add_argument('--cutoff', type=float, default=0, dest='cutoff', help="Percentage of nucleotides at a given position in a read that must be identical in order for a consensus to be called at that position.")
 parser.add_argument('--Ncutoff', type=float, default=1, dest='Ncutoff', help="Maximum percentage of Ns allowed in a consensus")
 parser.add_argument('--readlength', type=int, default=81, dest='read_length', help="Length of the input read that is being used.")
-parser.add_argument('--read_type', type=str,  action="store", default="dual_map", help="Type of read.  Options: dual_map: both reads map properly.  Doesn't consider read pairs where only one read maps.  mono_map: considers any read pair where one read maps.  hairpin: only use for hairpin sequence.")
+parser.add_argument('--read_type', type=str,  action="store", default="dual_map", help="Type of read.  Options: dual_map: both reads map properly.  Doesn't consider read pairs where only one read maps.  mono_map: considers any read pair where one read maps.")
 o = parser.parse_args()
 
 ##########################################################################################################################
@@ -134,9 +131,7 @@ def consensusMaker (groupedReadsList,  cutoff,  readLength) :
 #Initialization of all global variables, main input/output files, and main iterator and dictionaries.            #
 ##########################################################################################################################
 goodFlag=[]
-if o.read_type == "hairpin":
-    goodFlag=[161,81,145,97]
-elif o.read_type == "dual_map":
+if o.read_type == "dual_map":
     goodFlag=[83, 99, 147, 163]
 elif o.read_type == "mono_map":
     goodFlag=[153, 89, 117, 181, 83, 99, 171, 163]

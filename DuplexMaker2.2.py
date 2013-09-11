@@ -12,7 +12,6 @@ This program is intended to be run on a paired-end BAM file, sorted by read posi
 
 usage: DuplexMaker2.2.py [-h] [--infile INFILE] [--outfile OUTFILE]
                          [--Ncutoff NCUTOFF] [--readlength READ_LENGTH]
-                         [--hairpin HAIRPIN]
 
 arguments:
   -h, --help            show this help message and exit
@@ -21,7 +20,6 @@ arguments:
   --Ncutoff NCUTOFF     Maximum percentage of Ns allowed in a consensus [1]
   --readlength READ_LENGTH
                         Length of the input read that is being used.  [80]
-  --hairpin HAIRPIN     is this hairpin sequencing? [False]
 
 '''
 
@@ -43,7 +41,6 @@ parser.add_argument("--outfile",  action="store", dest="outfile", help="output B
 parser.add_argument('--Ncutoff', type=float, default=1, dest='Ncutoff', help="Maximum percentage of Ns allowed in a consensus")
 #parser.add_argument('-p', action='store_true', dest='pipe', help="Output consensus reads to stdout"  )
 parser.add_argument('--readlength', type=int, default=81, dest='read_length', help="Length of the input read that is being used.")
-parser.add_argument('--hairpin', type=bool, default=False, dest='hairpin', help="is this hairpin sequencing?")
 o = parser.parse_args()
 
 ##########################################################################################################################
@@ -133,10 +130,7 @@ for line in bamEntry:
         readOne=True
         dictKeys = readDict.keys()
         for dictTag in readDict.keys(): #extract sequences to send to the consensus maker
-            if o.hairpin==False:
-                switchtag = dictTag[12:24] + dictTag[:12]
-            else:
-                switchtag = dictTag
+            switchtag = dictTag
             try:
                 consensus = DSCMaker( [readDict[dictTag][6], readDict[switchtag][6]],  o.read_length )
                 #Filter out consensuses with too many Ns in them
