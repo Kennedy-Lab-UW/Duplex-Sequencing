@@ -130,7 +130,7 @@ for line in bamEntry:
         readOne=True
         dictKeys = readDict.keys()
         for dictTag in readDict.keys(): #extract sequences to send to the consensus maker
-            switchtag = dictTag
+            switchtag = dictTag[12:]+dictTag[:12]
             try:
                 consensus = DSCMaker( [readDict[dictTag][6], readDict[switchtag][6]],  o.read_length )
                 #Filter out consensuses with too many Ns in them
