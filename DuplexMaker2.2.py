@@ -100,7 +100,7 @@ cigDum = firstRead.cigar #set a dummy cigar score
 for line in bamEntry:
     #reinitialize first line
     if readOne==True:
-            readDict[firstTag] = [firstRead.flag, firstRead.rname, firstRead.pos, firstRead.mrnm, firstRead.mpos, firstRead.isize, firstRead.seq]
+        readDict[firstTag] = [firstRead.flag, firstRead.rname, firstRead.pos, firstRead.mrnm, firstRead.mpos, firstRead.isize, firstRead.seq]
         readOne=False
     while line.pos == firstRead.pos and fileDone==False:
         if readNum % 100000 == 0:
