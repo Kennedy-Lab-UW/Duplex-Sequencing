@@ -6,8 +6,20 @@ These programs are meant to be run in order, and result in the transformation of
 
 New in this version:
 Ability to run paired-end files
-Filter for 'good' reads (mapped in a proper pair)
+Choose which reads to make consensuses with  (dual_map v. mono_map)
+Filter for 'good' reads
 Filter for 'good' SSCS's (not too many N's)
+Filter for most common cigar string
+Filter out reads with soft-clipping
+Customizable file names
+Bash script writing program
+
+Required packages/programs
+BWA (written with V 0.6.2)
+Samtools (written with V 0.1.17)
+Python (written with V 2.7.3)
+Pysam (written with V 0.7.5)
+BioPython (written with V 1.62)
 
 Instructions: 
 
@@ -15,7 +27,7 @@ First, run PE_BASH_MAKER.py, then make the bash script (.sh file) exicutable usi
 
 chmod +x PE_DCS_CALC.*.*.sh
 
-Run the bash script.  This should run the rest of the process through to an output paired-end BAM file.  It is strongly sugested that the final sorted BAM file undergo post-processing with picard-tools-1.70/AddOrReplaceReadGroups.jar and GATK/GenomeAnalysisTK.jar, before generating statistics.  Do not run PE_BASH_MAKER.py in a folder containing pre-existing SAM files, as it will delete them.  
+Run the bash script.  This should run the rest of the process through to an output paired-end BAM file.  It is strongly sugested that the final sorted BAM file undergo post-processing with picard-tools-1.70/AddOrReplaceReadGroups.jar and GATK/GenomeAnalysisTK.jar, before generating statistics.  Do not run the bash script in a folder containing pre-existing SAM files, as it will delete them.  
 
 Inputs:
 	read-1-raw-data.fq
