@@ -38,9 +38,9 @@ from argparse import ArgumentParser
 parser=ArgumentParser()
 parser.add_argument("--infile", action="store", dest="infile", help="input BAM file", default='sys.stdin')
 parser.add_argument("--outfile",  action="store", dest="outfile", help="output BAM file",  default='sys.stdout')
-parser.add_argument('--Ncutoff', type=float, default=1, dest='Ncutoff', help="Maximum percentage of Ns allowed in a consensus")
+parser.add_argument('--Ncutoff', type=float, default=1.0, dest='Ncutoff', help="Maximum percentage of Ns allowed in a consensus [1.0]")
 #parser.add_argument('-p', action='store_true', dest='pipe', help="Output consensus reads to stdout"  )
-parser.add_argument('--readlength', type=int, default=81, dest='read_length', help="Length of the input read that is being used.")
+parser.add_argument('--readlength', type=int, default=80, dest='read_length', help="Length of the input read that is being used. [80]")
 o = parser.parse_args()
 
 ##########################################################################################################################
@@ -59,6 +59,7 @@ def DSCMaker (groupedReadsList,  readLength) :
             consensusRead += groupedReadsList[0][i]
         else:
             consensusRead += "N"
+    
     return consensusRead
 
 ##########################################################################################################################
@@ -102,9 +103,8 @@ for line in bamEntry:
     if readOne==True:
         readDict[firstTag] = [firstRead.flag, firstRead.rname, firstRead.pos, firstRead.mrnm, firstRead.mpos, firstRead.isize, firstRead.seq]
         readOne=False
+    
     while line.pos == firstRead.pos and fileDone==False:
-        if readNum % 100000 == 0:
-            print >> sys.stderr, readNum, "reads processed"
 
         tag = line.qname.split(":")[0] #extract the barcode
         #add the sequence to the read dictionary
@@ -117,8 +117,9 @@ for line in bamEntry:
         except:
             fileDone = True #tell the program that it has reached the end of the fil
             readNum += 1
-        #else:
-        #   finished=True
+        
+        if readNum % 100000 == 0:
+            print >> sys.stderr, readNum, "reads processed"
     else:
 
 ##########################################################################################################################
@@ -129,8 +130,10 @@ for line in bamEntry:
         firstTag = firstRead.qname
         readOne=True
         dictKeys = readDict.keys()
+        
         for dictTag in readDict.keys(): #extract sequences to send to the consensus maker
             switchtag = dictTag[12:]+dictTag[:12]
+            
             try:
                 consensus = DSCMaker( [readDict[dictTag][6], readDict[switchtag][6]],  o.read_length )
                 #Filter out consensuses with too many Ns in them
@@ -139,11 +142,13 @@ for line in bamEntry:
                     a = pysam.AlignedRead()
                     a.qname = dictTag
                     a.flag = readDict[dictTag][0]
+                    
                     if a.is_reverse == True:
                         tmpSeq=Seq(consensus,IUPAC.unambiguous_dna)
                         a.seq=str(tmpSeq.reverse_complement())
                     else:
                         a.seq = consensus
+                    
                     a.rname = readDict[dictTag][1]
                     a.pos = readDict[dictTag][2]
                     a.mapq = 255
@@ -157,6 +162,7 @@ for line in bamEntry:
     #Write SSCSs to output BAM file in read pairs.                                           #
     ##########################################################################################################################
                     if dictTag in consensusDict:
+                        
                         if a.is_read1 == True:
                             #if o.pipe==True:
                             #   outStd.write(a)
@@ -175,8 +181,10 @@ for line in bamEntry:
                             outBam.write(a)
                     else:
                         consensusDict[dictTag]=a
+                
                 del readDict[dictTag]
                 del readDict[switchtag]
+            
             except:
                 pass
 
