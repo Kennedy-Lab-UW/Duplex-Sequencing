@@ -102,8 +102,8 @@ outBash.write("#!/bin/bash \n\n")
 outBash.write("#Filter for reads with a properly located duplex tag, ")
 outBash.write("then move the tag into the header \n\n")
 
-out1 = "head." + r1 + ".fq"
-out2 = "head." + r2 + ".fq"
+out1 = r1 + ".fq.smi"
+out2 = r2 + ".fq.smi"
 
 readlength = 0
 

@@ -65,13 +65,13 @@ parser=ArgumentParser()
 parser.add_argument("--infile", action="store", dest="infile", help="input BAM file", default='sys.stdin')
 parser.add_argument("--tagfile",  action="store",  dest="tagfile", help="output tagcounts file",  default='sys.stdout')
 parser.add_argument("--outfile",  action="store", dest="outfile", help="output BAM file",  default='sys.stdout')
-parser.add_argument("--rep_filt", action="store",  type=int, dest='rep_filt', help="Remove tags with homomeric runs of nucleotides of length x", default=9 )
-parser.add_argument('--minmem', type=int, default=0, dest='minmem', help="Minimum number of reads allowed to comprise a consensus.")
-parser.add_argument('--maxmem', type=int, default=100, dest='maxmem', help="Maximum number of reads allowed to comprise a consensus.")
-parser.add_argument('--cutoff', type=float, default=0, dest='cutoff', help="Percentage of nucleotides at a given position in a read that must be identical in order for a consensus to be called at that position.")
-parser.add_argument('--Ncutoff', type=float, default=1, dest='Ncutoff', help="Maximum percentage of Ns allowed in a consensus")
-parser.add_argument('--readlength', type=int, default=81, dest='read_length', help="Length of the input read that is being used.")
-parser.add_argument('--read_type', type=str,  action="store", default="dual_map", help="Type of read.  Options: dual_map: both reads map properly.  Doesn't consider read pairs where only one read maps.  mono_map: considers any read pair where one read maps.")
+parser.add_argument("--rep_filt", action="store",  type=int, dest='rep_filt', help="Remove tags with homomeric runs of nucleotides of length x. [9]", default=9 )
+parser.add_argument('--minmem', type=int, default=3, dest='minmem', help="Minimum number of reads allowed to comprise a consensus. [3] ")
+parser.add_argument('--maxmem', type=int, default=1000, dest='maxmem', help="Maximum number of reads allowed to comprise a consensus. [1000]")
+parser.add_argument('--cutoff', type=float, default=.7, dest='cutoff', help="Percentage of nucleotides at a given position in a read that must be identical in order for a consensus to be called at that position. [0.7]")
+parser.add_argument('--Ncutoff', type=float, default=1, dest='Ncutoff', help="Maximum fraction of Ns allowed in a consensus [1.0]")
+parser.add_argument('--readlength', type=int, default=80, dest='read_length', help="Length of the input read that is being used. [80]")
+parser.add_argument('--read_type', type=str,  action="store", default="dual_map", help="Type of read.  Options: dual_map: both reads map properly.  Doesn't consider read pairs where only one read maps.  mono_map: considers any read pair where one read maps. [dual_map]")
 o = parser.parse_args()
 
 ##########################################################################################################################
@@ -93,21 +93,16 @@ def consensusMaker (groupedReadsList,  cutoff,  readLength) :
             try:
                 if groupedReadsList[j][i] == 'T' :
                     nucIdentityList[0] += 1
-                    nucIdentityList[5] += 1
                 elif groupedReadsList[j][i] == 'C':
                     nucIdentityList[1] += 1
-                    nucIdentityList[5] += 1
                 elif groupedReadsList[j][i] == 'G':
                     nucIdentityList[2] += 1
-                    nucIdentityList[5] += 1 
                 elif groupedReadsList[j][i] == 'A':
                     nucIdentityList[3] += 1
-                    nucIdentityList[5] += 1
                 elif groupedReadsList[j][i] == 'N':
                     nucIdentityList[4] += 1
-                    nucIdentityList[5] += 1 
+                nucIdentityList[5] += 1
                 seqDict[i] = nucIdentityList
-
             except:
                 seqDict[i] = nucIdentityList
                 nucIdentityList=[0, 0, 0, 0, 0, 0]
@@ -147,7 +142,7 @@ fileDone=False #initialize end of file bool
 finished=False
 readOne=False
 
-qualScore = 'i'*o.read_length #set a dummy quality score
+qualScore = 'J'*o.read_length #set a dummy quality score
 
 bamEntry = inBam.fetch( until_eof = True ) #initialize the iterator
 readWin = [bamEntry.next(), ''] #get the first read
@@ -199,10 +194,12 @@ for line in bamEntry:
 
                 if str(readWin[winPos%2].cigar) not in readDict[tag][6]:
                     readDict[tag][6][str(readWin[winPos%2].cigar)]=[0,readWin[winPos%2].cigar]
+                
                 readDict[tag][6][str(readWin[winPos%2].cigar)].append(readWin[winPos%2].seq)
                 readDict[tag][6][str(readWin[winPos%2].cigar)][0]+=1
         else:
             nonMap.write(readWin[winPos%2])
+        
         winPos += 1
         if readOne == False:
             try: #keep StopIteration error from happening
@@ -211,7 +208,6 @@ for line in bamEntry:
                 fileDone = True #tell the program that it has reached the end of the file
         else:
             readOne = False
-
     else:
 
 ##########################################################################################################################
@@ -220,14 +216,12 @@ for line in bamEntry:
 
         readOne=True
         for dictTag in readDict.keys(): #extract sequences to send to the consensus maker
-
-
             cigComp={}
+            
             for cigStr in readDict[dictTag][6].keys(): #determin the most common cigar string
                 cigComp[cigStr]=readDict[dictTag][6][cigStr][0]
             maxCig=max(cigComp)
-
-
+            
             if cigComp[maxCig] <= o.maxmem and cigComp[maxCig] >= o.minmem:
                 consensus = consensusMaker( readDict[dictTag][6][maxCig][2:],  o.cutoff,  o.read_length )
 
@@ -250,8 +244,6 @@ for line in bamEntry:
 
                 #Filter out consensuses with too many Ns in them
                 if consensus.count("N" )/ len(consensus) < o.Ncutoff:
-                    if len(consensus) < o.read_length :
-                        print consensus, dictTag.split(':')[0]
                     #write a line to the consensusDictionary
                     a = pysam.AlignedRead()
                     a.qname = dictTag.split(':')[0]
@@ -303,6 +295,7 @@ outNC1.close()
 
 for consTag in consensusDict.keys():
     extraBam.write(consensusDict.pop(consTag))
+
 extraBam.close()
 #outStd.close()
 ##########################################################################################################################
