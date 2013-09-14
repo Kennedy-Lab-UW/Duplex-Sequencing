@@ -204,8 +204,6 @@ outBash.write(
         " | samtools sort - " + DCSsort + "\n"
         )
 outBash.write("samtools index " + DCSsort + "\n")
-outBash.write("samtools view -F4 " + DCSsort +  ".bam \n\n")
-
 
 outBash.write("rm *.sam \n")
 
