@@ -203,7 +203,7 @@ outBash.write(
         "samtools view -Sbu " + DCSaln + 
         " | samtools sort - " + DCSsort + "\n"
         )
-outBash.write("samtools index " + DCSsort + "\n")
+outBash.write("samtools index " + DCSsort + ".bam\n")
 
 outBash.write("rm *.sam \n")
 
