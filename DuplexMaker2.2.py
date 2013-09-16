@@ -54,7 +54,7 @@ def printRead(readIn):
 def DSCMaker (groupedReadsList,  readLength) :
     #The consensus maker uses a simple "majority rules" algorithm to qmake a consensus at each base position.  If no nucleotide majority reaches above the minimum theshold (--cutoff), the position is considered undefined and an 'N' is placed at that position in the read.
     consensusRead = ''
-    for i in range(readLength) :#rebuild consensus read taking into account the cutoff percentage
+    for i in xrange(readLength) :#rebuild consensus read taking into account the cutoff percentage
         if groupedReadsList[0][i]==groupedReadsList[1][i]:
             consensusRead += groupedReadsList[0][i]
         else:
