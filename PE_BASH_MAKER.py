@@ -84,11 +84,10 @@ parser.add_argument(
             )
 parser.add_argument(
         "--parallel", 
-        type = str, 
         action = "store_true", 
         dest = "parallel", 
         help = "Perform the alignments of both reads in parallel"
-            )
+        )
 o = parser.parse_args()
 
 spath = "".join(
@@ -130,7 +129,7 @@ PE = "PE." + r1 + "." + r2 + ".sam"
 outBash.write("#Create a paired end file \n\n")
 
 if o.parallel:
-        outBash.write("for read_file in " + out1 +" " + out2 +"; do bwa aln " + o.ref + " ${read_file} > ${read_file}.aln & ;done")
+        outBash.write("for read_file in " + out1 +" " + out2 +"; do bwa aln " + o.ref + " ${read_file} > ${read_file}.aln;done\n")
 
 else:
         outBash.write("bwa aln " + o.ref + " " + out1 + " > " + aln1 + "\n")
