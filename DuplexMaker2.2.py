@@ -48,7 +48,7 @@ o = parser.parse_args()
 ##########################################################################################################################
 
 def printRead(readIn):
-    print(str(readIn.qname) +  "    " + str(readIn.flag) + "    " + str(readIn.tid) + " " + str(readIn.pos) + " " + str(readIn.mapq) + "    " + str(readIn.cigar) + "   " + str(readIn.mrnm) + "    " + str(readIn.mpos) + "    " + str(readIn.isize) + "   " + str(readIn.seq) + " " + str(readIn.qual) + "    " + str(readIn.tags))
+    sys.stderr.write("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (readIn.qname, readIn.flag, readIn.tid, readIn.pos, readIn.mapq, readIn.cigar, readIn.mrnm, readIn.mpos, readIn.isize, readIn.seq, readIn.qual, readIn.tags))
 
 
 def DSCMaker (groupedReadsList,  readLength) :
@@ -119,7 +119,7 @@ for line in bamEntry:
             readNum += 1
         
         if readNum % 100000 == 0:
-            print >> sys.stderr, readNum, "reads processed"
+            sys.stderr.write("%s reads processed" % (readNum))
     else:
 
 ##########################################################################################################################
@@ -209,4 +209,4 @@ extraBam.close()
 #Write the tag counts file.                                                  #
 ##########################################################################################################################
 
-print >> sys.stderr, readNum, "reads processed"
+sys.stderr.write("%s reads processed" % (readNum))

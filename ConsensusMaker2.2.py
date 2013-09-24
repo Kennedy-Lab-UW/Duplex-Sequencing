@@ -79,7 +79,7 @@ o = parser.parse_args()
 ##########################################################################################################################
 
 def printRead(readIn):
-    sys.stderr.write(str(readIn.qname) +  " " + str(readIn.flag) + "    " + str(readIn.tid) + " " + str(readIn.pos) + " " + str(readIn.mapq) + "    " + str(readIn.cigar) + "   " + str(readIn.mrnm) + "    " + str(readIn.mpos) + "    " + str(readIn.isize) + "   " + str(readIn.seq) + " " + str(readIn.qual) + "    " + str(readIn.tags) + "\n")
+    sys.stderr.write("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (readIn.qname, readIn.flag, readIn.tid, readIn.pos, readIn.mapq, readIn.cigar, readIn.mrnm, readIn.mpos, readIn.isize, readIn.seq, readIn.qual, readIn.tags))
 
 def consensusMaker (groupedReadsList,  cutoff,  readLength) :
     '''The consensus maker uses a simple "majority rules" algorithm to qmake a consensus at each base position.  If no nucleotide majority reaches above the minimum theshold (--cutoff), the position is considered undefined and an 'N' is placed at that position in the read.'''
