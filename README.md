@@ -27,7 +27,11 @@ First, run PE_BASH_MAKER.py, then make the bash script (.sh file) exicutable usi
 
 chmod +x PE_DCS_CALC.*.*.sh
 
-Run the bash script.  This should run the rest of the process through to an output paired-end BAM file.  It is strongly sugested that the final sorted BAM file undergo post-processing with picard-tools-1.70/AddOrReplaceReadGroups.jar and GATK/GenomeAnalysisTK.jar, before generating statistics.  Do not run the bash script in a folder containing pre-existing SAM files, as it will delete them.  
+Run the bash script with:
+
+bash [scriptname.sh] 3>&1 1>&2 2>&3 | tee -a log.txt
+
+This should run the rest of the process through to an output paired-end BAM file, copying the contents of stderr to a log file for documentation and reporting purposes.  It is strongly sugested that the final sorted BAM file undergo post-processing with picard-tools-1.70/AddOrReplaceReadGroups.jar and GATK/GenomeAnalysisTK.jar, before generating statistics.  Do not run the bash script in a folder containing pre-existing SAM files, as it will delete them.  
 
 Inputs:
 	read-1-raw-data.fq
