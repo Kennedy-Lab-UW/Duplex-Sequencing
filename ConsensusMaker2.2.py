@@ -71,7 +71,8 @@ parser.add_argument('--maxmem', type=int, default=1000, dest='maxmem', help="Max
 parser.add_argument('--cutoff', type=float, default=.7, dest='cutoff', help="Percentage of nucleotides at a given position in a read that must be identical in order for a consensus to be called at that position. [0.7]")
 parser.add_argument('--Ncutoff', type=float, default=1, dest='Ncutoff', help="Maximum fraction of Ns allowed in a consensus [1.0]")
 parser.add_argument('--readlength', type=int, default=80, dest='read_length', help="Length of the input read that is being used. [80]")
-parser.add_argument('--read_type', type=str,  action="store", default="dual_map", help="Type of read.  Options: dual_map: both reads map properly.  Doesn't consider read pairs where only one read maps.  mono_map: considers any read pair where one read maps. [dual_map]")
+parser.add_argument('--read_type', action="store", dest='read_type'default="dual_map", help="Type of read.  Options: dual_map: both reads map properly.  Doesn't consider read pairs where only one read maps.  mono_map: considers any read pair where one read maps. [dual_map]")
+parser.add_argument('--isize', type = int, default=1000, dest='isize', help="maximum distance between read pairs")
 o = parser.parse_args()
 
 ##########################################################################################################################
@@ -134,9 +135,14 @@ inBam = pysam.Samfile( o.infile, "rb" ) #open the input BAM file
 outBam = pysam.Samfile( o.outfile, "wb", template = inBam ) #open the output BAM file
 outNC1 = pysam.Samfile( o.outfile.replace(".bam","_LCC.bam"),"wb", template = inBam )
 nonMap = pysam.Samfile( o.outfile.replace(".bam","_NM.bam"), "wb", template = inBam ) #file for reads with strange flags
+extraBam = pysam.Samfile(o.outfile.replace(".bam","_UP.bam"), "wb", template = inBam)
 #outStd = pysam.Samfile('-', 'wb', template = inBam ) #open the stdOut writer
 
 readNum=0
+nM=0
+LCC=0
+ConMade=0
+UP=0
 
 fileDone=False #initialize end of file bool
 finished=False
@@ -184,9 +190,10 @@ for line in bamEntry:
         tagDict[tag] += 1
 
         if int( readWin[winPos%2].flag ) in goodFlag and overlap==False and softClip==False: #check if the given read is good data
-            if ('A'*o.rep_filt in tag) or ('C'*o.rep_filt in tag) or ('G'*o.rep_filt in tag) or ('C'*o.rep_filt in tag) : 
+            if ('A'*o.rep_filt in tag) or ('C'*o.rep_filt in tag) or ('G'*o.rep_filt in tag) or ('C'*o.rep_filt in tag): 
                 #check for bad barcodes
-                pass 
+                nM += 1
+                nonMap.write(readWin[winPos%2])
             else :
                 #add the sequence to the read dictionary
                 if tag not in readDict:
@@ -198,6 +205,7 @@ for line in bamEntry:
                 readDict[tag][6][str(readWin[winPos%2].cigar)].append(readWin[winPos%2].seq)
                 readDict[tag][6][str(readWin[winPos%2].cigar)][0]+=1
         else:
+            nM += 1
             nonMap.write(readWin[winPos%2])
         
         winPos += 1
@@ -223,23 +231,26 @@ for line in bamEntry:
             maxCig=max(cigComp)
             
             if cigComp[maxCig] <= o.maxmem and cigComp[maxCig] >= o.minmem:
+                ConMade += 1
                 consensus = consensusMaker( readDict[dictTag][6][maxCig][2:],  o.cutoff,  o.read_length )
 
                 for cigStr in readDict[dictTag][6].keys():
                     if cigStr != maxCig:
-                        a = pysam.AlignedRead()
-                        a.qname = dictTag.split(':')[0]
-                        a.flag = readDict[dictTag][0]
-                        a.seq = consensus
-                        a.rname = readDict[dictTag][1]
-                        a.pos = readDict[dictTag][2]
-                        a.mapq = 255
-                        a.cigar = readDict[dictTag][6][maxCig][1]
-                        a.mrnm = readDict[dictTag][3]
-                        a.mpos=readDict[dictTag][4]
-                        a.isize = readDict[dictTag][5]
-                        a.qual = qualScore  
-                        outNC1.write(a)
+                        for n in xrange(2, len(readDict[dictTag][6][cigStr][2:])):
+                            a = pysam.AlignedRead()
+                            a.qname = dictTag.split(':')[0]
+                            a.flag = readDict[dictTag][0]
+                            a.seq = readDict[dictTag][6][cigStr][n]
+                            a.rname = readDict[dictTag][1]
+                            a.pos = readDict[dictTag][2]
+                            a.mapq = 255
+                            a.cigar = readDict[dictTag][6][cigStr][1]
+                            a.mrnm = readDict[dictTag][3]
+                            a.mpos=readDict[dictTag][4]
+                            a.isize = readDict[dictTag][5]
+                            a.qual = qualScore  
+                            outNC1.write(a)
+                            LCC += 1
                 cigComp={}
 
                 #Filter out consensuses with too many Ns in them
@@ -281,12 +292,16 @@ for line in bamEntry:
                         consensusDict[dictTag]=a
 
     readDict={} #reset the read dictionary
+    
+    for consTag in consensusDict.keys():
+        if consensusDict[consTag].pos + o.isize < readWin[winPos%2].pos:
+            extraBam.write(consensusDict.pop(consTag))
+            UP += 1
 
 ##########################################################################################################################
 #Write unpaired SSCSs to extraConsensus.bam                                          #
 ##########################################################################################################################
 
-extraBam=pysam.Samfile(o.outfile.replace(".bam","_UP.bam"), "wb", template = inBam)
 #close BAM files
 inBam.close()
 outBam.close()
@@ -295,6 +310,7 @@ outNC1.close()
 
 for consTag in consensusDict.keys():
     extraBam.write(consensusDict.pop(consTag))
+    UP += 1
 
 extraBam.close()
 #outStd.close()
@@ -303,6 +319,10 @@ extraBam.close()
 ##########################################################################################################################
 
 sys.stderr.write("Reads processed:" + str(readNum) + "\n")
+sys.stderr.write("Bad reads: %s\n" % (nM))
+sys.stderr.write("Reads with Less Common Cigar Strings: %s\n" % (LCC))
+sys.stderr.write("Consensuses Made: %s\n" % (ConMade))
+sys.stderr.write("Unpaired Consensuses: %s\n" % (UP))
 
 tagFile = open( o.tagfile, "w" )
 tagFile.write ( "\n".join( [ "%s\t%d" % ( SMI, tagDict[SMI] ) for SMI in sorted( tagDict.keys(), key=lambda x: tagDict[x], reverse=True ) ] ))
