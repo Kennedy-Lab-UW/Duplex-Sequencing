@@ -23,13 +23,13 @@ BioPython (written with V 1.62)
 
 Instructions: 
 
-First, run PE_BASH_MAKER.py, then make the bash script (.sh file) exicutable using the command below.  
+First, run PE_BASH_MAKER.py, then make the bash script (.sh file) exicutable using the command below.  There should only be one bash script in the folder with the correct name format (if you want, you can confirm this with ls)
 
 chmod +x PE_DCS_CALC.*.*.sh
 
 Run the bash script with:
 
-bash [scriptname.sh] 3>&1 1>&2 2>&3 | tee -a log.txt
+bash scriptname.sh 3>&1 1>&2 2>&3 | tee -a log.txt
 
 This should run the rest of the process through to an output paired-end BAM file, copying the contents of stderr to a log file for documentation and reporting purposes.  It is strongly sugested that the final sorted BAM file undergo post-processing with picard-tools-1.70/AddOrReplaceReadGroups.jar and GATK/GenomeAnalysisTK.jar, before generating statistics.  Do not run the bash script in a folder containing pre-existing SAM files, as it will delete them.  
 
