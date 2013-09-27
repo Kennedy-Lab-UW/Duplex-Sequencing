@@ -12,6 +12,8 @@ import os
 import re
 import argparse
 from argparse import ArgumentParser
+import time
+
 
 parser = ArgumentParser()
 parser.add_argument(
@@ -82,11 +84,12 @@ parser.add_argument(
             where only one read maps.  \
             mono_map: considers any read pair where one read maps."
             )
+#BUGGY...Does not work as intended, instead runs sequentially.
 parser.add_argument(
         "--parallel", 
         action = "store_true", 
         dest = "parallel", 
-        help = "Perform the alignments of both reads in parallel"
+        help = "Perform the alignments of both reads in parallel" 
         )
 o = parser.parse_args()
 
@@ -106,6 +109,7 @@ outBash.write("#!/bin/bash \n\n")
 
 arguments=sys.argv
 outBash.write("#print first few lines of the log file\n")
+outbash.writeF("echo bash script made: \t%s>&2\n" % (time.ctime(time.time())))
 outBash.write("echo 'python ")
 for arg in arguments:
     outBash.write("%s " % arg)
@@ -121,7 +125,8 @@ out2 = r2 + ".fq.smi"
 
 readlength = 0
 
-
+outbash.write("echo tag_to_header start: >&2\n")
+outbash.write("date >&2\n")
 outBash.write(
         "python " + spath + "tag_to_header.py --infile1 " + 
         o.r1src + " --infile2 " + o.r2src + " --outfile1 " + out1 + 
@@ -135,9 +140,10 @@ aln2 = r2 + ".aln"
 PE = "PE." + r1 + "." + r2 + ".sam"
 
 outBash.write("#Create a paired end file \n\n")
-
+outbash.write("echo BWA start: >&2\n")
+outbash.write("date >&2\n")
 if o.parallel:
-        outBash.write("for read_file in " + out1 +" " + out2 +"; do bwa aln " + o.ref + " ${read_file} > ${read_file}.aln;done\n")
+        outBash.write("for read_file in " + r1 + " " + r2 + "; do bwa aln " + o.ref + " ${read_file}.fq.smi > ${read_file}.aln;done\n")
 
 else:
         outBash.write("bwa aln " + o.ref + " " + out1 + " > " + aln1 + "\n")
@@ -151,7 +157,8 @@ outBash.write(
 PEsort = "PE." + r1 + "." + r2 + ".sort"
 
 outBash.write("#Sort the paired end file \n\n")
-
+outbash.write("echo Sort 1 start: >&2\n")
+outbash.write("date >&2\n")
 outBash.write(
         "samtools view -Sbu " + PE + " |samtools sort - " + 
         PEsort + "\n\n"
@@ -161,7 +168,8 @@ tagF = "PE." + r1 + "." + r2 + ".tagcounts"
 SSCSout = "SSCS." + r1 + "." + r2 + ".bam"
 
 outBash.write("#Find SSCSs\n\n")
-
+outbash.write("echo ConsensusMaker start: >&2\n")
+outbash.write("date >&2\n")
 outBash.write(
         "python " + spath + "ConsensusMaker2.2.py --infile " + 
         PEsort + ".bam --tagfile " + tagF + " --outfile " + SSCSout + 
@@ -174,7 +182,8 @@ outBash.write(
 SSCSsort = SSCSout.replace(".bam",".sort")
 
 outBash.write("#Resort the SSCSs \n\n")
-
+outbash.write("echo Sort 2 start: >&2\n")
+outbash.write("date >&2\n")
 outBash.write(
         "samtools view -bu " + SSCSout + " | samtools sort - " + 
         SSCSsort + "\n\n"
@@ -183,7 +192,8 @@ outBash.write(
 
 DCSout = SSCSout.replace("SSCS","DCS")
 outBash.write("#Find the DCSs \n\n")
-
+outbash.write("echo DuplexMaker start: >&2\n")
+outbash.write("date >&2\n")
 outBash.write(
         "python " + spath + "DuplexMaker2.2.py --infile " + SSCSsort + 
         ".bam --outfile " + DCSout + " --Ncutoff " + o.Ncut + 
@@ -196,7 +206,8 @@ DCSr1aln = DCSr1.replace(".fq",".aln")
 DCSr2 = DCSout.replace(".bam",".r2.fq")
 DCSr2aln = DCSr2.replace(".fq",".aln")
 DCSaln = DCSout.replace(".bam",".aln.sam")
-
+outbash.write("echo BWA 2 start: >&2\n")
+outbash.write("date >&2\n")
 outBash.write("bwa aln " + o.ref + " " + DCSr1  + " > " + DCSr1aln + "\n")
 outBash.write("bwa aln " + o.ref + " " + DCSr2  + " > " + DCSr2aln + "\n")
 outBash.write(
@@ -205,7 +216,8 @@ outBash.write(
         )
 
 DCSsort = "DCS." + r1 + "." + r2 + ".aln.sort"
-
+outbash.write("echo Samtools sort and index start: >&2\n")
+outbash.write("date >&2\n")
 outBash.write(
         "samtools view -Sbu " + DCSaln + 
         " | samtools sort - " + DCSsort + "\n"
