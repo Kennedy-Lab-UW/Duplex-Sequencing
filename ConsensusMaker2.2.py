@@ -71,7 +71,7 @@ parser.add_argument('--maxmem', type=int, default=1000, dest='maxmem', help="Max
 parser.add_argument('--cutoff', type=float, default=.7, dest='cutoff', help="Percentage of nucleotides at a given position in a read that must be identical in order for a consensus to be called at that position. [0.7]")
 parser.add_argument('--Ncutoff', type=float, default=1, dest='Ncutoff', help="Maximum fraction of Ns allowed in a consensus [1.0]")
 parser.add_argument('--readlength', type=int, default=80, dest='read_length', help="Length of the input read that is being used. [80]")
-parser.add_argument('--read_type', action="store", dest='read_type'default="dual_map", help="Type of read.  Options: dual_map: both reads map properly.  Doesn't consider read pairs where only one read maps.  mono_map: considers any read pair where one read maps. [dual_map]")
+parser.add_argument('--read_type', action="store", dest='read_type', default="dual_map", help="Type of read.  Options: dual_map: both reads map properly.  Doesn't consider read pairs where only one read maps.  mono_map: considers any read pair where one read maps. [dual_map]")
 parser.add_argument('--isize', type = int, default=1000, dest='isize', help="maximum distance between read pairs")
 o = parser.parse_args()
 
@@ -322,7 +322,7 @@ sys.stderr.write("Reads processed:" + str(readNum) + "\n")
 sys.stderr.write("Bad reads: %s\n" % (nM))
 sys.stderr.write("Reads with Less Common Cigar Strings: %s\n" % (LCC))
 sys.stderr.write("Consensuses Made: %s\n" % (ConMade))
-sys.stderr.write("Unpaired Consensuses: %s\n" % (UP))
+sys.stderr.write("Unpaired Consensuses: %s\n\n" % (UP))
 
 tagFile = open( o.tagfile, "w" )
 tagFile.write ( "\n".join( [ "%s\t%d" % ( SMI, tagDict[SMI] ) for SMI in sorted( tagDict.keys(), key=lambda x: tagDict[x], reverse=True ) ] ))

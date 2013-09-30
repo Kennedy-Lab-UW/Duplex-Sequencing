@@ -209,4 +209,4 @@ extraBam.close()
 #Write the tag counts file.                                                  #
 ##########################################################################################################################
 
-sys.stderr.write("%s reads processed" % (readNum))
+sys.stderr.write("%s reads processed\n\n" % (readNum))
