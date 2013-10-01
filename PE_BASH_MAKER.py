@@ -74,6 +74,30 @@ parser.add_argument(
         default = "80"
         )
 parser.add_argument(
+        "--blength", 
+        type = int, 
+        action = "store", 
+        dest = "blength"
+        help = "length of the barcode sequence on a unprocessed single read.", 
+        default = "12"
+        )
+parser.add_argument(
+        "--slength", 
+        type = int, 
+        action = "store", 
+        dest = "slength", 
+        help = "length of the spacer sequence in a unprocessed single read.",
+        default = "5"
+        )
+parser.add_argument(
+        "--progInd", 
+        type = int, 
+        action = "store", 
+        dest = "progInd", 
+        help = "how often you want to be told what a program is doing", 
+        default = "1000000"
+        )
+parser.add_argument(
         "--read_type", 
         type = str, 
         action = "store", 
@@ -128,9 +152,8 @@ readlength = 0
 outBash.write("echo 'tag_to_header start:' >&2\n")
 outBash.write("date >&2\n")
 outBash.write(
-        "python " + spath + "tag_to_header.py --infile1 " + 
-        o.r1src + " --infile2 " + o.r2src + " --outfile1 " + out1 + 
-        " --outfile2 " + out2 + "\n\n"
+        "python %stag_to_header.py --infile1 %s --infile2 %s --outfile1 %s --outfile2 %s --barcode_length %s --spacer_length %s --read_out %s\n\n" % 
+        (spath o.r1src o.r2src out1 out2 o.blength o.slength o.progInd)
         )
 readlength = str(o.rlength)
 

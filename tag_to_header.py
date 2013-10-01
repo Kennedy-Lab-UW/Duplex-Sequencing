@@ -45,12 +45,15 @@ class fastQItterator:
         self.eof=False
     
     def next(self):
-        newREad=""
-        try:
-            newRead=fastQRead(self.source.next(), self.source.next(), self.source.next(), self.source.next())
-        except Exception:
-            self.eof=True
-            return("EOF")
+        new=[]
+        for j in xrange(4):
+            try:
+                tmp=self.souce.next()
+            except StopIteration:
+                self.eof=True
+                return("EOF") 
+            new.append(self.source.next())
+        newRead=fastQRead(new[0],new[1],new[2],new[3])
         return(newRead)
 
     def close(self):
@@ -107,13 +110,13 @@ nospacer = 0
 goodreads = 0
 badtag = 0
 oldBad = 0
-EOF=False
+isEOF=False
 
-while EOF==False:
+while isEOF==False:
     read1 = in1.next()
     read2 = in2.next()
     if read1 == "EOF" or read2 == "EOF":
-        EOF==True
+        isEOF = True
     else:
         
         ctr += 1
@@ -160,8 +163,8 @@ in2.close()
 out1.close()
 out2.close()
 
-sys.stderr.write("/nSummary statistics:\n")
+sys.stderr.write("Summary statistics:\n")
 sys.stderr.write("Total sequences processed: %s\n" % (ctr))
 sys.stderr.write("Sequences passing filter: %s\n" % (goodreads))
 sys.stderr.write("Missing spacers: %s\n" % (nospacer))
-sys.stderr.write("Bad tags: %s" % (badtag))
+sys.stderr.write("Bad tags: %s\n\n" % (badtag))
