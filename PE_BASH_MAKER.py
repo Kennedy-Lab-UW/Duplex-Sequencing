@@ -133,7 +133,7 @@ outBash.write("#!/bin/bash \n\n")
 
 arguments=sys.argv
 outBash.write("#print first few lines of the log file\n")
-outBash.writeF("echo bash script made: \t%s>&2\n" % (time.ctime(time.time())))
+outBash.write("echo bash script made: \t%s>&2\n" % (time.ctime(time.time())))
 outBash.write("echo 'python ")
 for arg in arguments:
     outBash.write("%s " % arg)
