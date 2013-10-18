@@ -137,8 +137,8 @@ def main():
                 
                 #fastq reconstruction
                 if (tag1.isalpha() and tag1.count('N') == 0) and (tag2.isalpha() and tag2.count('N') == 0) :
-                    rOut1 = read1[o.blength + o.slength:]
-                    rOut2 = read2[o.blength + o.slength:]
+                    rOut1 = read1[o.blength + o.slength + 4:]
+                    rOut2 = read2[o.blength + o.slength + 4:]
                     
                     out1.write(rOut1)
                     out2.write(rOut2)

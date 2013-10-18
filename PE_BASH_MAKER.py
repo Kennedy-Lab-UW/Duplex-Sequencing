@@ -132,6 +132,7 @@ def main():
     outBash.write("#!/bin/bash \n\n")
 
     arguments=sys.argv
+    outBash.write("umask 000\n\n")
     outBash.write("#print first few lines of the log file\n")
     outBash.write("echo bash script made: \t%s>&2\n" % (time.ctime(time.time())))
     outBash.write("echo 'python ")
@@ -166,7 +167,7 @@ def main():
     outBash.write("echo 'BWA start:' >&2\n")
     outBash.write("date >&2\n")
     if o.parallel:
-            outBash.write("for read_file in " + r1 + " " + r2 + "; do bwa aln " + o.ref + " ${read_file}.fq.smi > ${read_file}.aln;done\n")
+            outBash.write("for read_file in " + r1 + " " + r2 + "; do\nbwa aln " + o.ref + " ${read_file}.fq.smi > ${read_file}.aln\ndone\n")
 
     else:
             outBash.write("bwa aln " + o.ref + " " + out1 + " > " + aln1 + "\n")
