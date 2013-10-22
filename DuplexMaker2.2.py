@@ -101,6 +101,7 @@ def main():
 
     for line in bamEntry:
         #reinitialize first line
+        readNum += 1
         if readOne==True:
             readDict[firstTag] = [firstRead.flag, firstRead.rname, firstRead.pos, firstRead.mrnm, firstRead.mpos, firstRead.isize, firstRead.seq]
             readOne=False
@@ -120,11 +121,11 @@ def main():
                 readNum += 1
             
             if readNum % 100000 == 0:
-                sys.stderr.write("%s reads processed" % (readNum))
+                sys.stderr.write("%s reads processed\n" % (readNum))
         else:
 
     ##########################################################################################################################
-    #Send reads to consensusMaker                                                #
+    #Send reads to DCSMaker                                                #
     ##########################################################################################################################
 
             firstRead = line #store the present line for the next group of lines
@@ -132,7 +133,7 @@ def main():
             readOne=True
             dictKeys = readDict.keys()
             
-            for dictTag in readDict.keys(): #extract sequences to send to the consensus maker
+            for dictTag in readDict.keys(): #extract sequences to send to the DCSmaker
                 switchtag = dictTag[12:]+dictTag[:12]
                 
                 try:
@@ -206,9 +207,6 @@ def main():
         extraBam.write(consensusDict.pop(consTag))
     extraBam.close()
     #outStd.close()
-    ##########################################################################################################################
-    #Write the tag counts file.                                                  #
-    ##########################################################################################################################
 
     sys.stderr.write("%s reads processed\n\n" % (readNum))
 
