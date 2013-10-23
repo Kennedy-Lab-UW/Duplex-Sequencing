@@ -134,13 +134,13 @@ def main():
     arguments=sys.argv
     outBash.write("umask 000\n\n")
     outBash.write("#print first few lines of the log file\n")
-    outBash.write("echo bash script made: \t%s>&2\n" % (time.ctime(time.time())))
+    outBash.write("echo bash script made: \t%s > &2\n" % (time.ctime(time.time())))
     outBash.write("echo 'python ")
     for arg in arguments:
         outBash.write("%s " % arg)
-    outBash.write("' >&2\n")
-    outBash.write("echo 'chmod +x PE_DCS_CALC.*.*.sh' >&2\n")
-    outBash.write("echo 'bash PE_DCS_CALC.%s.%s.sh 3>&1 1>&2 2>&3 | tee -a log.txt' >&2\n\n" % (r1, r2))
+    outBash.write("' > &2\n")
+    outBash.write("echo 'chmod +x PE_DCS_CALC.*.*.sh' > &2\n")
+    outBash.write("echo 'bash PE_DCS_CALC.%s.%s.sh 3>&1 1>&2 2>&3 | tee -a log.txt' > &2\n\n" % (r1, r2))
 
     outBash.write("#Filter for reads with a properly located duplex tag, ")
     outBash.write("then move the tag into the header \n")
