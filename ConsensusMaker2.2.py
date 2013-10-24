@@ -1,9 +1,10 @@
 '''
 Consensus Maker
-Version 2.2
+Version 2.0
 By Brendan Kohrn and Scott Kennedy(1)
 (1) Department of Pathology, University of Washington School of Medicine, Seattle, WA 98195
-September 09, 2013
+Based on work by Mike Schmitt and Joe Hiatt
+October 23, 2013
 
 Written for Python 2.7.3
 Required modules: Pysam, Samtools
@@ -54,6 +55,7 @@ Added cigar string comparison before sending to consensus maker.
 import sys
 import pysam
 import re
+import random
 from collections import defaultdict
 from argparse import ArgumentParser
 
@@ -114,8 +116,9 @@ def main():
     parser.add_argument('--cutoff', type=float, default=.7, dest='cutoff', help="Percentage of nucleotides at a given position in a read that must be identical in order for a consensus to be called at that position. [0.7]")
     parser.add_argument('--Ncutoff', type=float, default=1, dest='Ncutoff', help="Maximum fraction of Ns allowed in a consensus [1.0]")
     parser.add_argument('--readlength', type=int, default=80, dest='read_length', help="Length of the input read that is being used. [80]")
-    parser.add_argument('--read_type', action="store", dest='read_type', default="dual_map", help="Type of read.  Options: dual_map: both reads map properly.  Doesn't consider read pairs where only one read maps.  mono_map: considers any read pair where one read maps. [dual_map]")
-    parser.add_argument('--isize', type = int, default=1000, dest='isize', help="maximum distance between read pairs")
+    parser.add_argument('--read_type', action="store", dest='read_type', default="mono_map", help="Type of read.  Options: dual_map: both reads map properly.  Doesn't consider read pairs where only one read maps.  mono_map: considers any read pair where one read maps. [mono_map]")
+    parser.add_argument('--isize', type = int, default=-1, dest='isize', help="maximum distance between read pairs")
+    parser.add_argument('--read_out', type = int, default = 1000000, dest = 'rOut')
     o = parser.parse_args()
 
     ##########################################################################################################################
@@ -139,11 +142,16 @@ def main():
     extraBam = pysam.Samfile(o.outfile.replace(".bam","_UP.bam"), "wb", template = inBam)
     #outStd = pysam.Samfile('-', 'wb', template = inBam ) #open the stdOut writer
 
-    readNum=0
-    nM=0
-    LCC=0
-    ConMade=0
-    UP=0
+    readNum = 0
+    nM = 0
+    bF = 0
+    oL = 0
+    sC = 0
+    rT = 0
+    
+    LCC = 0
+    ConMade = 0
+    UP = 0
 
     fileDone=False #initialize end of file bool
     finished=False
@@ -170,7 +178,7 @@ def main():
         if readOne==True:
             winPos -= 1
         while (readWin[winPos%2].pos == readWin[(winPos-1)%2].pos and fileDone==False and readOne==False) or readOne == True:
-            if readNum % 100000 == 0:
+            if readNum % o,rOut == 0:
                 sys.stderr.write("Reads processed:" + str(readNum) + "\n")
             overlap=False
             if readWin[winPos%2].pos < readWin[winPos%2].mpos and readWin[winPos%2].mpos < readWin[winPos%2].pos + o.read_length and int(readWin[winPos%2].flag) in (83, 99, 147, 163):
@@ -195,6 +203,7 @@ def main():
                     #check for bad barcodes
                     nM += 1
                     nonMap.write(readWin[winPos%2])
+                    rT += 1
                 else :
                     #add the sequence to the read dictionary
                     if tag not in readDict:
@@ -208,6 +217,12 @@ def main():
             else:
                 nM += 1
                 nonMap.write(readWin[winPos%2])
+                if int(readWin[winPos%2].flag() not in goodFlag:
+                    bF += 1
+                elif overlap == True:
+                    oL += 1
+                elif softClip == True:
+                    sC += 1
             
             winPos += 1
             if readOne == False:
@@ -231,9 +246,13 @@ def main():
                     cigComp[cigStr]=readDict[dictTag][6][cigStr][0]
                 maxCig=max(cigComp)
                 
-                if cigComp[maxCig] <= o.maxmem and cigComp[maxCig] >= o.minmem:
-                    ConMade += 1
-                    consensus = consensusMaker( readDict[dictTag][6][maxCig][2:],  o.cutoff,  o.read_length )
+                if cigComp[maxCig] >= o.minmem:
+                    if cigComp[maxCig] <= o.maxmem:
+                        ConMade += 1
+                        consensus = consensusMaker( readDict[dictTag][6][maxCig][2:],  o.cutoff,  o.read_length )
+                    else:
+                        ConMade += 1
+                        consensus = consensusMaker(random.sample(readDict[dictTag][6][maxCig][2:], o.maxmem), o.cutoff, o.read_length)
 
                     for cigStr in readDict[dictTag][6].keys():
                         if cigStr != maxCig:
@@ -294,10 +313,11 @@ def main():
 
         readDict={} #reset the read dictionary
         
-        for consTag in consensusDict.keys():
-            if consensusDict[consTag].pos + o.isize < readWin[winPos%2].pos:
-                extraBam.write(consensusDict.pop(consTag))
-                UP += 1
+        if o.isize != -1:
+            for consTag in consensusDict.keys():
+                if consensusDict[consTag].pos + o.isize < readWin[winPos%2].pos:
+                    extraBam.write(consensusDict.pop(consTag))
+                    UP += 1
 
     ##########################################################################################################################
     #Write unpaired SSCSs to extraConsensus.bam                                          #
@@ -318,12 +338,17 @@ def main():
     ##########################################################################################################################
     #Write the tag counts file.                                                  #
     ##########################################################################################################################
-
+    
+    sys.stderr.write("Summary Statistics: \n")
     sys.stderr.write("Reads processed:" + str(readNum) + "\n")
-    sys.stderr.write("Bad reads: %s\n" % (nM))
-    sys.stderr.write("Reads with Less Common Cigar Strings: %s\n" % (LCC))
-    sys.stderr.write("Consensuses Made: %s\n" % (ConMade))
-    sys.stderr.write("Unpaired Consensuses: %s\n\n" % (UP))
+    sys.stderr.write("Bad reads: %s\n" % nM)
+    sys.stderr.write("\tNon-mapping reads: %s\n" % bF)
+    sys.stderr.write("\tOverlapping Reads: %s\n" % oL)
+    sys.stderr.write("\tSoftclipped Reads: %s\n" %sC)
+    sys.stderr.write("\tRepetitive Duplex Tag: %s\n" % rT)
+    sys.stderr.write("Reads with Less Common Cigar Strings: %s\n" % LCC)
+    sys.stderr.write("Consensuses Made: %s\n" % ConMade)
+    sys.stderr.write("Unpaired Consensuses: %s\n\n" % UP)
 
     tagFile = open( o.tagfile, "w" )
     tagFile.write ( "\n".join( [ "%s\t%d" % ( SMI, tagDict[SMI] ) for SMI in sorted( tagDict.keys(), key=lambda x: tagDict[x], reverse=True ) ] ))

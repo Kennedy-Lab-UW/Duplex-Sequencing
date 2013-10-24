@@ -1,9 +1,10 @@
 '''
 DCS Filter
-Version 2.2
+Version 2.0
 By Brendan Kohrn and Scott Kennedy(1)
 (1) Department of Pathology, University of Washington School of Medicine, Seattle, WA 98195 
-August 23, 2013 
+Based on work by Scott Kennedy, Mike Schmitt and Joe Hiatt
+October 23, 2013
 
 Written for Python 2.7.3
 Required modules: Pysam, Samtools, BioPython
@@ -57,6 +58,7 @@ def main():
     parser.add_argument('--Ncutoff', type=float, default=1.0, dest='Ncutoff', help="Maximum percentage of Ns allowed in a consensus [1.0]")
     #parser.add_argument('-p', action='store_true', dest='pipe', help="Output consensus reads to stdout"  )
     parser.add_argument('--readlength', type=int, default=80, dest='read_length', help="Length of the input read that is being used. [80]")
+    parser.add_argument('--read_out', type = int, default = 1000000, dest = 'rOut')
     o = parser.parse_args()
 
     ##########################################################################################################################
@@ -67,15 +69,17 @@ def main():
     #Initialization of all global variables, main input/output files, and main iterator and dictionaries.            #
     ##########################################################################################################################
 
-    inBam = pysam.Samfile( o.infile, "rb" ) #open the input BAM file
-    outBam = pysam.Samfile( o.outfile, "wb", template = inBam ) #open the output BAM file
+    inBam = pysam.Samfile(o.infile, "rb") #open the input BAM file
+    outBam = pysam.Samfile(o.outfile, "wb", template = inBam) #open the output BAM file
     fastqFile1 = open(o.outfile.replace('.bam','')+".r1.fq",'w')
     fastqFile2 = open(o.outfile.replace('.bam','')+".r2.fq",'w')
     #outStd = pysam.Samfile('-', 'wb', template = inBam ) #open the stdOut writer
 
     #if o.pipe==False:
     #   outStd.close()
-    readNum=0
+    readNum = 0
+    duplexMade = 0
+    uP = 0
 
     fileDone=False #initialize end of file bool
     finished=False
@@ -120,7 +124,7 @@ def main():
                 fileDone = True #tell the program that it has reached the end of the fil
                 readNum += 1
             
-            if readNum % 100000 == 0:
+            if readNum % o.rOut == 0:
                 sys.stderr.write("%s reads processed\n" % (readNum))
         else:
 
@@ -138,6 +142,7 @@ def main():
                 
                 try:
                     consensus = DSCMaker( [readDict[dictTag][6], readDict[switchtag][6]],  o.read_length )
+                    duplexMade += 1
                     #Filter out consensuses with too many Ns in them
                     if consensus.count("N" )/ len(consensus) < o.Ncutoff:
                         #write a line to the consensusDictionary
@@ -205,10 +210,14 @@ def main():
 
     for consTag in consensusDict.keys():
         extraBam.write(consensusDict.pop(consTag))
+        uP += 1
     extraBam.close()
     #outStd.close()
-
-    sys.stderr.write("%s reads processed\n\n" % (readNum))
+    
+    sys.stderr.write("Summary Statistics: \n")
+    sys.stderr.write("Reads Processed: %s\n" % readNum)
+    sys.stderr.write("Duplexes Made: %s\n" % duplexMade)
+    sys.stderr.write("Unpaired Duplexes: %s\n\n" % uP)
 
 if __name__ == "__main__":
     main()

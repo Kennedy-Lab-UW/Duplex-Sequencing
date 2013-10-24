@@ -1,4 +1,7 @@
-"""write a bash script to run the process
+"""
+PE Bash Maker V 1.0
+by Brendan Kohrn
+write a bash script to run the process
 This program makes a shell script so that the user will not need to 
 enter the commands for all the programs himself.  When using it, 
 navigate to the folder with your data, with all the programs in a 
@@ -20,8 +23,7 @@ def main():
             "--ref", 
             action = "store", 
             dest = "ref", 
-            help = ".FASTA file containing the reference genome", 
-            default = 'sys.stdin'
+            help = ".FASTA file containing the reference genome"
             )
     parser.add_argument(
             "--r1src", 
@@ -41,28 +43,28 @@ def main():
             "--min", 
             action = "store", 
             dest = "minMem", 
-            help = "Minimum members for SSCS consensus", 
+            help = "Minimum members for SSCS consensus [3]", 
             default = "3"
             )
     parser.add_argument(
             "--max", 
             action = "store", 
             dest = "maxMem", 
-            help = "Maximum members for SSCS consensus", 
+            help = "Maximum members for SSCS consensus [1000]", 
             default = "1000"
             )
     parser.add_argument(
             "--cut", 
             action = "store", 
             dest = "cutOff", 
-            help = "Mimimum percent matching for base choice in SSCS consensus", 
+            help = "Mimimum percent matching for base choice in SSCS consensus [0.8]", 
             default = ".8"
             )
     parser.add_argument(
             "--Ncut", 
             action = "store", 
             dest = "Ncut", 
-            help = "Maxumum percent N's allowed", 
+            help = "Maxumum percent N's allowed [0.1]", 
             default = ".1"
             )
     parser.add_argument(
@@ -70,15 +72,15 @@ def main():
             type = int, 
             action = "store", 
             dest = "rlength", 
-            help = "Length of a single read", 
-            default = "80"
+            help = "Length of a single read [85]", 
+            default = "85"
             )
     parser.add_argument(
             "--blength", 
             type = int, 
             action = "store", 
             dest = "blength", 
-            help = "length of the barcode sequence on a unprocessed single read.", 
+            help = "length of the barcode sequence on a unprocessed single read. [12]", 
             default = "12"
             )
     parser.add_argument(
@@ -94,7 +96,7 @@ def main():
             type = int, 
             action = "store", 
             dest = "progInd", 
-            help = "how often you want to be told what a program is doing", 
+            help = "how often you want to be told what a program is doing [1000000]", 
             default = "1000000"
             )
     parser.add_argument(
@@ -102,12 +104,14 @@ def main():
             type = str, 
             action = "store", 
             dest = "read_type", 
-            default = "dual_map", 
+            default = "mono_map", 
             help = "Type of read.  Options: \
                 dual_map: both reads map properly.  Doesn't consider read pairs \
                 where only one read maps.  \
-                mono_map: considers any read pair where one read maps."
+                mono_map: considers any read pair where one read maps.\
+                [mono_map]"
                 )
+    parser.add_argument('--isize', type = int, default=-1, dest='isize', help="maximum distance between read pairs")
     #BUGGY...Does not work as intended, instead runs sequentially.
     parser.add_argument(
             "--parallel", 
@@ -134,13 +138,12 @@ def main():
     arguments=sys.argv
     outBash.write("umask 000\n\n")
     outBash.write("#print first few lines of the log file\n")
-    outBash.write("echo bash script made: \t%s > &2\n" % (time.ctime(time.time())))
+    outBash.write("echo bash script made: \t%s >&2\n" % (time.ctime(time.time())))
     outBash.write("echo 'python ")
     for arg in arguments:
         outBash.write("%s " % arg)
-    outBash.write("' > &2\n")
-    outBash.write("echo 'chmod +x PE_DCS_CALC.*.*.sh' > &2\n")
-    outBash.write("echo 'bash PE_DCS_CALC.%s.%s.sh 3>&1 1>&2 2>&3 | tee -a log.txt' > &2\n\n" % (r1, r2))
+    outBash.write("' >&2\n")
+    outBash.write("echo 'bash PE_DCS_CALC.%s.%s.sh 3>&1 1>&2 2>&3 | tee -a log.txt' >&2\n\n" % (r1, r2))
 
     outBash.write("#Filter for reads with a properly located duplex tag, ")
     outBash.write("then move the tag into the header \n")
@@ -152,6 +155,10 @@ def main():
 
     outBash.write("echo 'tag_to_header start:' >&2\n")
     outBash.write("date >&2\n")
+    outBash.write(
+            "echo 'python %stag_to_header.py --infile1 %s --infile2 %s --outfile1 %s --outfile2 %s --barcode_length %s --spacer_length %s --read_out %s' >&2\n\n" % 
+            (spath, o.r1src, o.r2src, out1, out2, o.blength, o.slength, o.progInd)
+            )
     outBash.write(
             "python %stag_to_header.py --infile1 %s --infile2 %s --outfile1 %s --outfile2 %s --barcode_length %s --spacer_length %s --read_out %s\n\n" % 
             (spath, o.r1src, o.r2src, out1, out2, o.blength, o.slength, o.progInd)
@@ -167,12 +174,21 @@ def main():
     outBash.write("echo 'BWA start:' >&2\n")
     outBash.write("date >&2\n")
     if o.parallel:
-            outBash.write("for read_file in " + r1 + " " + r2 + "; do\nbwa aln " + o.ref + " ${read_file}.fq.smi > ${read_file}.aln\ndone\n")
+            outBash.write("echo 'for read_file in " + r1 + " " + r2 + "; do' >&2\n")
+            outBash.write("echo 'bwa aln " + o.ref + " ${read_file}.fq.smi > ${read_file}.aln' >&2\n")
+            outBash.write("echo 'done' >&2\n\n")
+            outBash.write("for read_file in " + r1 + " " + r2 + "; do\nbwa aln " + o.ref + " ${read_file}.fq.smi > ${read_file}.aln\ndone\n\n")
 
     else:
-            outBash.write("bwa aln " + o.ref + " " + out1 + " > " + aln1 + "\n")
-            outBash.write("bwa aln " + o.ref + " " + out2 + " > " + aln2 + "\n")
+            outBash.write("echo 'bwa aln " + o.ref + " " + out1 + " > " + aln1 + "' >&2\n")
+            outBash.write("bwa aln " + o.ref + " " + out1 + " > " + aln1 + "\n\n")
+            outBash.write("echo 'bwa aln " + o.ref + " " + out2 + " > " + aln2 + "' >&2\n")
+            outBash.write("bwa aln " + o.ref + " " + out2 + " > " + aln2 + "\n\n")
 
+    outBash.write(
+            "echo 'bwa sampe " + o.ref + " " + aln1 + " " + aln2 + " " + out1 + 
+            " " + out2 + " > " + PE + "' >&2\n"
+            )
     outBash.write(
             "bwa sampe " + o.ref + " " + aln1 + " " + aln2 + " " + out1 + 
             " " + out2 + " > " + PE + "\n\n"
@@ -183,6 +199,11 @@ def main():
     outBash.write("#Sort the paired end file \n\n")
     outBash.write("echo 'Sort 1 start:' >&2\n")
     outBash.write("date >&2\n")
+    
+    outBash.write(
+            "echo 'samtools view -Sbu " + PE + " |samtools sort - " + 
+            PEsort + "' >&2\n"
+            )
     outBash.write(
             "samtools view -Sbu " + PE + " |samtools sort - " + 
             PEsort + "\n\n"
@@ -194,12 +215,20 @@ def main():
     outBash.write("#Find SSCSs\n\n")
     outBash.write("echo 'ConsensusMaker start:' >&2\n")
     outBash.write("date >&2\n")
+    
+    outBash.write(
+            "echo 'python " + spath + "ConsensusMaker2.2.py --infile " + 
+            PEsort + ".bam --tagfile " + tagF + " --outfile " + SSCSout + 
+            " --minmem " + o.minMem + " --maxmem " + o.maxMem + " --cutoff " + 
+            o.cutOff + " --Ncutoff " + o.Ncut + " --readlength " + readlength + 
+            " --read_type " + o.read_type + " --isize " + o.isize + " --read_out " + o.progInd + "' >&2\n"
+            )
     outBash.write(
             "python " + spath + "ConsensusMaker2.2.py --infile " + 
             PEsort + ".bam --tagfile " + tagF + " --outfile " + SSCSout + 
             " --minmem " + o.minMem + " --maxmem " + o.maxMem + " --cutoff " + 
             o.cutOff + " --Ncutoff " + o.Ncut + " --readlength " + readlength + 
-            " --read_type " + o.read_type + "\n\n"
+            " --read_type " + o.read_type + " --isize " + o.isize + " --read_out " + o.progInd + " \n\n"
             )
 
 
@@ -208,6 +237,11 @@ def main():
     outBash.write("#Resort the SSCSs \n\n")
     outBash.write("echo 'Sort 2 start:' >&2\n")
     outBash.write("date >&2\n")
+    
+    outBash.write(
+            "echo 'samtools view -bu " + SSCSout + " | samtools sort - " + 
+            SSCSsort + "' >&2\n"
+            )
     outBash.write(
             "samtools view -bu " + SSCSout + " | samtools sort - " + 
             SSCSsort + "\n\n"
@@ -219,9 +253,14 @@ def main():
     outBash.write("echo 'DuplexMaker start:' >&2\n")
     outBash.write("date >&2\n")
     outBash.write(
+            "echo 'python " + spath + "DuplexMaker2.2.py --infile " + SSCSsort + 
+            ".bam --outfile " + DCSout + " --Ncutoff " + o.Ncut + 
+            " --readlength " + readlength + " --read_out " + o.progInd "' >&2\n"
+            )
+    outBash.write(
             "python " + spath + "DuplexMaker2.2.py --infile " + SSCSsort + 
             ".bam --outfile " + DCSout + " --Ncutoff " + o.Ncut + 
-            " --readlength " + readlength + "\n\n"
+            " --readlength " + readlength + " --read_out " + o.progInd "\n\n"
             )
 
 
@@ -232,8 +271,14 @@ def main():
     DCSaln = DCSout.replace(".bam",".aln.sam")
     outBash.write("echo 'BWA 2 start:' >&2\n")
     outBash.write("date >&2\n")
-    outBash.write("bwa aln " + o.ref + " " + DCSr1  + " > " + DCSr1aln + "\n")
-    outBash.write("bwa aln " + o.ref + " " + DCSr2  + " > " + DCSr2aln + "\n")
+    outBash.write("echo 'bwa aln " + o.ref + " " + DCSr1  + " > " + DCSr1aln + "' >&2\n")
+    outBash.write("bwa aln " + o.ref + " " + DCSr1  + " > " + DCSr1aln + "\n\n")
+    outBash.write("echo 'bwa aln " + o.ref + " " + DCSr2  + " > " + DCSr2aln + "' >&2\n")
+    outBash.write("bwa aln " + o.ref + " " + DCSr2  + " > " + DCSr2aln + "\n\n")
+    outBash.write(
+            "echo 'bwa sampe " + o.ref + " " + DCSr1aln + " " + DCSr2aln + " " + 
+            DCSr1 + " " + DCSr2 + " > " + DCSaln + "' >&2\n"
+            )
     outBash.write(
             "bwa sampe " + o.ref + " " + DCSr1aln + " " + DCSr2aln + " " + 
             DCSr1 + " " + DCSr2 + " > " + DCSaln + "\n\n"
@@ -243,11 +288,17 @@ def main():
     outBash.write("echo 'Samtools sort and index start:' >&2\n")
     outBash.write("date >&2\n")
     outBash.write(
-            "samtools view -Sbu " + DCSaln + 
-            " | samtools sort - " + DCSsort + "\n"
+            "echo 'samtools view -Sbu " + DCSaln + 
+            " | samtools sort - " + DCSsort + "' >&2\n"
             )
-    outBash.write("samtools index " + DCSsort + ".bam\n")
+    outBash.write(
+            "samtools view -Sbu " + DCSaln + 
+            " | samtools sort - " + DCSsort + "\n\n"
+            )
+    outBash.write("echo 'samtools index " + DCSsort + ".bam' >&2\n")
+    outBash.write("samtools index " + DCSsort + ".bam\n\n")
 
+    outBash.write("echo 'rm *.sam' >&2\n")
     outBash.write("rm *.sam \n")
 
     outBash.close()
