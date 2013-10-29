@@ -4,52 +4,60 @@ Version 2.0
 By Brendan Kohrn and Scott Kennedy(1)
 (1) Department of Pathology, University of Washington School of Medicine, Seattle, WA 98195
 Based on work by Mike Schmitt and Joe Hiatt
-October 23, 2013
+October 28, 2013
 
 Written for Python 2.7.3
 Required modules: Pysam, Samtools
 
-This program is intended to be run on a paired-end BAM file, sorted by read position, with duplex tags in the header and constant read length.  It will output a paired-end BAM file with single strand consensus sequences (SSCSs), and a .tagcounts file which contains the different tags (on both strands) and how many times they occur, even if they are not used in SSCS generation, in order by read.  In addition, it will output a BAM file of SSCSs which are unpaired, either because one of the pair didn't match the criteria for allignment, or because of some other reason, and a BAM file of all unconsidered sequences in the original file.  Quality scores on the output BAM files are meaningless.  The file produced by this program is meant to continue on through the duplex maker.  
+Inputs: 
+    A position-sorted paired-end BAM file containing reads with a duplex tag in the header.  
 
-The program starts at the position of the first good read, determined by the type of read specified on startup.  It then goes through the file until it finds a new position, saving all reads as it goes.  When it finds a new position, it sends the saved reads to the consensus maker, one tag at a time, untill it runs out of tags.  Consensus sequences are saved until their mates come up, at which point both are written to the output BAM file, first read first.  After emptying the reads from the first position, it continues on through the origional file until it finds another new position, sends those reads to the consensus maker, and so on until the end of the file.  At the end of the file, any remaining reads are sent through the consensus maker, and any unpaired consensuses are written to extraConsensus.bam.  
+Outputs:
+    1: A paired-end BAM file containing SSCSs
+    2: A single-end BAM file containing unpaired SSCSs
+    3: A single-end BAM file containing reads with less common cigar strings
+    4: A single-end BAM file containing non-mapping reads
+    5: A tagcounts file
+    
+    Note that quality scores in outputs 1, 2, and 3 are just space fillers and do not signify anything about the quality of the sequence.  
 
-In the future, the program may be able to autodetect read length.  
+The program starts at the position of the first good read, determined by the type of read specified on startup.  It then goes through the file until it finds a new position, saving all reads as it goes.  When it finds a new position, it sends the saved reads to the consensus maker, one tag at a time, untill it runs out of tags.  Consensus sequences are saved until their mates come up, at which point both are written to the output BAM file, read 1 first.  After making consensuses with the reads from the first position, it continues on through the origional file until it finds another new position, sends those reads to the consensus maker, and so on until the end of the file.  At the end of the file, any remaining reads are sent through the consensus maker, and any unpaired consensuses are written to a file ending in _UP.bam.  
 
-usage: ConsensusMaker2.2.py [-h] [--infile INFILE] [--tagfile TAGFILE]
-                            [--outfile OUTFILE] [--rep_filt REP_FILT]
-                            [--minmem MINMEM] [--maxmem MAXMEM]
-                            [--cutoff CUTOFF] [--Ncutoff NCUTOFF]
-                            [--readlength READ_LENGTH] [--read_type READ_TYPE]
+In the future, this program may be able to autodetect read length.  
 
-arguments:
+usage: ConsensusMaker.py [-h] [--infile INFILE] [--tagfile TAGFILE]
+                         [--outfile OUTFILE] [--rep_filt REP_FILT]
+                         [--minmem MINMEM] [--maxmem MAXMEM] [--cutoff CUTOFF]
+                         [--Ncutoff NCUTOFF] [--readlength READ_LENGTH]
+                         [--read_type READ_TYPE] [--isize ISIZE]
+                         [--read_out ROUT]
+
+optional arguments:
   -h, --help            show this help message and exit
   --infile INFILE       input BAM file
   --tagfile TAGFILE     output tagcounts file
   --outfile OUTFILE     output BAM file
   --rep_filt REP_FILT   Remove tags with homomeric runs of nucleotides of
-                        length x [9]
+                        length x. [9]
   --minmem MINMEM       Minimum number of reads allowed to comprise a
-                        consensus. [0]
+                        consensus. [3]
   --maxmem MAXMEM       Maximum number of reads allowed to comprise a
-                        consensus. [100]
+                        consensus. [1000]
   --cutoff CUTOFF       Percentage of nucleotides at a given position in a
                         read that must be identical in order for a consensus
-                        to be called at that position. [0]
-  --Ncutoff NCUTOFF     Maximum percentage of Ns allowed in a consensus [1]
+                        to be called at that position. [0.7]
+  --Ncutoff NCUTOFF     Maximum fraction of Ns allowed in a consensus [1.0]
   --readlength READ_LENGTH
                         Length of the input read that is being used. [80]
   --read_type READ_TYPE
-                        Type of read. 
-                        Options: 
-                            dual_map: both reads map propperly.  Doesn't consider read pairs where only one read maps. 
-                            mono_map: considers any read pair where one read maps. 
-'''
+                        Type of read. Options: dual_map: both reads map
+                        properly. Doesn't consider read pairs where only one
+                        read maps. mono_map: considers any read pair where one
+                        read maps. [mono_map]
+  --isize ISIZE         maximum distance between read pairs
+  --read_out ROUT       How often you want to be told what the program is
+                        doing. [1000000]
 
-'''
-ChangeLog in this version:
-Inserted try in consensusMaker.  
-Added cigarDictionary as readDict[6]
-Added cigar string comparison before sending to consensus maker.
 '''
 
 import sys
@@ -118,7 +126,7 @@ def main():
     parser.add_argument('--readlength', type=int, default=80, dest='read_length', help="Length of the input read that is being used. [80]")
     parser.add_argument('--read_type', action="store", dest='read_type', default="mono_map", help="Type of read.  Options: dual_map: both reads map properly.  Doesn't consider read pairs where only one read maps.  mono_map: considers any read pair where one read maps. [mono_map]")
     parser.add_argument('--isize', type = int, default=-1, dest='isize', help="maximum distance between read pairs")
-    parser.add_argument('--read_out', type = int, default = 1000000, dest = 'rOut')
+    parser.add_argument('--read_out', type = int, default = 1000000, dest = 'rOut', help = 'How often you want to be told what the program is doing. [1000000]')
     o = parser.parse_args()
 
     ##########################################################################################################################
@@ -178,7 +186,7 @@ def main():
         if readOne==True:
             winPos -= 1
         while (readWin[winPos%2].pos == readWin[(winPos-1)%2].pos and fileDone==False and readOne==False) or readOne == True:
-            if readNum % o,rOut == 0:
+            if readNum % o.rOut == 0:
                 sys.stderr.write("Reads processed:" + str(readNum) + "\n")
             overlap=False
             if readWin[winPos%2].pos < readWin[winPos%2].mpos and readWin[winPos%2].mpos < readWin[winPos%2].pos + o.read_length and int(readWin[winPos%2].flag) in (83, 99, 147, 163):
@@ -217,7 +225,7 @@ def main():
             else:
                 nM += 1
                 nonMap.write(readWin[winPos%2])
-                if int(readWin[winPos%2].flag() not in goodFlag:
+                if int(readWin[winPos%2].flag()) not in goodFlag:
                     bF += 1
                 elif overlap == True:
                     oL += 1

@@ -9,7 +9,17 @@ October 23, 2013
 Written for Python 2.7.3
 Required modules: Pysam, Samtools, BioPython
 
-This program is intended to be run on a paired-end BAM file, sorted by read position, which has already been through the consensus maker.  It alligns SSCS's to their switchtag, and outputs a paired-end BAM file containing Duplex Consensus Sequences (DCS's) and a BAM file containing unpaired duplex consensus sequences.  
+Inputs:
+    A position-sorted paired-end BAM file containing SSCSs
+    
+Outputs: 
+    1: A paired-end BAM file containing DCSs
+    2: A single-end BAM file containing unpaired DCSs
+    3: A pair of fastq files containing DCSs for use in realligning.
+    
+    Note: Quality scores and cigar strings in these files are meaningless. 
+
+This program goes through the input file by position, making DCSs as it goes and writing them to file.  At the end of the run, any unpaired DCSs are written to a file ending in _UP.bam.  
 
 usage: DuplexMaker2.2.py [-h] [--infile INFILE] [--outfile OUTFILE]
                          [--Ncutoff NCUTOFF] [--readlength READ_LENGTH]
@@ -58,7 +68,7 @@ def main():
     parser.add_argument('--Ncutoff', type=float, default=1.0, dest='Ncutoff', help="Maximum percentage of Ns allowed in a consensus [1.0]")
     #parser.add_argument('-p', action='store_true', dest='pipe', help="Output consensus reads to stdout"  )
     parser.add_argument('--readlength', type=int, default=80, dest='read_length', help="Length of the input read that is being used. [80]")
-    parser.add_argument('--read_out', type = int, default = 1000000, dest = 'rOut')
+    parser.add_argument('--read_out', type = int, default = 1000000, dest = 'rOut', help = 'How often you want to be told what the program is doing. [1000000]')
     o = parser.parse_args()
 
     ##########################################################################################################################

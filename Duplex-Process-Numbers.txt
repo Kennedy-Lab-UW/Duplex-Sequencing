@@ -1,0 +1,113 @@
+start: 2n reads in n read pairs
+
+tag_to_header:
+	progress numbers = read pairs (n = total)
+	input:
+		File			Sequences	Sequence Type	Pairs
+		seq1.fq			n			reads			unpaired
+		seq2.fq			n			reads			unpaired
+	output:
+		File			Sequences	Sequence Type	Pairs
+		seq1.fq.smi		m			reads			unpaired
+		seq2.fq.smi		m			reads			unapired
+
+bwa aln: (x2)
+	progress numbers = read pairs (m = total)
+	input:
+		1:
+			File			Sequences	Sequence Type	Pairs
+			seq1.fq.smi		m			reads			unpaired
+		2:
+			File			Sequences	Sequence Type	Pairs
+			seq2.fq.smi		m			reads			unpaired
+	output:
+		1:  seq1.aln
+		2:  seq2.aln
+	
+bwa sampe: 
+	progress numbers = read pairs (m = total)
+	input:
+		seq1.aln
+		seq2.aln
+	output: 
+		File		Sequences	Sequence Type	Pairs
+		PE.sam		2m			reads			m
+
+samtools sort:
+	no progress numbers
+	input:
+		File		Sequences	Sequence Type	Pairs
+		PE.sam		2m			reads			m
+	output:
+		File			Sequences	Sequence Type	Pairs
+		PE.sort.bam		2m			reads			m
+
+ConsensusMaker
+	progress numbers = reads (2m = total)
+	input:
+		File			Sequences	Sequence Type	Pairs
+		PE.sort.bam		2m			reads			m
+	output: 
+		File			Sequences	Sequence Type	Pairs
+		SSCS.bam	 	2J 			SSCS			J 
+		SSCS_UP.bam 	j 			SSCS 			unpaired
+		SSCS_NM.bam		?			reads			unpaired
+		SSCS_LCC.bam 	?			reads			unpaired
+		SSCS.tagcounts	---------Not a Sequence File--------
+	
+samtools sort:
+	no progress numbers
+	input: 
+		File			Sequences	Sequence Type	Pairs
+		SSCS.bam	 	2J 			SSCS			J 
+	output:
+		File			Sequences	Sequence Type	Pairs
+		SSCS.sort.bam	2J 			SSCS			J 
+
+DuplexMaker:
+	progress numbers = SSCS's (total = 2J)
+	input:
+		File			Sequences	Sequence Type	Pairs
+		SSCS.sort.bam	2J 			SSCS			J 
+	output:
+		File			Sequences	Sequence Type	Pairs
+		DCS.bam			2L 			DCS				L 
+		DCS_UP.bam		l			DCS				unpaired
+		DCS.r1.fq		L			DCS				unpaired
+		DCS.r2.fq		L			DCS				unpaired
+
+bwa aln: (x2)
+	progress numbers = DCS pairs (total = l)
+	input:
+		1: 
+			File			Sequences	Sequence Type	Pairs
+			DCS.r1.fq		L			DCS				unpaired
+		2: 
+			File			Sequences	Sequence Type	Pairs
+			DCS.r2.fq		L			DCS				unpaired
+	output:
+		1:
+			DCS.r1.aln
+		2:
+			DCS.r2.aln
+bwa sampe: 
+	progress numbers = DCS pairs (total = l)
+	input:
+		DCS.r1.aln
+		DCS.r2.aln
+	output:
+		File			Sequences	Sequence Type	Pairs
+		DCS.sam			2L			DCS				L
+
+samtools sort:
+	no progress numbers
+	input:
+		File			Sequences	Sequence Type	Pairs
+		DCS.sam			2L			DCS				L
+	output:
+		File				Sequences	Sequence Type	Pairs
+		DCS.aln.sort.bam	2L			DCS				L
+		
+n > m >> J > L
+J > j, L > l
+J = 2L + l

@@ -1,8 +1,32 @@
 '''
 Tag To Header
 Version 2.0
-By Joe Hiatt, Scott Kennedy, Brendan Kohrn and Mike Schmitt
-October 23, 2013
+By Joe Hiatt, Scott Kennedy(1), Brendan Kohrn and Mike Schmitt(1)
+(1) Department of Pathology, University of Washington School of Medicine, Seattle, WA 98195
+October 28, 2013
+
+Isolate duplex tags, move them from within the sequenced read to the header region, and remove the spacer region.  
+
+usage: tag_to_header.py [-h] [--infile1 INFILE1] [--infile2 INFILE2]
+                        [--outfile1 OUTFILE1] [--outfile2 OUTFILE2]
+                        [--barcode_length BLENGTH] [--spacer_length SLENGTH]
+                        [--read_out ROUT] [--adapter ADAPTERSEQ]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --infile1 INFILE1     First input raw fastq file.
+  --infile2 INFILE2     Second input raw fastq file.
+  --outfile1 OUTFILE1   Output file for first fastq reads.
+  --outfile2 OUTFILE2   Output file for second fastq reads.
+  --barcode_length BLENGTH
+                        Length of the duplex tag sequence. [12]
+  --spacer_length SLENGTH
+                        Length of the spacer sequences used. [12]
+  --read_out ROUT       How often you want to be told what the program is
+                        doing. [1000000]
+  --adapter ADAPTERSEQ  Optional: Spacer sequence for filtering on the
+                        presence of the spacer. This could be thrown off by
+                        low quality scores.
 '''
 
 import sys
@@ -96,15 +120,14 @@ def hdrRenameFxn(x, y, z):
 
 def main():
     parser = ArgumentParser()
-    parser.add_argument('--adapter1',  default = None,  dest = 'adapterSeq1')
-    parser.add_argument('--adapter2',  default = None,  dest = 'adapterSeq2')
-    parser.add_argument('--infile1', default = None, dest = 'infile1')
-    parser.add_argument('--infile2', default = None, dest = 'infile2')
-    parser.add_argument('--outfile1', default = None, dest = 'outfile1')
-    parser.add_argument('--outfile2', default = None, dest = 'outfile2')
-    parser.add_argument('--barcode_length', type = int, default = 12, dest = 'blength')
-    parser.add_argument('--spacer_length', type = int, default = 5, dest = 'slength')
-    parser.add_argument('--read_out', type = int, default = 1000000, dest = 'rOut')
+    parser.add_argument('--infile1', default = None, dest = 'infile1', help = 'First input raw fastq file.  ')
+    parser.add_argument('--infile2', default = None, dest = 'infile2', help = 'Second input raw fastq file.  ')
+    parser.add_argument('--outfile1', default = None, dest = 'outfile1', help = 'Output file for first fastq reads.  ')
+    parser.add_argument('--outfile2', default = None, dest = 'outfile2', help = 'Output file for second fastq reads.  ')
+    parser.add_argument('--barcode_length', type = int, default = 12, dest = 'blength', help = 'Length of the duplex tag sequence. [12]')
+    parser.add_argument('--spacer_length', type = int, default = 5, dest = 'slength', help = 'Length of the spacer sequences used. [12]')
+    parser.add_argument('--read_out', type = int, default = 1000000, dest = 'rOut', help = 'How often you want to be told what the program is doing. [1000000]')
+    parser.add_argument('--adapter',  default = None,  dest = 'adapterSeq', help = 'Optional: Spacer sequence for filtering on the presence of the spacer.  This could be thrown off by low quality scores.')
     o=parser.parse_args()
 
 
@@ -128,7 +151,7 @@ def main():
         else:
             
             ctr += 1
-            if o.adapterSeq1 != None and o.adapterSeq2 != None and (read1.seq[o.blength:o.blength + o.slength] != o.adapterSeq1 or read2[o.blength:o.blength + o.slength] != o.adapterSeq2):
+            if o.adapterSeq != None and (read1.seq[o.blength:o.blength + o.slength] != o.adapterSeq or read2[o.blength:o.blength + o.slength] != o.adapterSeq):
         #        sys.stderr.write('Error: something is wrong with the spacers')
         #        print(read1)
         #        print(read2)

@@ -1,10 +1,12 @@
 #!/bin/env python
-
-#By Mike Schmitt
-#Version 1.1
-#June 14, 2012
-
 """
+Mut Position
+
+By Mike Schmitt
+Version 1.2
+October 28, 2013
+Modified by Brendan Kohrn to allow n-length indels
+
 This script gives position-specific mutation frequencies from a tagcounts file given as stdin.
 
 The output is tab-delimited and specifies:
@@ -12,9 +14,7 @@ chromosome number, template base, nucleotide position, depth, mutations to T, C,
 
 Usage:
 
-cat seq.pileup | python count-muts.py
-
-Mike Schmitt, Jan 9, 2012
+cat seq.pileup | python mut-position.py
 """
 
 from optparse import OptionParser
@@ -50,8 +50,12 @@ Gcount=[]
 Acount=[]
 inscount=[]
 delcount=[]
-for i,line in enumerate( lines ):
 
+for i,line in enumerate( lines ):
+      
+      ins = {}
+      dels = {}
+      
       linebins = line.split()
 
 #convert sequence information to uppercase
@@ -67,28 +71,25 @@ for i,line in enumerate( lines ):
       linebins[4] = linebins[4].replace('N','')      
 
 #count and remove insertions
-      ins1 = linebins[4].count('+1')
-      ins2 = linebins[4].count('+2')
-      ins3 = linebins[4].count('+3')
-      ins4 = linebins[4].count('+4')
-
-      linebins[4] = re.sub('\+1.','',linebins[4])    
-      linebins[4] = re.sub('\+2..','',linebins[4])
-      linebins[4] = re.sub('\+3...','',linebins[4])    
-      linebins[4] = re.sub('\+4....','',linebins[4])    
+      newIns = map(int, re.findall(r\'\+\d+', linebins[4]))
+      for length in newIns:
+      if length not in ins:
+          ins[length] = 1
+      else:
+          ins[length] += 1
+          rmStr = r'\+' + str(length) + "."*length
+      linebins[4] = re.sub(rmStr, '', linebins[4])
       
 #count and remove deletions
-      del1 = linebins[4].count('-1')
-      del2 = linebins[4].count('-2')
-      del3 = linebins[4].count('-3')
-      del4 = linebins[4].count('-4')
-
-      linebins[4] = linebins[4].replace('*','')    
-      linebins[4] = re.sub('-1.','',linebins[4])    
-      linebins[4] = re.sub('-2..','',linebins[4])    
-      linebins[4] = re.sub('-3...','',linebins[4])    
-      linebins[4] = re.sub('-4....','',linebins[4])    
-
+      newDels = map(int, re.findall(r'-\d+', linebins[4]))
+      for length in newDels:
+          if length not in dels:
+          dels[length] = 1
+      else:
+          dels[length] += 1
+          rmStr = r'-' + str(length) + "."*length
+      linebins[4] = re.sub(rmStr, '', linebins[4])
+     
 #count depth                                                                                                
       depth = len(linebins[4])
                                                     
@@ -113,8 +114,8 @@ for i,line in enumerate( lines ):
             Ccount.append(linebins[4].count('C'))
             Gcount.append(linebins[4].count('G'))
             Acount.append(linebins[4].count('A'))
-            inscount.append(ins1+ins2+ins3+ins4)
-            delcount.append(del1+del2+del3+del4)
+            inscount.append(sum(ins))
+            delcount.append(sum(dels))
             chrom.append(linebins[0])
             pos.append(linebins[1])
             template.append(linebins[2])

@@ -1,12 +1,13 @@
 #!/bin/env python
 
-#by Mike Schmitt
-#Version 1.3
-#Jan 31, 2013
-#Modified from count-muts.py v1.1
-#Edited by Brendan Kohrn to fix a problem with 0 depth where no 0 depth should be
-
 """
+Count Muts Unique
+
+by Mike Schmitt
+Version 1.3
+October 28, 2013
+Modified from count-muts.py v1.1
+Edited by Brendan Kohrn to fix a problem with 0 depth where no 0 depth should be and to allow n-length indels
     
 This script pulls out the mutation frequencies from a pileup file given as stdin.
 
@@ -16,7 +17,7 @@ This version counts each mutation exactly once (i.e. clonal expansions are count
 
 Usage:
 
-cat seq.pileup | python count-muts.py
+cat seq.pileup | python count-muts-unique.py
 
 """
 
@@ -67,15 +68,9 @@ GtoA = 0
 GtoT = 0
 GtoC = 0
 
-ins1 = 0
-ins2 = 0
-ins3 = 0
-ins4 = 0
+ins = {}
 
-del1 = 0
-del2 = 0
-del3 = 0
-del4 = 0
+dels = {}
 
 
 for line in f:
@@ -114,27 +109,24 @@ for line in f:
             linebins[4] = linebins[4].replace('N','')          
           
 #count and remove insertions
-            if linebins[4].count('+1') > 0: ins1 += 1
-            if linebins[4].count('+2') > 0: ins1 += 1
-            if linebins[4].count('+3') > 0: ins1 += 1
-            if linebins[4].count('+4') > 0: ins1 += 1
-
-            linebins[4] = re.sub('\+1.','',linebins[4])    
-            linebins[4] = re.sub('\+2..','',linebins[4])
-            linebins[4] = re.sub('\+3...','',linebins[4])    
-            linebins[4] = re.sub('\+4....','',linebins[4])    
+            newIns = map(int, re.findall(r\'\+\d+', linebins[4]))
+            for length in newIns:
+                if length not in ins:
+                    ins[length] = 1
+                else:
+                    ins[length] += 1
+                rmStr = r'\+' + str(length) + "."*length
+                linebins[4] = re.sub(rmStr, '', linebins[4])
       
 #count and remove deletions
-            if linebins[4].count('-1'): del1 += 1
-            if linebins[4].count('-2'): del2 += 1
-            if linebins[4].count('-3'): del3 += 1
-            if linebins[4].count('-4'): del4 += 1
-
-            linebins[4] = linebins[4].replace('*','')    
-            linebins[4] = re.sub('-1.','',linebins[4])    
-            linebins[4] = re.sub('-2..','',linebins[4])    
-            linebins[4] = re.sub('-3...','',linebins[4])    
-            linebins[4] = re.sub('-4....','',linebins[4])    
+            newDels = map(int, re.findall(r'-\d+', linebins[4]))
+            for length in newDels:
+                if length not in dels:
+                    dels[length] = 1
+                else:
+                    dels[length] += 1
+                rmStr = r'-' + str(length) + "."*length
+                linebins[4] = re.sub(rmStr, '', linebins[4])
      
 #count point mutations
        
@@ -164,7 +156,7 @@ for line in f:
 
 totalseq = Aseq + Tseq + Cseq + Gseq
 totalptmut = AtoT + AtoC + AtoG + TtoA + TtoC + TtoG + CtoA + CtoT + CtoG + GtoA + GtoT + GtoC
-totalindel = ins1 + ins2 + ins3 + ins4 + del1 + del2 + del3 + del4
+totalindel = sum(ins) + sum(dels)
                                             
 ptmutfreq = (float (totalptmut) / float(totalseq))
 indelfreq = (float (totalindel) / float(totalseq))
@@ -194,8 +186,11 @@ print "G to A:", GtoA, ' %.2e' % (float(GtoA) / float(max(Gseq,1)))
 print "G to T:", GtoT, ' %.2e' % (float(GtoT) / float(max(Gseq,1)))
 print "G to C:", GtoC, ' %.2e' % (float(GtoC) / float(max(Gseq,1)))
 print ""
-print "+1 insertions", ins1, ' %.2e' % (float(ins1) / float(max(totalseq,1)))
-print "-1 deletions",del1, ' %.2e' % (float(del1) / float(max(totalseq,1)))
+for n in ins.keys():
+    print('+' + n + ' insertions: ' + ins[n] + ' %.2e' % (float(ins1) / float(max(totalseq,1))))
+print ""
+for n in dels.keys():
+    print('-' + n + ' deletions: ' + dels[n] + '\t%.2e' % (float(ins1) / float(max(totalseq,1))))
 print "Total indel events", totalindel
 print "Overall indel frequency", '%.2e' % indelfreq
 print ""

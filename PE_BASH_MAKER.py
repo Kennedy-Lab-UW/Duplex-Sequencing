@@ -1,13 +1,49 @@
 """
 PE Bash Maker V 1.0
 by Brendan Kohrn
-write a bash script to run the process
+October 28, 2013
+
+Write a bash script to run the process.  
+
 This program makes a shell script so that the user will not need to 
 enter the commands for all the programs himself.  When using it, 
 navigate to the folder with your data, with all the programs in a 
-different folder, and enter a relative path to that folder from the 
-folder with your data.  This way, the program will be able to auto-build
-the path to the programs.  
+different folder.  
+
+usage: PE_BASH_MAKER.py [-h] [--ref REF] [--r1src R1SRC] [--r2src R2SRC]
+                        [--min MINMEM] [--max MAXMEM] [--cut CUTOFF]
+                        [--Ncut NCUT] [--rlength RLENGTH] [--blength BLENGTH]
+                        [--slength SLENGTH] [--progInd PROGIND]
+                        [--read_type READ_TYPE] [--isize ISIZE] [--absolute]
+                        [--parallel]
+
+Arguments:
+  -h, --help            show this help message and exit
+  --ref REF             .FASTA file containing the reference genome
+  --r1src R1SRC         .fq file containing the raw read1 data
+  --r2src R2SRC         .fq file containing the raw read2 data
+  --min MINMEM          Minimum members for SSCS consensus [3]
+  --max MAXMEM          Maximum members for SSCS consensus [1000]
+  --cut CUTOFF          Mimimum percent matching for base choice in SSCS
+                        consensus [0.8]
+  --Ncut NCUT           Maxumum percent N's allowed [0.1]
+  --rlength RLENGTH     Length of a single read [85]
+  --blength BLENGTH     Length of the barcode sequence on a unprocessed single
+                        read. [12]
+  --slength SLENGTH     Length of the spacer sequence in a unprocessed single
+                        read.
+  --progInd PROGIND     How often you want to be told what a program is doing
+                        [1000000]
+  --read_type READ_TYPE
+                        Type of read. Options: dual_map: both reads map
+                        properly. Doesn't consider read pairs where only one
+                        read maps. mono_map: considers any read pair where one
+                        read maps. [mono_map]
+  --isize ISIZE         Optional: Maximum distance between read pairs [-1]
+  --absolute            Optional: Treat the program path as an absolute path
+  --parallel            Optional: Perform the alignments of both reads in
+                        parallelOptional: Perform the alignments of both reads in parallel.  This is faster but requires more memory (minimum 16 GB recommended). 
+
 """
 
 import sys
@@ -80,7 +116,7 @@ def main():
             type = int, 
             action = "store", 
             dest = "blength", 
-            help = "length of the barcode sequence on a unprocessed single read. [12]", 
+            help = "Length of the barcode sequence on a unprocessed single read. [12]", 
             default = "12"
             )
     parser.add_argument(
@@ -88,7 +124,7 @@ def main():
             type = int, 
             action = "store", 
             dest = "slength", 
-            help = "length of the spacer sequence in a unprocessed single read.",
+            help = "Length of the spacer sequence in a unprocessed single read.",
             default = "5"
             )
     parser.add_argument(
@@ -96,7 +132,7 @@ def main():
             type = int, 
             action = "store", 
             dest = "progInd", 
-            help = "how often you want to be told what a program is doing [1000000]", 
+            help = "How often you want to be told what a program is doing [1000000]", 
             default = "1000000"
             )
     parser.add_argument(
@@ -111,21 +147,25 @@ def main():
                 mono_map: considers any read pair where one read maps.\
                 [mono_map]"
                 )
-    parser.add_argument('--isize', type = int, default=-1, dest='isize', help="maximum distance between read pairs")
+    parser.add_argument('--isize', type = int, default=-1, dest='isize', help="Optional: Maximum distance between read pairs [-1]")
     #BUGGY...Does not work as intended, instead runs sequentially.
+    parser.add_argument('--absolute', action = 'store_true', dest='absolute', help="Optional: Treat the program path as an absolute path")
     parser.add_argument(
             "--parallel", 
             action = "store_true", 
             dest = "parallel", 
-            help = "Perform the alignments of both reads in parallel" 
+            help = "Optional: Perform the alignments of both reads in parallel.  This is faster but requires more memory (minimum 16 GB recommended). " 
             )
     o = parser.parse_args()
-
-    spath = "".join(
-            (repr(os.getcwd()).replace("'", '') + "/" +
-            repr(sys.argv[0]).replace("'", ""))
-            )
-    spath = spath.replace("PE_BASH_MAKER.py", "")
+    
+    if o.absolute:
+        spath = repr(sys.argv[0]).replace("'", "").replace("PE_BASH_MAKER.py", "")
+    else:
+        spath = "".join(
+                (repr(os.getcwd()).replace("'", '') + "/" +
+                repr(sys.argv[0]).replace("'", ""))
+                )
+        spath = spath.replace("PE_BASH_MAKER.py", "")
 
     #Set up basic file naming protocols
     r1 = o.r1src.replace(".fq", "")
@@ -217,14 +257,14 @@ def main():
     outBash.write("date >&2\n")
     
     outBash.write(
-            "echo 'python " + spath + "ConsensusMaker2.2.py --infile " + 
+            "echo 'python " + spath + "ConsensusMaker.py --infile " + 
             PEsort + ".bam --tagfile " + tagF + " --outfile " + SSCSout + 
             " --minmem " + o.minMem + " --maxmem " + o.maxMem + " --cutoff " + 
             o.cutOff + " --Ncutoff " + o.Ncut + " --readlength " + readlength + 
             " --read_type " + o.read_type + " --isize " + o.isize + " --read_out " + o.progInd + "' >&2\n"
             )
     outBash.write(
-            "python " + spath + "ConsensusMaker2.2.py --infile " + 
+            "python " + spath + "ConsensusMaker.py --infile " + 
             PEsort + ".bam --tagfile " + tagF + " --outfile " + SSCSout + 
             " --minmem " + o.minMem + " --maxmem " + o.maxMem + " --cutoff " + 
             o.cutOff + " --Ncutoff " + o.Ncut + " --readlength " + readlength + 
@@ -253,15 +293,11 @@ def main():
     outBash.write("echo 'DuplexMaker start:' >&2\n")
     outBash.write("date >&2\n")
     outBash.write(
-            "echo 'python " + spath + "DuplexMaker2.2.py --infile " + SSCSsort + 
-            ".bam --outfile " + DCSout + " --Ncutoff " + o.Ncut + 
-            " --readlength " + readlength + " --read_out " + o.progInd "' >&2\n"
-            )
+            "echo 'python %sDuplexMaker.py --infile %s.bam --outfile %s --Ncutoff %s --readlength %s --read_out %s' >&2\n" %
+            (spath, SSCSsort, DCSout, o.Ncut, readlength, o.progInd))
     outBash.write(
-            "python " + spath + "DuplexMaker2.2.py --infile " + SSCSsort + 
-            ".bam --outfile " + DCSout + " --Ncutoff " + o.Ncut + 
-            " --readlength " + readlength + " --read_out " + o.progInd "\n\n"
-            )
+            "python %sDuplexMaker.py --infile %s.bam --outfile %s --Ncutoff %s --readlength %s --read_out %s >&2\n" %
+            (spath, SSCSsort, DCSout, o.Ncut, readlength, o.progInd))
 
 
     DCSr1 = DCSout.replace(".bam",".r1.fq")

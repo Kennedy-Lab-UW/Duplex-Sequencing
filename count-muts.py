@@ -1,10 +1,13 @@
 #!/bin/env python
 
-#by Mike Schmitt
-#Version 1.3
-#January 24, 2013
-
 """
+Count Muts
+
+by Mike Schmitt
+Version 1.4
+October 28, 2013
+Modified by Brendan Kohrn to allow n-length indels
+
     
 This script pulls out the mutation frequencies from a pileup file given as stdin.
 
@@ -71,15 +74,9 @@ GtoA = 0
 GtoT = 0
 GtoC = 0
 
-ins1 = 0
-ins2 = 0
-ins3 = 0
-ins4 = 0
+ins = {}
 
-del1 = 0
-del2 = 0
-del3 = 0
-del4 = 0
+dels = {}
 
 
 for line in f:
@@ -110,27 +107,24 @@ for line in f:
             linebins[4] = linebins[4].replace('N','')          
           
 #count and remove insertions
-            ins1 += linebins[4].count('+1')
-            ins2 += linebins[4].count('+2')
-            ins3 += linebins[4].count('+3')
-            ins4 += linebins[4].count('+4')
-
-            linebins[4] = re.sub('\+1.','',linebins[4])    
-            linebins[4] = re.sub('\+2..','',linebins[4])
-            linebins[4] = re.sub('\+3...','',linebins[4])    
-            linebins[4] = re.sub('\+4....','',linebins[4])    
+            newIns = map(int, re.findall(r\'\+\d+', linebins[4]))
+            for length in newIns:
+                if length not in ins:
+                    ins[length] = 1
+                else:
+                    ins[length] += 1
+                rmStr = r'\+' + str(length) + "."*length
+                linebins[4] = re.sub(rmStr, '', linebins[4])
       
 #count and remove deletions
-            del1 += linebins[4].count('-1')
-            del2 += linebins[4].count('-2')
-            del3 += linebins[4].count('-3')
-            del4 += linebins[4].count('-4')
-
-            linebins[4] = linebins[4].replace('*','')    
-            linebins[4] = re.sub('-1.','',linebins[4])    
-            linebins[4] = re.sub('-2..','',linebins[4])    
-            linebins[4] = re.sub('-3...','',linebins[4])    
-            linebins[4] = re.sub('-4....','',linebins[4])    
+            newDels = map(int, re.findall(r'-\d+', linebins[4]))
+            for length in newDels:
+                if length not in dels:
+                    dels[length] = 1
+                else:
+                    dels[length] += 1
+                rmStr = r'-' + str(length) + "."*length
+                linebins[4] = re.sub(rmStr, '', linebins[4])
      
 #count point mutations
        
@@ -160,8 +154,8 @@ for line in f:
 
 totalseq = Aseq + Tseq + Cseq + Gseq
 totalptmut = AtoT + AtoC + AtoG + TtoA + TtoC + TtoG + CtoA + CtoT + CtoG + GtoA + GtoT + GtoC
-totalins = ins1 + ins2 + ins3 + ins4
-totaldels = del1 + del2 + del3 + del4                                            
+totalins = sum(ins)
+totaldels = sum(dels)                                           
   
 print ""
 print "Minimum depth", options.mindepth
@@ -195,21 +189,17 @@ print ""
 print "Overall point mutation frequency", '\t%.2e\t%.2e\t%.2e' % Wilson(totalptmut, max(totalseq, 1))
 print ""
 print ""
-print "+1 insertions", ins1, '\t%.2e\t%.2e\t%.2e' % Wilson(ins1, max(totalseq,1))
-print "+2 insertions", ins2, '\t%.2e\t%.2e\t%.2e' % Wilson(ins2, max(totalseq,1))
-print "+3 insertions", ins3, '\t%.2e\t%.2e\t%.2e' % Wilson(ins3, max(totalseq,1))
-print "+4 insertions", ins4, '\t%.2e\t%.2e\t%.2e' % Wilson(ins4, max(totalseq,1))
+for n in ins.keys():
+    print('+' + n + ' insertions: ' + ins[n] + '\t%.2e\t%.2e\t%.2e' % Wilson(ins(n), max(totalseq,1)))
 print ""
-print "-1 deletions",del1, '\t%.2e\t%.2e\t%.2e' % Wilson(del1, max(totalseq,1))
-print "-2 deletions",del2, '\t%.2e\t%.2e\t%.2e' % Wilson(del2, max(totalseq,1))
-print "-3 deletions",del3, '\t%.2e\t%.2e\t%.2e' % Wilson(del3, max(totalseq,1))
-print "-4 deletions ",del4, '\t%.2e\t%.2e\t%.2e' % Wilson(del4, max(totalseq,1))
+for n in dels.keys():
+    print('-' + n + ' deletions: ' + dels[n] + '\t%.2e\t%.2e\t%.2e' % Wilson(dels(n), max(totalseq,1)))
 print ""
 print "Total insertion events:", totalins
 print "Overall insert frequency:\t%.2e\t%.2e\t%.2e" % Wilson(totalins, max(totalseq, 1))
 print ""
 print "Total deletion events:", totaldels
-print "Overall insert frequency:\t%.2e\t%.2e\t%.2e" % Wilson(totaldels, max(totalseq, 1))
+print "Overall deletion frequency:\t%.2e\t%.2e\t%.2e" % Wilson(totaldels, max(totalseq, 1))
 
 
 
