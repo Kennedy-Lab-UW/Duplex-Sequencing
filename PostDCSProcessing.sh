@@ -1,6 +1,6 @@
 #!/bin/bash
-#Arguments
-#in_file ref_genome minDepth minClonality maxClonality
+
+# usage: bash /PATH/PostDCSProcessing.sh in_file ref_genome minDepth minClonality maxClonality
 
 clear
 #Path to PicardTools:
@@ -33,10 +33,10 @@ java -jar $picard/AddOrReplaceReadGroups.jar INPUT=${1/.aln.sort.bam/.filt.bam} 
 java -Xmx2g -jar $gaTK/GenomeAnalysisTK.jar -T ClipReads -I ${1/.aln.sort.bam/.filt.readgroups.bam} -o ${1/.aln.sort.bam/.filt.readgroups.clipped.bam} -R $refGenome --cyclesToTrim "1-5,71-80" --clipRepresentation HARDCLIP_BASES --fix_misencoded_quality_scores --unsafe
 
 #----------------generating stats from final file---------------
-samtools mpileup -B -d 500000 -f $refGenome ${1/.aln.sort.bam/.filt.bam} | tee ${1/.aln.sort.bam/.filt.pileup} | python $progPath/CountMuts.py -d $3 -c $4 -C $5 > ${1%%.aln.sort.bam}.filt.pileup.d${3}-c${4}-${5}.countmuts
-cat ${1/.aln.sort.bam/.filt.pileup} | python $progPath/CountMuts.py -d $3 -c $4 -C $5 -u > ${1%%.aln.sort.bam}.filt.pileup.d${3}-c${4}-${5}.unique.countmuts
+samtools mpileup -B -d 500000 -f $refGenome ${1/.aln.sort.bam/.filt.bam} | tee ${1/.aln.sort.bam/.filt.pileup} | python $progPath/CountMuts.py -o ${1%%.aln.sort.bam}.filt.pileup.d${3}-c${4}-${5}.countmuts -d $3 -c $4 -C $5
+python $progPath/CountMuts.py -i ${1/.aln.sort.bam/.filt.pileup} -o ${1%%.aln.sort.bam}.filt.pileup.d${3}-c${4}-${5}.unique.countmuts -d $3 -c $4 -C $5 -u
 
-samtools mpileup -B -d 500000 -f $refGenome ${1/.aln.sort.bam/.filt.readgroups.clipped.bam} | tee ${1/.aln.sort.bam/.filt.readgroups.clipped.bam.pileup} | python $progPath/CountMuts.py -d $3 -c $4 -C $5 > ${1%%.aln.sort.bam}.filt.readgroups.clipped.bam.pileup.d${3}-c${4}-${5}.countmuts
-cat ${1/.aln.sort.bam/.filt.readgroups.clipped.bam.pileup} | python $progPath/CountMuts.py -d $3 -c $4 -C $5 -u > ${1%%.aln.sort.bam}.filt.readgroups.clipped.bam.pileup.d${3}-c${4}-${5}.unique.countmuts
+samtools mpileup -B -d 500000 -f $refGenome ${1/.aln.sort.bam/.filt.readgroups.clipped.bam} | tee ${1/.aln.sort.bam/.filt.readgroups.clipped.bam.pileup} | python $progPath/CountMuts.py -o ${1%%.aln.sort.bam}.filt.readgroups.clipped.bam.pileup.d${3}-c${4}-${5}.countmuts -d $3 -c $4 -C $5
+python $progPath/CountMuts.py -i ${1/.aln.sort.bam/.filt.readgroups.clipped.bam.pileup} -o ${1%%.aln.sort.bam}.filt.readgroups.clipped.bam.pileup.d${3}-c${4}-${5}.unique.countmuts -d $3 -c $4 -C $5 -u
 
-cat ${1/.aln.sort.bam/.filt.readgroups.clipped.bam.pileup} | python $progPath/mut-position.py -d $3 -c $4 -C $5 > ${1%%.aln.sort.bam}.filt.readgroups.clipped.bam.pileup.d${3}-c${4}-${5}.mutpos
+python $progPath/mut-position.py -i ${1/.aln.sort.bam/.filt.readgroups.clipped.bam.pileup} -o ${1%%.aln.sort.bam}.filt.readgroups.clipped.bam.pileup.d${3}-c${4}-${5}.mutpos -d $3 -c $4 -C $5
