@@ -6,15 +6,39 @@ Version 1.4
 October 28, 2013
 Modified from count-muts.py and count-muts-unique.py
 Edited by Brendan Kohrn to fix a problem with 0 depth where no 0 depth should be and to allow n-length indels, and to merge the two conditions into one program.  
-This script pulls out the mutation frequencies from a pileup file given as stdin.
 
-Sites with < 20x depth, and sites with clonal mutations (defined as >30% reads mutated), are excluded from analysis by default.
+This script pulls out the mutation frequencies from a pileup file given as stdin, or can take an imput file using the -i option, and writes to stdout, or can take an output file name.   
+
+Sites with less than MINDEPTH, or clonalities outside of the range MIN_CLONALITY-MAX_CLONALITY, are excluded from analysis.
 
 If -u is specified, this program counts each mutation exactly once (i.e. clonal expansions are counted as a single mutation)
 
 Usage:
 
-cat seq.pileup | python CountMuts.py
+cat seq.pileup | CountMuts.py [-h] [-d MINDEPTH] [-C MAX_CLONALITY] [-c MIN_CLONALITY] [-n N_CUTOFF] [-s START] [-e END] [-u] > outfile.countmuts
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -d MINDEPTH, --depth MINDEPTH
+                        Minimum depth for counting mutations at a site
+                        (default = 20)
+  -C MAX_CLONALITY, --max_clonality MAX_CLONALITY
+                        Cutoff of mutant reads for scoring a clonal mutation
+                        (default = 0.3)
+  -c MIN_CLONALITY, --min_clonality MIN_CLONALITY
+                        Cutoff of mutant reads for scoring a clonal mutation
+                        (default = 0)
+  -n N_CUTOFF, --n_cutoff N_CUTOFF
+                        Maximum fraction of N's allowed to score a position
+                        (default = 0.5)
+  -s START, --start START
+                        Position at which to start scoring for mutations
+                        (default = 0)
+  -e END, --end END     Position at which to stop scoring for mutations. If
+                        set to 0, no position filtering will be performed
+                        (default = 0)
+  -u, --unique          run countMutsUnique instead of countMuts
+
 """
 
 from argparse import ArgumentParser
@@ -38,7 +62,7 @@ def Wilson(positive,  total) :
         return  (phat, positiveCI , negativeCI )
 
 
-def CountMutations(o, f):
+def CountMutations(o, f, fOut):
     depths = []
 
     Aseq = 0
@@ -159,66 +183,73 @@ def CountMutations(o, f):
     totaldels = sum(dels[n] for n in dels.keys())
                                                 
 
-    print("\nMinimum depth: %s" % o.mindepth)
-    print("Clonality: %s - %s" % (o.min_clonality, o.max_clonality))
-    if o.end != 0:
-        print('Position: %s - %s' % (o.start, o.end))
+    print("\nMinimum depth: %s" % o.mindepth, file = fOut)
+    print("Clonality: %s - %s" % (o.min_clonality, o.max_clonality), file = fOut)
+    if o.end != 0: 
+        print('Position: %s - %s' % (o.start, o.end), file = fOut)
     if o.unique:
-        print('Unique Counts')
-    print("\nA's sequenced: %s" % Aseq)
-    print(("A to T:\t%s" % AtoT) + ('\t%.2e\t%.2e\t%.2e' % Wilson(AtoT,  max(Aseq, 1)))) #Output is in the form: Mutation type, number of times mutation is oberseved, frequency, 95% positive CI, 95% negative CI (Confidence Intervals are based on the Wilson Confidence Interval)
-    print(("A to C:\t%s" % AtoC) + ('\t%.2e\t%.2e\t%.2e' % Wilson(AtoC,  max(Aseq, 1))))
-    print(("A to G:\t%s" % AtoG) + ('\t%.2e\t%.2e\t%.2e' % Wilson(AtoG,  max(Aseq, 1))))
-    print("\nT's sequenced: %s" % Tseq)
-    print(("T to A:\t%s" % TtoA) + ('\t%.2e\t%.2e\t%.2e' % Wilson(TtoA,   max(Tseq, 1))))
-    print(("T to C:\t%s" % TtoC) + ('\t%.2e\t%.2e\t%.2e' % Wilson(TtoC,  max(Tseq, 1))))
-    print(("T to G:\t%s" % TtoG) + ('\t%.2e\t%.2e\t%.2e' % Wilson(TtoG,   max(Tseq, 1))))
-    print("\nC's sequenced: %s" % Cseq)
-    print(("C to A:\t%s" % CtoA) + ('\t%.2e\t%.2e\t%.2e' % Wilson(CtoA,  max(Cseq, 1))))
-    print(("C to T:\t%s" % CtoT) + ('\t%.2e\t%.2e\t%.2e' % Wilson(CtoT,   max(Cseq, 1))))
-    print(("C to G:\t%s" % CtoG) + ('\t%.2e\t%.2e\t%.2e' % Wilson(CtoG,   max(Cseq, 1))))
-    print("\nG's sequenced: %s" % Gseq)
-    print(("G to A:\t%s" % GtoA) + ('\t%.2e\t%.2e\t%.2e' % Wilson(GtoA,   max(Gseq, 1))))
-    print(("G to T:\t%s" % GtoT) + ('\t%.2e\t%.2e\t%.2e' % Wilson(GtoT,   max(Gseq, 1))))
-    print(("G to C:\t%s" % GtoC) + ('\t%.2e\t%.2e\t%.2e' % Wilson(GtoC,   max(Gseq, 1))))
-    print("\nTotal nucleotides sequenced: %s" % totalseq)
-    print("Total point mutations: %s" % totalptmut)
-    print('Overall point mutation frequency:\t%.2e\t%.2e\t%.2e\n' % Wilson(totalptmut, max(totalseq, 1)))
+        print('Unique Counts', file = fOut)
+    print("\nA's sequenced: %s" % Aseq, file = fOut)
+    print(("A to T:\t%s" % AtoT) + ('\t%.2e\t%.2e\t%.2e' % Wilson(AtoT,  max(Aseq, 1))), file = fOut) #Output is in the form: Mutation type, number of times mutation is oberseved, frequency, 95% positive CI, 95% negative CI (Confidence Intervals are based on the Wilson Confidence Interval)
+    print(("A to C:\t%s" % AtoC) + ('\t%.2e\t%.2e\t%.2e' % Wilson(AtoC,  max(Aseq, 1))), file = fOut)
+    print(("A to G:\t%s" % AtoG) + ('\t%.2e\t%.2e\t%.2e' % Wilson(AtoG,  max(Aseq, 1))), file = fOut)
+    print("\nT's sequenced: %s" % Tseq, file = fOut)
+    print(("T to A:\t%s" % TtoA) + ('\t%.2e\t%.2e\t%.2e' % Wilson(TtoA,   max(Tseq, 1))), file = fOut)
+    print(("T to C:\t%s" % TtoC) + ('\t%.2e\t%.2e\t%.2e' % Wilson(TtoC,  max(Tseq, 1))), file = fOut)
+    print(("T to G:\t%s" % TtoG) + ('\t%.2e\t%.2e\t%.2e' % Wilson(TtoG,   max(Tseq, 1))), file = fOut)
+    print("\nC's sequenced: %s" % Cseq, file = fOut)
+    print(("C to A:\t%s" % CtoA) + ('\t%.2e\t%.2e\t%.2e' % Wilson(CtoA,  max(Cseq, 1))), file = fOut)
+    print(("C to T:\t%s" % CtoT) + ('\t%.2e\t%.2e\t%.2e' % Wilson(CtoT,   max(Cseq, 1))), file = fOut)
+    print(("C to G:\t%s" % CtoG) + ('\t%.2e\t%.2e\t%.2e' % Wilson(CtoG,   max(Cseq, 1))), file = fOut)
+    print("\nG's sequenced: %s" % Gseq, file = fOut)
+    print(("G to A:\t%s" % GtoA) + ('\t%.2e\t%.2e\t%.2e' % Wilson(GtoA,   max(Gseq, 1))), file = fOut)
+    print(("G to T:\t%s" % GtoT) + ('\t%.2e\t%.2e\t%.2e' % Wilson(GtoT,   max(Gseq, 1))), file = fOut)
+    print(("G to C:\t%s" % GtoC) + ('\t%.2e\t%.2e\t%.2e' % Wilson(GtoC,   max(Gseq, 1))), file = fOut)
+    print("\nTotal nucleotides sequenced: %s" % totalseq, file = fOut)
+    print("Total point mutations: %s" % totalptmut, file = fOut)
+    print('Overall point mutation frequency:\t%.2e\t%.2e\t%.2e\n' % Wilson(totalptmut, max(totalseq, 1)), file = fOut)
     
     insKeys = sorted(ins.items(), key=lambda x: x[0])
     for n in insKeys:
-        print(('+%s insertions: %s' % (n[0], n[1])) + ('\t%.2e\t%.2e\t%.2e' % Wilson(n[1], max(totalseq,1))))
+        print(('+%s insertions: %s' % (n[0], n[1])) + ('\t%.2e\t%.2e\t%.2e' % Wilson(n[1], max(totalseq,1))), file = fOut)
     if dels != {}:
-        print('')
+        print('', file = fOut)
     delsKeys = sorted(dels.items(), key=lambda x: x[0])
     for n in delsKeys:
-        print(('-%s deletions: %s' % (n[0], n[1])) + ('\t%.2e\t%.2e\t%.2e' % Wilson(n[1], max(totalseq,1))))   
-    print("\nTotal insertion events: %s" % totalins)
-    print("Overall insert frequency:\t%.2e\t%.2e\t%.2e" % Wilson(totalins, max(totalseq, 1))
-    print("\nTotal deletion events: %s" % totaldels)
-    print("Overall insert frequency:\t%.2e\t%.2e\t%.2e" % Wilson(totaldels, max(totalseq, 1))
+        print(('-%s deletions: %s' % (n[0], n[1])) + ('\t%.2e\t%.2e\t%.2e' % Wilson(n[1], max(totalseq,1))), file = fOut)   
+    print("\nTotal insertion events: %s" % totalins, file = fOut)
+    print("Overall insert frequency:\t%.2e\t%.2e\t%.2e" % Wilson(totalins, max(totalseq, 1)), file = fOut)
+    print("\nTotal deletion events: %s" % totaldels, file = fOut)
+    print("Overall insert frequency:\t%.2e\t%.2e\t%.2e" % Wilson(totaldels, max(totalseq, 1)), file = fOut)
 
 def main():
     parser = ArgumentParser()
-
+    parser.add_argument('-i', '--infile', action ='store', dest = 'inFile', help = 'An imput file. If None, defaults to stdin. [None]', default = None)
+    parser.add_argument('-o', '--outfile', action = 'store', dest = 'outFile', help - 'A base filename for the output file.  Indicators for imput parameters and the .countmuts extention will be added to this.  If None, outputs to stdout.  [None]', default = None)
     parser.add_argument("-d", "--depth", action="store", type=int, dest="mindepth", 
-                      help="Minimum depth for counting mutations at a site (default = 20)", default=20)
-    parser.add_argument("-C", "--max_clonality", action="store", type=float, dest="max_clonality",
-                      help="Cutoff of mutant reads for scoring a clonal mutation (default = 0.3)", default=0.3)
+                      help="Minimum depth for counting mutations at a site [20]", default=20)
     parser.add_argument("-c", "--min_clonality", action="store", type=float, dest="min_clonality",
-                      help="Cutoff of mutant reads for scoring a clonal mutation (default = 0)", default=0)
+                      help="Cutoff of mutant reads for scoring a clonal mutation [0]", default=0)
+    parser.add_argument("-C", "--max_clonality", action="store", type=float, dest="max_clonality",
+                      help="Cutoff of mutant reads for scoring a clonal mutation [0.3]", default=0.3)
     parser.add_argument("-n", "--n_cutoff", action="store", type=float, dest="n_cutoff",
-                      help="Maximum fraction of N's allowed to score a position (default = 0.5)", default=0.05)
+                      help="Maximum fraction of N's allowed to score a position [0.5]", default=0.05)
     parser.add_argument("-s", "--start", action="store", type=int, dest="start",
-                      help="Position at which to start scoring for mutations (default = 0)", default=0)
+                      help="Position at which to start scoring for mutations [0]", default=0)
     parser.add_argument("-e", "--end", action="store", type=int, dest="end",
-                      help="Position at which to stop scoring for mutations. If set to 0, no position filtering will be performed (default = 0)", default=0)
-    parser.add_argument('-u', '--unique', action='store_true', dest='unique', help='run countMutsUnique instead of countMuts')
+                      help="Position at which to stop scoring for mutations. If set to 0, no position filtering will be performed [0]", default=0)
+    parser.add_argument('-u', '--unique', action='store_true', dest='unique', help='Run countMutsUnique instead of countMuts')
 
     o = parser.parse_args()
-    f = sys.stdin
-    
-    CountMutations(o, f)
+    if o.inFile != None:
+        f = open(o.inFile, 'r')
+    else:
+        f = sys.stdin
+    if o.outFile != None:
+        fOut = open(o.outFile, 'w')
+    else:
+        fOut = sys.stdout
+    CountMutations(o, f, fOut)
 
 
 if __name__ == "__main__":
