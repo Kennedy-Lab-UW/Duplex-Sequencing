@@ -119,17 +119,17 @@ Several steps are based on prior work by Joe Hiatt
     The file Duplex-Process-Numbers.txt describes the number of reads in each file and the live outputs from each step.  
 
 9. Analysis
-    --While the main pipeline does no analysis, there are a number of options.  A shell script to perform analysis based on mutation frequency is provided, and approximates the analysis found in version 1.21.  If this script is to be used,  GATK and Picard Tools must be present on the computer, and the paths to both programs and the main program file must be set propperly within the script.  Once this is done, the script can be run from any folder, using
+    --While the main pipeline does no analysis, there are a number of options.  A shell script to perform analysis based on mutation frequency is provided, and approximates the analysis found in version 1.21.  If this script is to be used,  GATK and Picard Tools must be present on the computer, and the paths to both programs must be set propperly within the script.  Once this is done, the script can be run from any folder, using
         
-        bash /PATH/DCSmutsProcessing.sh DCS.*.*.aln.sort.bam /REFPATH/ref_genome.fasta minDepth maxClonality 2>&1 | tee -a log.txt
+        bash /PATH/PostDCSProcessing.sh DCS.*.*.aln.sort.bam /REFPATH/ref_genome.fasta minDepth minClonality maxClonality 2>&1 | tee -a log.txt
     
-    where minDepth is an integer (default 20) and maxClonality is a decimal (default 0.3).  
+    where minDepth is an integer, minClonality is a decimal and maxClonality is a decimal.  
 
     --We have noticed that alignment errors at the ends of reads can result in false mutations. To eliminate these, we hard-clip the first and last 5 nt of each read after alignment: DCS.*.*.readgroups.clipped.bam
 
-    --text file listing overall mutation frequencies: these are the files having extension .pileup.countmuts
+    --text file listing overall mutation frequencies: these are the files having extension .countmuts
     
-    --text files listing unique mutation frequencies: these are the files having extension .pileup.unique.countmuts
+    --text files listing unique mutation frequencies: these are the files having extension .unique.countmuts
     
     --text file listing position-specific mutation frequencies: files having extension .pileup.mutpos
 
