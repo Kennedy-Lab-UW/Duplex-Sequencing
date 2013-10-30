@@ -40,7 +40,7 @@ class fastQRead:
         '''
         self.name=in1.strip().split("@")[1] if "@" in in1 else in1
         self.seq=in2.strip()
-        self.spacer=""
+        self.spacer="+"
         self.qual=in4.strip()
         if len(self.seq)!=len(self.qual):
             raise ValueError("Sequence and quality scores of different lengths!/n%s/n%s/n%s/n%s" % (in1, in2, "+", in4))
@@ -67,11 +67,11 @@ class fastQItterator:
         new=[]
         for j in xrange(4):
             try:
-                tmp=self.souce.next()
+                tmp=self.source.next()
             except StopIteration:
                 self.eof=True
                 return("EOF") 
-            new.append(self.source.next())
+            new.append(tmp)
         newRead=fastQRead(new[0],new[1],new[2],new[3])
         return(newRead)
 

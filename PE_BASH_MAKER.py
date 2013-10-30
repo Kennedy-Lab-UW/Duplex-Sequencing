@@ -174,7 +174,7 @@ def main():
     #Creat output BASH file
     outBash = open("PE_DCS_CALC." + r1 + "." + r2 + ".sh", "w")
     outBash.write("#!/bin/bash \n\n")
-
+    outBash.write("clear\n"
     arguments=sys.argv
     outBash.write("umask 000\n\n")
     outBash.write("#print first few lines of the log file\n")
@@ -215,15 +215,16 @@ def main():
     outBash.write("date >&2\n")
     if o.parallel:
             outBash.write("echo 'for read_file in " + r1 + " " + r2 + "; do' >&2\n")
-            outBash.write("echo 'bwa aln " + o.ref + " ${read_file}.fq.smi > ${read_file}.aln' >&2\n")
+            outBash.write("echo 'bwa aln " + o.ref + " ${read_file}.fq.smi > ${read_file}.aln &' >&2\n")
+            outBash.write("echo 'let count+=1' >&2\n")
+            outBash.write("echo '[[ $((count%2)) -eq 0 ]] && wait' >&2\n")
             outBash.write("echo 'done' >&2\n\n")
-            outBash.write("for read_file in " + r1 + " " + r2 + "; do\nbwa aln " + o.ref + " ${read_file}.fq.smi > ${read_file}.aln\ndone\n\n")
+            outBash.write("for read_file in " + r1 + " " + r2 + "; do\nbwa aln " + o.ref + " ${read_file}.fq.smi > ${read_file}.aln &\nlet count+=1\n[[ $((count%2)) -eq 0 ]] && wait\ndone\n\n")
 
     else:
             outBash.write("echo 'bwa aln " + o.ref + " " + out1 + " > " + aln1 + "' >&2\n")
             outBash.write("bwa aln " + o.ref + " " + out1 + " > " + aln1 + "\n\n")
             outBash.write("echo 'bwa aln " + o.ref + " " + out2 + " > " + aln2 + "' >&2\n")
-            outBash.write("bwa aln " + o.ref + " " + out2 + " > " + aln2 + "\n\n")
 
     outBash.write(
             "echo 'bwa sampe " + o.ref + " " + aln1 + " " + aln2 + " " + out1 + 
@@ -257,18 +258,12 @@ def main():
     outBash.write("date >&2\n")
     
     outBash.write(
-            "echo 'python " + spath + "ConsensusMaker.py --infile " + 
-            PEsort + ".bam --tagfile " + tagF + " --outfile " + SSCSout + 
-            " --minmem " + o.minMem + " --maxmem " + o.maxMem + " --cutoff " + 
-            o.cutOff + " --Ncutoff " + o.Ncut + " --readlength " + readlength + 
-            " --read_type " + o.read_type + " --isize " + o.isize + " --read_out " + o.progInd + "' >&2\n"
+            "echo 'python %sConsensusMaker.py --infile %s.bam --tagfile %s --outfile %s --minmem %s --maxmem %s --cutoff %s --Ncutoff %s --readlength %s --read_type %s --isize %s --read_out %s' >&2\n" %  
+            (spath, PEsort, tagF, SSCSout, o.minMem, o.maxMem, o.cutOff, o.Ncut, readlength, o.read_type, o.isize, o.progInd)
             )
     outBash.write(
-            "python " + spath + "ConsensusMaker.py --infile " + 
-            PEsort + ".bam --tagfile " + tagF + " --outfile " + SSCSout + 
-            " --minmem " + o.minMem + " --maxmem " + o.maxMem + " --cutoff " + 
-            o.cutOff + " --Ncutoff " + o.Ncut + " --readlength " + readlength + 
-            " --read_type " + o.read_type + " --isize " + o.isize + " --read_out " + o.progInd + " \n\n"
+            "python %sConsensusMaker.py --infile %s.bam --tagfile %s --outfile %s --minmem %s --maxmem %s --cutoff %s --Ncutoff %s --readlength %s --read_type %s --isize %s --read_out %s\n\n" %  
+            (spath, PEsort, tagF, SSCSout, o.minMem, o.maxMem, o.cutOff, o.Ncut, readlength, o.read_type, o.isize, o.progInd)
             )
 
 

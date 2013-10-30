@@ -70,6 +70,10 @@ from argparse import ArgumentParser
 def printRead(readIn):
     sys.stderr.write("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (readIn.qname, readIn.flag, readIn.tid, readIn.pos, readIn.mapq, readIn.cigar, readIn.mrnm, readIn.mpos, readIn.isize, readIn.seq, readIn.qual, readIn.tags))
 
+##########################################################################################################################
+#Consensus Maker module.  Takes a list of sequences, and finds a consensus by simple majority.               #
+##########################################################################################################################
+
 def consensusMaker (groupedReadsList,  cutoff,  readLength) :
     '''The consensus maker uses a simple "majority rules" algorithm to qmake a consensus at each base position.  If no nucleotide majority reaches above the minimum theshold (--cutoff), the position is considered undefined and an 'N' is placed at that position in the read.'''
     nucIdentityList=[0, 0, 0, 0, 0, 0] # In the order of T, C, G, A, N, Total
@@ -129,14 +133,9 @@ def main():
     parser.add_argument('--read_out', type = int, default = 1000000, dest = 'rOut', help = 'How often you want to be told what the program is doing. [1000000]')
     o = parser.parse_args()
 
-    ##########################################################################################################################
-    #Consensus Maker module.  Takes a list of sequences, and finds a consensus by simple majority.               #
-    ##########################################################################################################################
-
-
-    ##########################################################################################################################
-    #Initialization of all global variables, main input/output files, and main iterator and dictionaries.            #
-    ##########################################################################################################################
+##########################################################################################################################
+#Initialization of all global variables, main input/output files, and main iterator and dictionaries.            #
+##########################################################################################################################
     goodFlag=[]
     if o.read_type == "dual_map":
         goodFlag=[83, 99, 147, 163]
@@ -176,9 +175,9 @@ def main():
 
     consensusDict={}
 
-    ##########################################################################################################################
-    #Start going through the input BAM file, one position at a time.                                 #
-    ##########################################################################################################################
+##########################################################################################################################
+#Start going through the input BAM file, one position at a time.                                 #
+##########################################################################################################################
     for line in bamEntry:
         winPos += 1
         readWin[winPos%2] = line
@@ -202,9 +201,12 @@ def main():
                 for tupple in readWin[winPos%2].cigar:
                     if tupple[0]==4:
                         softClip=True
-
-            tag = readWin[winPos%2].qname.split('#')[1] + (":1" if readWin[winPos%2].is_read1 == True else (":2" if readWin[winPos%2].is_read2 == True else ":se"))
-            tagDict[tag] += 1
+            try:
+                tag = readWin[winPos%2].qname.split('#')[1] + (":1" if readWin[winPos%2].is_read1 == True else (":2" if readWin[winPos%2].is_read2 == True else ":se"))
+                tagDict[tag] += 1
+            except:
+                print readNum
+                raise
 
             if int( readWin[winPos%2].flag ) in goodFlag and overlap==False and softClip==False: #check if the given read is good data
                 if ('A'*o.rep_filt in tag) or ('C'*o.rep_filt in tag) or ('G'*o.rep_filt in tag) or ('C'*o.rep_filt in tag): 
@@ -225,7 +227,7 @@ def main():
             else:
                 nM += 1
                 nonMap.write(readWin[winPos%2])
-                if int(readWin[winPos%2].flag()) not in goodFlag:
+                if int(readWin[winPos%2].flag) not in goodFlag:
                     bF += 1
                 elif overlap == True:
                     oL += 1
@@ -242,9 +244,9 @@ def main():
                 readOne = False
         else:
 
-    ##########################################################################################################################
-    #Send reads to consensusMaker                                                #
-    ##########################################################################################################################
+##########################################################################################################################
+#Send reads to consensusMaker                                                #
+##########################################################################################################################
 
             readOne=True
             for dictTag in readDict.keys(): #extract sequences to send to the consensus maker
@@ -297,9 +299,9 @@ def main():
                         a.isize = readDict[dictTag][5]
                         a.qual = qualScore
 
-    ##########################################################################################################################
-    #Write SSCSs to output BAM file in read pairs.                                           #
-    ##########################################################################################################################
+##########################################################################################################################
+#Write SSCSs to output BAM file in read pairs.                                           #
+##########################################################################################################################
 
                         altTag=dictTag.replace(("1" if "1" in dictTag else "2"),("2" if "1" in dictTag else "1"))
 
@@ -327,9 +329,9 @@ def main():
                     extraBam.write(consensusDict.pop(consTag))
                     UP += 1
 
-    ##########################################################################################################################
-    #Write unpaired SSCSs to extraConsensus.bam                                          #
-    ##########################################################################################################################
+##########################################################################################################################
+#Write unpaired SSCSs to extraConsensus.bam                                          #
+##########################################################################################################################
 
     #close BAM files
     inBam.close()
@@ -343,9 +345,9 @@ def main():
 
     extraBam.close()
     #outStd.close()
-    ##########################################################################################################################
-    #Write the tag counts file.                                                  #
-    ##########################################################################################################################
+##########################################################################################################################
+#Write the tag counts file.                                                  #
+##########################################################################################################################
     
     sys.stderr.write("Summary Statistics: \n")
     sys.stderr.write("Reads processed:" + str(readNum) + "\n")
