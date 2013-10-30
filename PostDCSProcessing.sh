@@ -39,4 +39,4 @@ cat ${1/.aln.sort.bam/.filt.pileup} | python $progPath/CountMuts.py -d $3 -c $4 
 samtools mpileup -B -d 500000 -f $refGenome ${1/.aln.sort.bam/.filt.readgroups.clipped.bam} | tee ${1/.aln.sort.bam/.filt.readgroups.clipped.bam.pileup} | python $progPath/CountMuts.py -d $3 -c $4 -C $5 > ${1%%.aln.sort.bam}.filt.readgroups.clipped.bam.pileup.d${3}-c${4}-${5}.countmuts
 cat ${1/.aln.sort.bam/.filt.readgroups.clipped.bam.pileup} | python $progPath/CountMuts.py -d $3 -c $4 -C $5 -u > ${1%%.aln.sort.bam}.filt.readgroups.clipped.bam.pileup.d${3}-c${4}-${5}.unique.countmuts
 
-cat ${1/.aln.sort.bam/.filt.readgroups.clipped.bam.pileup} | python $progPath/mut-position.py -d $3 -c $4 -C $5 > ${1%%.aln.sort.bam}.filt.readgroups.clipped.bam.pileup.d${3}-c${4}-${5}.mutpos}
+cat ${1/.aln.sort.bam/.filt.readgroups.clipped.bam.pileup} | python $progPath/mut-position.py -d $3 -c $4 -C $5 > ${1%%.aln.sort.bam}.filt.readgroups.clipped.bam.pileup.d${3}-c${4}-${5}.mutpos
