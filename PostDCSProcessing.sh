@@ -4,10 +4,10 @@
 
 clear
 #Path to PicardTools:
-picard=/Users/LoeblabM11/Desktop/bioinformatics/programs/picard-tools-1.70
+picard=/PATH/picard-tools-1.70
 
 #Path to GATK:
-gaTK=/Users/LoeblabM11/Desktop/bioinformatics/programs/GATK
+gaTK=/PATH/GATK
 
 #Path to reference genome:
 refGenome=$2 #enter full path
