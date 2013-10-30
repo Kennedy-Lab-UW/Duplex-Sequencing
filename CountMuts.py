@@ -158,53 +158,45 @@ def CountMutations(o, f):
     totalins = sum(ins[n] for n in ins.keys())
     totaldels = sum(dels[n] for n in dels.keys())
                                                 
-    print ""
-    print "Minimum depth", o.mindepth
-    print "Maximum clonality", o.max_clonality
-    print "Minimum clonality", o.min_clonality
+
+    print("\nMinimum depth: %s" % o.mindepth)
+    print("Clonality: %s - %s" % (o.min_clonality, o.max_clonality))
     if o.end != 0:
-        print('\nPosition: %s - %s' % (o.start, o.end))
+        print('Position: %s - %s' % (o.start, o.end))
     if o.unique:
-        print('\nUnique Counts')
-    print ""
-    print "A's sequenced", Aseq
-    print "A to T:\t", AtoT, '\t%.2e\t%.2e\t%.2e' % Wilson(AtoT,  max(Aseq, 1)) #Output is in the form: Mutation type, number of times mutation is oberseved, frequency, 95% positive CI, 95% negative CI (Confidence Intervals are based on the Wilson Confidence Interval)
-    print "A to C:\t", AtoC, '\t%.2e\t%.2e\t%.2e' % Wilson(AtoC,  max(Aseq, 1))
-    print "A to G:\t", AtoG, '\t%.2e\t%.2e\t%.2e' % Wilson(AtoG,  max(Aseq, 1))
-    print ""
-    print "T's sequenced", Tseq
-    print "T to A:\t", TtoA, '\t%.2e\t%.2e\t%.2e' % Wilson(TtoA,   max(Tseq, 1))
-    print "T to C:\t", TtoC, '\t%.2e\t%.2e\t%.2e' % Wilson(TtoC,  max(Tseq, 1))
-    print "T to G:\t", TtoG, '\t%.2e\t%.2e\t%.2e' % Wilson(TtoG,   max(Tseq, 1))
-    print ""
-    print "C's sequenced", Cseq
-    print "C to A:\t", CtoA, '\t%.2e\t%.2e\t%.2e' % Wilson(CtoA,  max(Cseq, 1))
-    print "C to T:\t", CtoT, '\t%.2e\t%.2e\t%.2e' % Wilson(CtoT,   max(Cseq, 1))
-    print "C to G:\t", CtoG, '\t%.2e\t%.2e\t%.2e' % Wilson(CtoG,   max(Cseq, 1))
-    print ""
-    print "G's sequenced", Gseq
-    print "G to A:\t", GtoA, '\t%.2e\t%.2e\t%.2e' % Wilson(GtoA,   max(Gseq, 1))
-    print "G to T:\t", GtoT, '\t%.2e\t%.2e\t%.2e' % Wilson(GtoT,   max(Gseq, 1))
-    print "G to C:\t", GtoC, '\t%.2e\t%.2e\t%.2e' % Wilson(GtoC,   max(Gseq, 1))
-    print ""
-    print "Total nucleotides sequenced", totalseq
-    print "Total point mutations", totalptmut
-    print "Overall point mutation frequency", '\t%.2e\t%.2e\t%.2e' % Wilson(totalptmut, max(totalseq, 1))
-    print ""
+        print('Unique Counts')
+    print("\nA's sequenced: %s" % Aseq)
+    print(("A to T:\t%s" % AtoT) + ('\t%.2e\t%.2e\t%.2e' % Wilson(AtoT,  max(Aseq, 1)))) #Output is in the form: Mutation type, number of times mutation is oberseved, frequency, 95% positive CI, 95% negative CI (Confidence Intervals are based on the Wilson Confidence Interval)
+    print(("A to C:\t%s" % AtoC) + ('\t%.2e\t%.2e\t%.2e' % Wilson(AtoC,  max(Aseq, 1))))
+    print(("A to G:\t%s" % AtoG) + ('\t%.2e\t%.2e\t%.2e' % Wilson(AtoG,  max(Aseq, 1))))
+    print("\nT's sequenced: %s" % Tseq)
+    print(("T to A:\t%s" % TtoA) + ('\t%.2e\t%.2e\t%.2e' % Wilson(TtoA,   max(Tseq, 1))))
+    print(("T to C:\t%s" % TtoC) + ('\t%.2e\t%.2e\t%.2e' % Wilson(TtoC,  max(Tseq, 1))))
+    print(("T to G:\t%s" % TtoG) + ('\t%.2e\t%.2e\t%.2e' % Wilson(TtoG,   max(Tseq, 1))))
+    print("\nC's sequenced: %s" % Cseq)
+    print(("C to A:\t%s" % CtoA) + ('\t%.2e\t%.2e\t%.2e' % Wilson(CtoA,  max(Cseq, 1))))
+    print(("C to T:\t%s" % CtoT) + ('\t%.2e\t%.2e\t%.2e' % Wilson(CtoT,   max(Cseq, 1))))
+    print(("C to G:\t%s" % CtoG) + ('\t%.2e\t%.2e\t%.2e' % Wilson(CtoG,   max(Cseq, 1))))
+    print("\nG's sequenced: %s" % Gseq)
+    print(("G to A:\t%s" % GtoA) + ('\t%.2e\t%.2e\t%.2e' % Wilson(GtoA,   max(Gseq, 1))))
+    print(("G to T:\t%s" % GtoT) + ('\t%.2e\t%.2e\t%.2e' % Wilson(GtoT,   max(Gseq, 1))))
+    print(("G to C:\t%s" % GtoC) + ('\t%.2e\t%.2e\t%.2e' % Wilson(GtoC,   max(Gseq, 1))))
+    print("\nTotal nucleotides sequenced: %s" % totalseq)
+    print("Total point mutations: %s" % totalptmut)
+    print('Overall point mutation frequency:\t%.2e\t%.2e\t%.2e\n' % Wilson(totalptmut, max(totalseq, 1)))
     
     insKeys = sorted(ins.items(), key=lambda x: x[0])
     for n in insKeys:
-        print('+' + str(n[0]) + ' insertions: ' + str(n[1]) + '\t%.2e\t%.2e\t%.2e' % Wilson(n[1], max(totalseq,1)))
-    print ""
+        print(('+%s insertions: %s' % (n[0], n[1])) + ('\t%.2e\t%.2e\t%.2e' % Wilson(n[1], max(totalseq,1))))
+    if dels != {}:
+        print('')
     delsKeys = sorted(dels.items(), key=lambda x: x[0])
     for n in delsKeys:
-        print('-' + str(n[0]) + ' deletions: ' + str(n[1]) + '\t%.2e\t%.2e\t%.2e' % Wilson(n[1], max(totalseq,1)))
-    print ""    
-    print "Total insertion events:", totalins
-    print "Overall insert frequency:\t%.2e\t%.2e\t%.2e" % Wilson(totalins, max(totalseq, 1))
-    print ""
-    print "Total deletion events:", totaldels
-    print "Overall insert frequency:\t%.2e\t%.2e\t%.2e" % Wilson(totaldels, max(totalseq, 1))
+        print(('-%s deletions: %s' % (n[0], n[1])) + ('\t%.2e\t%.2e\t%.2e' % Wilson(n[1], max(totalseq,1))))   
+    print("\nTotal insertion events: %s" % totalins)
+    print("Overall insert frequency:\t%.2e\t%.2e\t%.2e" % Wilson(totalins, max(totalseq, 1))
+    print("\nTotal deletion events: %s" % totaldels)
+    print("Overall insert frequency:\t%.2e\t%.2e\t%.2e" % Wilson(totaldels, max(totalseq, 1))
 
 def main():
     parser = ArgumentParser()
