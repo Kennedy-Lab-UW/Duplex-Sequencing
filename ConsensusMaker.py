@@ -140,7 +140,7 @@ def main():
     if o.read_type == "dual_map":
         goodFlag=[83, 99, 147, 163]
     elif o.read_type == "mono_map":
-        goodFlag=[153, 89, 117, 181, 83, 99, 171, 163]
+        goodFlag=[101, 85, 165, 149, 105, 89, 169, 153, 83, 99, 171, 163]
 
     inBam = pysam.Samfile( o.infile, "rb" ) #open the input BAM file
     outBam = pysam.Samfile( o.outfile, "wb", template = inBam ) #open the output BAM file
@@ -155,6 +155,7 @@ def main():
     oL = 0
     sC = 0
     rT = 0
+    nC = 0
     
     LCC = 0
     ConMade = 0
@@ -284,7 +285,7 @@ def main():
                     cigComp={}
 
                     #Filter out consensuses with too many Ns in them
-                    if consensus.count("N" )/ len(consensus) < o.Ncutoff:
+                    if consensus.count("N" )/ len(consensus) <= o.Ncutoff:
                         #write a line to the consensusDictionary
                         a = pysam.AlignedRead()
                         a.qname = dictTag.split(':')[0]
@@ -320,28 +321,34 @@ def main():
                                 outBam.write(a)
                         else:
                             consensusDict[dictTag]=a
-
+                    else:
+                        nC += 1
         readDict={} #reset the read dictionary
-        
-        if o.isize != -1:
-            for consTag in consensusDict.keys():
-                if consensusDict[consTag].pos + o.isize < readWin[winPos%2].pos:
-                    extraBam.write(consensusDict.pop(consTag))
-                    UP += 1
+        if o.read_type == 'dual_map':
+            if o.isize != -1:
+                for consTag in consensusDict.keys():
+                    if consensusDict[consTag].pos + o.isize < readWin[winPos%2].pos:
+                        extraBam.write(consensusDict.pop(consTag))
+                        UP += 1
 
 ##########################################################################################################################
 #Write unpaired SSCSs to extraConsensus.bam                                          #
 ##########################################################################################################################
 
+
+    for consTag in consensusDict.keys():
+        if read_type == 'dual_map':
+            extraBam.write(consensusDict.pop(consTag))
+            UP += 1
+        else:
+            outBam.write(consensusDict.pop(consTag))
     #close BAM files
     inBam.close()
     outBam.close()
     nonMap.close()
     outNC1.close()
 
-    for consTag in consensusDict.keys():
-        extraBam.write(consensusDict.pop(consTag))
-        UP += 1
+
 
     extraBam.close()
     #outStd.close()
@@ -352,13 +359,14 @@ def main():
     sys.stderr.write("Summary Statistics: \n")
     sys.stderr.write("Reads processed:" + str(readNum) + "\n")
     sys.stderr.write("Bad reads: %s\n" % nM)
-    sys.stderr.write("\tNon-mapping reads: %s\n" % bF)
+    sys.stderr.write("\tReads with Bad Flags: %s\n" % bF)
     sys.stderr.write("\tOverlapping Reads: %s\n" % oL)
     sys.stderr.write("\tSoftclipped Reads: %s\n" %sC)
     sys.stderr.write("\tRepetitive Duplex Tag: %s\n" % rT)
     sys.stderr.write("Reads with Less Common Cigar Strings: %s\n" % LCC)
     sys.stderr.write("Consensuses Made: %s\n" % ConMade)
-    sys.stderr.write("Unpaired Consensuses: %s\n\n" % UP)
+    sys.stderr.write("Unpaired Consensuses: %s\n" % UP)
+    sys.stderr.write("Consensuses with Too Many Ns: %s\n\n" % nC)
 
     tagFile = open( o.tagfile, "w" )
     tagFile.write ( "\n".join( [ "%s\t%d" % ( SMI, tagDict[SMI] ) for SMI in sorted( tagDict.keys(), key=lambda x: tagDict[x], reverse=True ) ] ))

@@ -174,7 +174,7 @@ def main():
     #Creat output BASH file
     outBash = open("PE_DCS_CALC." + r1 + "." + r2 + ".sh", "w")
     outBash.write("#!/bin/bash \n\n")
-    outBash.write("clear\n"
+    outBash.write("clear\n")
     arguments=sys.argv
     outBash.write("umask 000\n\n")
     outBash.write("#print first few lines of the log file\n")
