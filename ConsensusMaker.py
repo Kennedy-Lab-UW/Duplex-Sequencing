@@ -126,21 +126,29 @@ def main():
     parser.add_argument('--minmem', type=int, default=3, dest='minmem', help="Minimum number of reads allowed to comprise a consensus. [3] ")
     parser.add_argument('--maxmem', type=int, default=1000, dest='maxmem', help="Maximum number of reads allowed to comprise a consensus. [1000]")
     parser.add_argument('--cutoff', type=float, default=.7, dest='cutoff', help="Percentage of nucleotides at a given position in a read that must be identical in order for a consensus to be called at that position. [0.7]")
-    parser.add_argument('--Ncutoff', type=float, default=1, dest='Ncutoff', help="Maximum fraction of Ns allowed in a consensus [1.0]")
+    parser.add_argument('--Ncutoff', type=float, default=1, dest='Ncutoff', help="With --filt 'n', maximum fraction of Ns allowed in a consensus [1.0]")
     parser.add_argument('--readlength', type=int, default=80, dest='read_length', help="Length of the input read that is being used. [80]")
-    parser.add_argument('--read_type', action="store", dest='read_type', default="mono_map", help="Type of read.  Options: dual_map: both reads map properly.  Doesn't consider read pairs where only one read maps.  mono_map: considers any read pair where one read maps. [mono_map]")
+    parser.add_argument('--read_type', type=str, action="store", dest='read_type', default="dpm", help="A string specifying which types of read to consider.  Read types: n: Neither read 1 or read 2 mapped.  m: Either read 1 or read 2 mapped, but not both.  p: Both read 1 and read 2 mapped, not a propper pair.  d: Both read 1 and read 2 mapped, propper pair.  s: Single ended reads\n\t\t['dpm']")
     parser.add_argument('--isize', type = int, default=-1, dest='isize', help="maximum distance between read pairs")
     parser.add_argument('--read_out', type = int, default = 1000000, dest = 'rOut', help = 'How often you want to be told what the program is doing. [1000000]')
+    parser.add_argument('--filt', type=str, default='os', dest='filt', help="A string indicating which filters should be implemented.  Filters: s: Softclipping filter.  o: Overlap filter.  n: N filter.  c: Cigar string filter.  ['os']")
     o = parser.parse_args()
 
 ##########################################################################################################################
 #Initialization of all global variables, main input/output files, and main iterator and dictionaries.            #
 ##########################################################################################################################
     goodFlag=[]
-    if o.read_type == "dual_map":
-        goodFlag=[83, 99, 147, 163]
-    elif o.read_type == "mono_map":
-        goodFlag=[101, 85, 165, 149, 105, 89, 169, 153, 83, 99, 171, 163]
+    if 'd' in o.read_type:
+        goodFlag.extend((9, 83, 163, 147))
+    if 'm' in o.read_type:
+        goodFlag.extend((101, 85, 165, 149, 105, 89, 169, 153))
+    if 'p' in o.read_type:
+        goodFlag.extend((97, 81, 161, 145))
+    if 'n' in o.read_type:
+        goodFlag.extend((109, 93, 173, 157))
+    if 's' in o.read_type:
+        goodFlag.extend((0, 16))
+
 
     inBam = pysam.Samfile( o.infile, "rb" ) #open the input BAM file
     outBam = pysam.Samfile( o.outfile, "wb", template = inBam ) #open the output BAM file
@@ -189,19 +197,21 @@ def main():
             if readNum % o.rOut == 0:
                 sys.stderr.write("Reads processed:" + str(readNum) + "\n")
             overlap=False
-            if readWin[winPos%2].pos < readWin[winPos%2].mpos and readWin[winPos%2].mpos < readWin[winPos%2].pos + o.read_length and int(readWin[winPos%2].flag) in (83, 99, 147, 163):
-                overlap=True
-            elif readWin[winPos%2].pos > readWin[winPos%2].mpos and readWin[winPos%2].pos < readWin[winPos%2].mpos + o.read_length and int(readWin[winPos%2].flag) in (83, 99, 147, 163):
-                overlap=True
-            elif readWin[winPos%2].pos==readWin[winPos%2].mpos and int(readWin[winPos%2].flag) in (83, 99, 147, 163):
-                overlap=True
+            if 'o' in o.filt:
+                if readWin[winPos%2].pos < readWin[winPos%2].mpos and readWin[winPos%2].mpos < readWin[winPos%2].pos + o.read_length and int(readWin[winPos%2].flag) in (83, 99, 147, 163):
+                    overlap=True
+                elif readWin[winPos%2].pos > readWin[winPos%2].mpos and readWin[winPos%2].pos < readWin[winPos%2].mpos + o.read_length and int(readWin[winPos%2].flag) in (83, 99, 147, 163):
+                    overlap=True
+                elif readWin[winPos%2].pos==readWin[winPos%2].mpos and int(readWin[winPos%2].flag) in (83, 99, 147, 163):
+                    overlap=True
             readNum +=1
 
             softClip=False
-            if readWin[winPos%2].cigar != None:
-                for tupple in readWin[winPos%2].cigar:
-                    if tupple[0]==4:
-                        softClip=True
+            if 's' in o.filt:
+                if readWin[winPos%2].cigar != None:
+                    for tupple in readWin[winPos%2].cigar:
+                        if tupple[0]==4:
+                            softClip=True
             try:
                 tag = readWin[winPos%2].qname.split('#')[1] + (":1" if readWin[winPos%2].is_read1 == True else (":2" if readWin[winPos%2].is_read2 == True else ":se"))
                 tagDict[tag] += 1
@@ -251,41 +261,57 @@ def main():
 
             readOne=True
             for dictTag in readDict.keys(): #extract sequences to send to the consensus maker
-                cigComp={}
-                
-                for cigStr in readDict[dictTag][6].keys(): #determin the most common cigar string
-                    cigComp[cigStr]=readDict[dictTag][6][cigStr][0]
-                maxCig=max(cigComp)
+
+                if 'c' in o.filt:
+                    cigComp={}
+                    for cigStr in readDict[dictTag][6].keys(): #determin the most common cigar string
+                        cigComp[cigStr]=readDict[dictTag][6][cigStr][0]
+                    maxCig=max(cigComp)
+                else:
+                    cigComp = {'myCig':[0, (0, o.read_length)]}
+                    for cigStr in readDict[dictTag][6].keys(): #determin the most common cigar string
+                        cigComp['myCig'][0]+=readDict[dictTag][6][cigStr][0]
+                        cigComp['myCig'].extend(readDict[dictTag][6][cigStr][1:])
+                    maxCig='myCig'
                 
                 if cigComp[maxCig] >= o.minmem:
-                    if cigComp[maxCig] <= o.maxmem:
-                        ConMade += 1
-                        consensus = consensusMaker( readDict[dictTag][6][maxCig][2:],  o.cutoff,  o.read_length )
+                    if 'c' in o.filt:
+                        if cigComp[maxCig] <= o.maxmem:
+                            ConMade += 1
+                            consensus = consensusMaker( readDict[dictTag][6][maxCig][2:],  o.cutoff,  o.read_length )
+                        else:
+                            ConMade += 1
+                            consensus = consensusMaker(random.sample(readDict[dictTag][6][maxCig][2:], o.maxmem), o.cutoff, o.read_length)
+                        
+                        for cigStr in readDict[dictTag][6].keys():
+                            if cigStr != maxCig:
+                                for n in xrange(2, len(readDict[dictTag][6][cigStr][2:])):
+                                    a = pysam.AlignedRead()
+                                    a.qname = dictTag.split(':')[0]
+                                    a.flag = readDict[dictTag][0]
+                                    a.seq = readDict[dictTag][6][cigStr][n]
+                                    a.rname = readDict[dictTag][1]
+                                    a.pos = readDict[dictTag][2]
+                                    a.mapq = 255
+                                    a.cigar = readDict[dictTag][6][cigStr][1]
+                                    a.mrnm = readDict[dictTag][3]
+                                    a.mpos=readDict[dictTag][4]
+                                    a.isize = readDict[dictTag][5]
+                                    a.qual = qualScore  
+                                    outNC1.write(a)
+                                    LCC += 1
                     else:
-                        ConMade += 1
-                        consensus = consensusMaker(random.sample(readDict[dictTag][6][maxCig][2:], o.maxmem), o.cutoff, o.read_length)
+                        if cigComp[maxCig][0] <= o.maxmem:
+                            consensus = consensusMaker(cigComp[maxCig][2:],  o.cutoff,  o.read_length )
+                        else:
+                            consensus = consensusMaker(random.sample(cigComp[maxCig][2:], o.maxmem), o.cutoff, o.read_length)
 
-                    for cigStr in readDict[dictTag][6].keys():
-                        if cigStr != maxCig:
-                            for n in xrange(2, len(readDict[dictTag][6][cigStr][2:])):
-                                a = pysam.AlignedRead()
-                                a.qname = dictTag.split(':')[0]
-                                a.flag = readDict[dictTag][0]
-                                a.seq = readDict[dictTag][6][cigStr][n]
-                                a.rname = readDict[dictTag][1]
-                                a.pos = readDict[dictTag][2]
-                                a.mapq = 255
-                                a.cigar = readDict[dictTag][6][cigStr][1]
-                                a.mrnm = readDict[dictTag][3]
-                                a.mpos=readDict[dictTag][4]
-                                a.isize = readDict[dictTag][5]
-                                a.qual = qualScore  
-                                outNC1.write(a)
-                                LCC += 1
+
+
                     cigComp={}
 
                     #Filter out consensuses with too many Ns in them
-                    if consensus.count("N" )/ len(consensus) <= o.Ncutoff:
+                    if consensus.count("N" )/ len(consensus) <= o.Ncutoff and 'n' in o.filt:
                         #write a line to the consensusDictionary
                         a = pysam.AlignedRead()
                         a.qname = dictTag.split(':')[0]
@@ -324,7 +350,7 @@ def main():
                     else:
                         nC += 1
         readDict={} #reset the read dictionary
-        if o.read_type == 'dual_map':
+        if o.read_type == 'd':
             if o.isize != -1:
                 for consTag in consensusDict.keys():
                     if consensusDict[consTag].pos + o.isize < readWin[winPos%2].pos:
@@ -337,7 +363,7 @@ def main():
 
 
     for consTag in consensusDict.keys():
-        if read_type == 'dual_map':
+        if o.read_type == 'd':
             extraBam.write(consensusDict.pop(consTag))
             UP += 1
         else:
