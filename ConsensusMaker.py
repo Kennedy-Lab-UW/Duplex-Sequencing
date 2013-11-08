@@ -139,13 +139,13 @@ def main():
 ##########################################################################################################################
     goodFlag=[]
     if 'd' in o.read_type:
-        goodFlag.extend((9, 83, 163, 147))
+        goodFlag.extend((99, 83, 163, 147))
     if 'm' in o.read_type:
-        goodFlag.extend((101, 85, 165, 149, 105, 89, 169, 153))
+        goodFlag.extend((181, 117, 137, 133, 73, 89, 69, 153))
     if 'p' in o.read_type:
-        goodFlag.extend((97, 81, 161, 145))
+        goodFlag.extend((97, 81, 161, 145, 129, 65, 177, 113))
     if 'n' in o.read_type:
-        goodFlag.extend((109, 93, 173, 157))
+        goodFlag.extend((141, 77))
     if 's' in o.read_type:
         goodFlag.extend((0, 16))
 
@@ -262,56 +262,56 @@ def main():
             readOne=True
             for dictTag in readDict.keys(): #extract sequences to send to the consensus maker
 
-                if 'c' in o.filt:
-                    cigComp={}
-                    for cigStr in readDict[dictTag][6].keys(): #determin the most common cigar string
-                        cigComp[cigStr]=readDict[dictTag][6][cigStr][0]
-                    maxCig=max(cigComp)
-                else:
-                    cigComp = {'myCig':[0, (0, o.read_length)]}
-                    for cigStr in readDict[dictTag][6].keys(): #determin the most common cigar string
-                        cigComp['myCig'][0]+=readDict[dictTag][6][cigStr][0]
-                        cigComp['myCig'].extend(readDict[dictTag][6][cigStr][1:])
-                    maxCig='myCig'
-                
+                #~ if 'c' in o.filt:
+                cigComp={}
+                for cigStr in readDict[dictTag][6].keys(): #determin the most common cigar string
+                    cigComp[cigStr]=readDict[dictTag][6][cigStr][0]
+                maxCig=max(cigComp)
+                #~ else:
+                    #~ cigComp = {'myCig':[0, (0, o.read_length)]}
+                    #~ for cigStr in readDict[dictTag][6].keys(): #determin the most common cigar string
+                        #~ cigComp['myCig'][0]+=readDict[dictTag][6][cigStr][0]
+                        #~ cigComp['myCig'].extend(readDict[dictTag][6][cigStr][1:])
+                    #~ maxCig='myCig'
+                #~ 
                 if cigComp[maxCig] >= o.minmem:
-                    if 'c' in o.filt:
-                        if cigComp[maxCig] <= o.maxmem:
-                            ConMade += 1
-                            consensus = consensusMaker( readDict[dictTag][6][maxCig][2:],  o.cutoff,  o.read_length )
-                        else:
-                            ConMade += 1
-                            consensus = consensusMaker(random.sample(readDict[dictTag][6][maxCig][2:], o.maxmem), o.cutoff, o.read_length)
-                        
-                        for cigStr in readDict[dictTag][6].keys():
-                            if cigStr != maxCig:
-                                for n in xrange(2, len(readDict[dictTag][6][cigStr][2:])):
-                                    a = pysam.AlignedRead()
-                                    a.qname = dictTag.split(':')[0]
-                                    a.flag = readDict[dictTag][0]
-                                    a.seq = readDict[dictTag][6][cigStr][n]
-                                    a.rname = readDict[dictTag][1]
-                                    a.pos = readDict[dictTag][2]
-                                    a.mapq = 255
-                                    a.cigar = readDict[dictTag][6][cigStr][1]
-                                    a.mrnm = readDict[dictTag][3]
-                                    a.mpos=readDict[dictTag][4]
-                                    a.isize = readDict[dictTag][5]
-                                    a.qual = qualScore  
-                                    outNC1.write(a)
-                                    LCC += 1
+                    #~ if 'c' in o.filt:
+                    if cigComp[maxCig] <= o.maxmem:
+                        ConMade += 1
+                        consensus = consensusMaker( readDict[dictTag][6][maxCig][2:],  o.cutoff,  o.read_length )
                     else:
-                        if cigComp[maxCig][0] <= o.maxmem:
-                            consensus = consensusMaker(cigComp[maxCig][2:],  o.cutoff,  o.read_length )
-                        else:
-                            consensus = consensusMaker(random.sample(cigComp[maxCig][2:], o.maxmem), o.cutoff, o.read_length)
+                        ConMade += 1
+                        consensus = consensusMaker(random.sample(readDict[dictTag][6][maxCig][2:], o.maxmem), o.cutoff, o.read_length)
+                    
+                    for cigStr in readDict[dictTag][6].keys():
+                        if cigStr != maxCig:
+                            for n in xrange(2, len(readDict[dictTag][6][cigStr][2:])):
+                                a = pysam.AlignedRead()
+                                a.qname = dictTag.split(':')[0]
+                                a.flag = readDict[dictTag][0]
+                                a.seq = readDict[dictTag][6][cigStr][n]
+                                a.rname = readDict[dictTag][1]
+                                a.pos = readDict[dictTag][2]
+                                a.mapq = 255
+                                a.cigar = readDict[dictTag][6][cigStr][1]
+                                a.mrnm = readDict[dictTag][3]
+                                a.mpos=readDict[dictTag][4]
+                                a.isize = readDict[dictTag][5]
+                                a.qual = qualScore  
+                                outNC1.write(a)
+                                LCC += 1
+                    #~ else:
+                        #~ if cigComp[maxCig][0] <= o.maxmem:
+                            #~ consensus = consensusMaker(cigComp[maxCig][2:],  o.cutoff,  o.read_length )
+                        #~ else:
+                            #~ consensus = consensusMaker(random.sample(cigComp[maxCig][2:], o.maxmem), o.cutoff, o.read_length)
 
 
 
                     cigComp={}
 
                     #Filter out consensuses with too many Ns in them
-                    if consensus.count("N" )/ len(consensus) <= o.Ncutoff and 'n' in o.filt:
+                    if (consensus.count("N" )/ len(consensus) <= o.Ncutoff and 'n' in o.filt) or ('n' not in o.filt):
                         #write a line to the consensusDictionary
                         a = pysam.AlignedRead()
                         a.qname = dictTag.split(':')[0]
