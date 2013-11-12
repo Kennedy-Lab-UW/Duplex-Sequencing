@@ -145,7 +145,7 @@ def main():
     if 'p' in o.read_type:
         goodFlag.extend((97, 81, 161, 145, 129, 65, 177, 113))
     if 'n' in o.read_type:
-        goodFlag.extend((141, 77))
+        goodFlag.extend((141, 77, 4))
     if 's' in o.read_type:
         goodFlag.extend((0, 16))
 

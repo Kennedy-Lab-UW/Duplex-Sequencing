@@ -140,21 +140,45 @@ def main():
             type = str, 
             action = "store", 
             dest = "read_type", 
-            default = "mono_map", 
-            help = "Type of read.  Options: \
-                dual_map: both reads map properly.  Doesn't consider read pairs \
-                where only one read maps.  \
-                mono_map: considers any read pair where one read maps.\
-                [mono_map]"
-                )
-    parser.add_argument('--isize', type = int, default=-1, dest='isize', help="Optional: Maximum distance between read pairs [-1]")
-    #BUGGY...Does not work as intended, instead runs sequentially.
-    parser.add_argument('--absolute', action = 'store_true', dest='absolute', help="Optional: Treat the program path as an absolute path")
+            default = "dpm", 
+            help = "A string specifying which types of read to consider.  Read types: \
+                    n: Neither read 1 or read 2 mapped.  \
+                    m: Either read 1 or read 2 mapped, but not both.  \
+                    p: Both read 1 and read 2 mapped, not a propper pair.  \
+                    d: Both read 1 and read 2 mapped, propper pair.  \
+                    s: Single ended reads. \
+                    ['dpm']"
+            )
+    parser.add_argument(
+            '--isize', 
+            type = int, 
+            default=-1, 
+            dest='isize', 
+            help="Optional: Maximum distance between read pairs [-1]"
+            )
+    parser.add_argument(
+            '--absolute', 
+            action = 'store_true', 
+            dest='absolute', 
+            help="Optional: Treat the program path as an absolute path"
+            )
     parser.add_argument(
             "--parallel", 
             action = "store_true", 
             dest = "parallel", 
             help = "Optional: Perform the alignments of both reads in parallel.  This is faster but requires more memory (minimum 16 GB recommended). " 
+            )
+    parser.add_argument(
+            '--filt', 
+            action="store", 
+            type=str, 
+            default='os', 
+            dest='filt', 
+            help="A string indicating which filters should be implemented.  Filters: \
+                    s: Softclipping filter.  \
+                    o: Overlap filter.  \
+                    n: N filter.  \
+                    ['os']"
             )
     o = parser.parse_args()
     
@@ -258,12 +282,12 @@ def main():
     outBash.write("date >&2\n")
     
     outBash.write(
-            "echo 'python %sConsensusMaker.py --infile %s.bam --tagfile %s --outfile %s --minmem %s --maxmem %s --cutoff %s --Ncutoff %s --readlength %s --read_type %s --isize %s --read_out %s' >&2\n" %  
-            (spath, PEsort, tagF, SSCSout, o.minMem, o.maxMem, o.cutOff, o.Ncut, readlength, o.read_type, o.isize, o.progInd)
+            "echo 'python %sConsensusMaker.py --infile %s.bam --tagfile %s --outfile %s --minmem %s --maxmem %s --cutoff %s --Ncutoff %s --readlength %s --read_type %s --filt %s --isize %s --read_out %s' >&2\n" %  
+            (spath, PEsort, tagF, SSCSout, o.minMem, o.maxMem, o.cutOff, o.Ncut, readlength, o.read_type, o.filt, o.isize, o.progInd)
             )
     outBash.write(
-            "python %sConsensusMaker.py --infile %s.bam --tagfile %s --outfile %s --minmem %s --maxmem %s --cutoff %s --Ncutoff %s --readlength %s --read_type %s --isize %s --read_out %s\n\n" %  
-            (spath, PEsort, tagF, SSCSout, o.minMem, o.maxMem, o.cutOff, o.Ncut, readlength, o.read_type, o.isize, o.progInd)
+            "python %sConsensusMaker.py --infile %s.bam --tagfile %s --outfile %s --minmem %s --maxmem %s --cutoff %s --Ncutoff %s --readlength %s --read_type %s --filt %s --isize %s --read_out %s\n\n" %  
+            (spath, PEsort, tagF, SSCSout, o.minMem, o.maxMem, o.cutOff, o.Ncut, readlength, o.read_type, o.filt, o.isize, o.progInd)
             )
 
 
