@@ -90,6 +90,7 @@ def main():
     readNum = 0
     duplexMade = 0
     uP = 0
+    nC = 0
 
     fileDone=False #initialize end of file bool
     finished=False
@@ -154,7 +155,9 @@ def main():
                     consensus = DSCMaker( [readDict[dictTag][6], readDict[switchtag][6]],  o.read_length )
                     duplexMade += 1
                     #Filter out consensuses with too many Ns in them
-                    if consensus.count("N" )/ len(consensus) < o.Ncutoff:
+                    if consensus.count("N")/ len(consensus) > o.Ncutoff:
+                        nC += 1
+                    else:
                         #write a line to the consensusDictionary
                         a = pysam.AlignedRead()
                         a.qname = dictTag
@@ -198,7 +201,6 @@ def main():
                                 outBam.write(a)
                         else:
                             consensusDict[dictTag]=a
-                    
                     del readDict[dictTag]
                     del readDict[switchtag]
                 
@@ -214,20 +216,43 @@ def main():
     extraBam=pysam.Samfile(o.outfile.replace(".bam","_UP.bam"), "wb", template = inBam)
     #close BAM files
     inBam.close()
-    outBam.close()
-    fastqFile1.close()
-    fastqFile2.close()
+
 
     for consTag in consensusDict.keys():
-        extraBam.write(consensusDict.pop(consTag))
+        a = pysam.AlignedRead()
+        a.qname = consTag
+        a.flag = 0
+        a.seq = '.' * o.read_length
+        a.rname = consensusDict[consTag].rname
+        a.pos = consensusDict[consTag].pos
+        a.mapq = 255
+        a.cigar = cigDum
+        a.mrnm = consensusDict[consTag].mrnm
+        a.mpos=consensusDict[consTag].pos
+        a.isize = consensusDict[consTag].isize
+        a.qual = qualScore
+        if consensusDict[consTag].is_read1 == False:
+            fastqFile1.write('@:%s\n%s\n+\n%s\n' %(a.qname, a.seq, a.qual))
+            outBam.write(a)
+            fastqFile2.write('@:%s\n%s\n+\n%s\n' %(consensusDict[consTag].qname, consensusDict[consTag].seq, consensusDict[consTag].qual))
+            outBam.write(consensusDict.pop(consTag))
+        else:
+            fastqFile1.write('@:%s\n%s\n+\n%s\n' %(consensusDict[consTag].qname, consensusDict[consTag].seq, consensusDict[consTag].qual))
+            outBam.write(consensusDict.pop(consTag))
+            fastqFile2.write('@:%s\n%s\n+\n%s\n' %(a.qname, a.seq, a.qual))
+            outBam.write(a)
         uP += 1
     extraBam.close()
+    fastqFile1.close()
+    fastqFile2.close()
+    outBam.close()
     #outStd.close()
     
     sys.stderr.write("Summary Statistics: \n")
     sys.stderr.write("Reads Processed: %s\n" % readNum)
     sys.stderr.write("Duplexes Made: %s\n" % duplexMade)
-    sys.stderr.write("Unpaired Duplexes: %s\n\n" % uP)
+    sys.stderr.write("Unpaired Duplexes: %s\n" % uP)
+    sys.stderr.write("N-clipped Duplexes: %s\n\n" % nC)
 
 if __name__ == "__main__":
     main()
