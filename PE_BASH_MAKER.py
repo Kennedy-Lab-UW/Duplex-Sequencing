@@ -55,88 +55,76 @@ import time
 
 def main():
     parser = ArgumentParser()
-    parser.add_argument(
-            "--ref", 
+    parser.add_argument("--ref", 
             action = "store", 
             dest = "ref", 
             help = ".FASTA file containing the reference genome"
             )
-    parser.add_argument(
-            "--r1src", 
+    parser.add_argument("--r1src", 
             action = "store", 
             dest = 'r1src', 
             help = ".fq file containing the raw read1 data", 
             default = "seq1.fq"
             )
-    parser.add_argument(
-            "--r2src", 
+    parser.add_argument("--r2src", 
             action = "store", 
             dest = "r2src", 
             help = ".fq file containing the raw read2 data", 
             default = "seq2.fq"
             )
-    parser.add_argument(
-            "--min", 
+    parser.add_argument("--min", 
             action = "store", 
             dest = "minMem", 
             help = "Minimum members for SSCS consensus [3]", 
             default = "3"
             )
-    parser.add_argument(
-            "--max", 
+    parser.add_argument("--max", 
             action = "store", 
             dest = "maxMem", 
             help = "Maximum members for SSCS consensus [1000]", 
             default = "1000"
             )
-    parser.add_argument(
-            "--cut", 
+    parser.add_argument("--cut", 
             action = "store", 
             dest = "cutOff", 
             help = "Mimimum percent matching for base choice in SSCS consensus [0.8]", 
             default = ".8"
             )
-    parser.add_argument(
-            "--Ncut", 
+    parser.add_argument("--Ncut", 
             action = "store", 
             dest = "Ncut", 
             help = "Maxumum percent N's allowed [0.1]", 
             default = ".1"
             )
-    parser.add_argument(
-            "--rlength", 
+    parser.add_argument("--rlength", 
             type = int, 
             action = "store", 
             dest = "rlength", 
-            help = "Length of a single read [85]", 
-            default = "85"
+            help = "Length of a single read [101]", 
+            default = "101"
             )
-    parser.add_argument(
-            "--blength", 
+    parser.add_argument("--blength", 
             type = int, 
             action = "store", 
             dest = "blength", 
             help = "Length of the barcode sequence on a unprocessed single read. [12]", 
             default = "12"
             )
-    parser.add_argument(
-            "--slength", 
+    parser.add_argument("--slength", 
             type = int, 
             action = "store", 
             dest = "slength", 
             help = "Length of the spacer sequence in a unprocessed single read.",
             default = "5"
             )
-    parser.add_argument(
-            "--progInd", 
+    parser.add_argument("--progInd", 
             type = int, 
             action = "store", 
             dest = "progInd", 
             help = "How often you want to be told what a program is doing [1000000]", 
             default = "1000000"
             )
-    parser.add_argument(
-            "--read_type", 
+    parser.add_argument("--read_type", 
             type = str, 
             action = "store", 
             dest = "read_type", 
@@ -149,36 +137,32 @@ def main():
                     s: Single ended reads. \
                     ['dpm']"
             )
-    parser.add_argument(
-            '--isize', 
+    parser.add_argument('--isize', 
             type = int, 
             default=-1, 
             dest='isize', 
             help="Optional: Maximum distance between read pairs [-1]"
             )
-    parser.add_argument(
-            '--absolute', 
+    parser.add_argument('--absolute', 
             action = 'store_true', 
             dest='absolute', 
             help="Optional: Treat the program path as an absolute path"
             )
-    parser.add_argument(
-            "--parallel", 
+    parser.add_argument("--parallel", 
             action = "store_true", 
             dest = "parallel", 
             help = "Optional: Perform the alignments of both reads in parallel.  This is faster but requires more memory (minimum 16 GB recommended). " 
             )
-    parser.add_argument(
-            '--filt', 
+    parser.add_argument('--filt', 
             action="store", 
             type=str, 
-            default='os', 
+            default='osn', 
             dest='filt', 
             help="A string indicating which filters should be implemented.  Filters: \
                     s: Softclipping filter.  \
                     o: Overlap filter.  \
                     n: N filter.  \
-                    ['os']"
+                    ['osn']"
             )
     o = parser.parse_args()
     
@@ -227,7 +211,7 @@ def main():
             "python %stag_to_header.py --infile1 %s --infile2 %s --outfile1 %s --outfile2 %s --barcode_length %s --spacer_length %s --read_out %s\n\n" % 
             (spath, o.r1src, o.r2src, out1, out2, o.blength, o.slength, o.progInd)
             )
-    readlength = str(o.rlength)
+    readlength = o.rlength - o.blength - o.slength
 
     aln1 = r1 + ".aln"
     aln2 = r2 + ".aln"
