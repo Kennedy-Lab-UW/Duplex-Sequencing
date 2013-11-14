@@ -185,9 +185,8 @@ def main():
                     sys.stderr.write("Missing spacers: %s\n" % (nospacer))
                     sys.stderr.write("Bad tags: %s\n\n" % (badtag))
                     if badtag == oldBad+o.rOut:
-                        raise IOError("Error between lines %s and %s." % ((ctr-o.rOut)*4,(ctr-o.rOut)*4))
-                    else:
-                        oldBad = badtag
+                        print("Warning!  Potential file error between lines %s and %s.  " % ((ctr-o.rOut)*4,(ctr)*4))
+                    oldBad = badtag
 
     in1.close()
     in2.close()
