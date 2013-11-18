@@ -239,6 +239,7 @@ def main():
             outBash.write("echo 'bwa aln " + o.ref + " " + out1 + " > " + aln1 + "' >&2\n")
             outBash.write("bwa aln " + o.ref + " " + out1 + " > " + aln1 + "\n\n")
             outBash.write("echo 'bwa aln " + o.ref + " " + out2 + " > " + aln2 + "' >&2\n")
+            outBash.write("bwa aln " + o.ref + " " + out2 + " > " + aln2 + "\n")
 
     outBash.write(
             "echo 'bwa sampe " + o.ref + " " + aln1 + " " + aln2 + " " + out1 + 
@@ -301,7 +302,7 @@ def main():
     outBash.write("#Find the DCSs \n\n")
     outBash.write("echo 'DuplexMaker start:' >&2\n")
     outBash.write("date >&2\n")
-    if hamming = True:
+    if hamming == True:
         outBash.write(
                 "echo 'python %sDuplexMaker.py --infile %s.bam --outfile %s --Ncutoff %s --readlength %s --read_out %s --hamming' >&2\n" %
                 (spath, SSCSsort, DCSout, o.Ncut, readlength, o.progInd))

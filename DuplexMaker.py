@@ -70,7 +70,7 @@ def main():
     #parser.add_argument('-p', action='store_true', dest='pipe', help="Output consensus reads to stdout"  )
     parser.add_argument('--readlength', type=int, default=80, dest='read_length', help="Length of the input read that is being used. [80]")
     parser.add_argument('--read_out', type = int, default = 1000000, dest = 'rOut', help = 'How often you want to be told what the program is doing. [1000000]')
-    parser.add_argument('--hammingfilt', '-h', action = 'store_true', dest = 'hammingfilt', help = 'Optional: Filter reads based on hamming distance for derived families.  '
+    parser.add_argument('--hammingfilt', '-f', action = 'store_true', dest = 'hammingfilt', help = 'Optional: Filter reads based on hamming distance for derived families.  ')
     o = parser.parse_args()
 
     ##########################################################################################################################
@@ -155,7 +155,8 @@ def main():
                     for elmt2 in xrange(len(myKeys) - 1):
                         myHD = jellyfish.hamming_distance(myKeys[elmt], myKeys[elmt2 + 1])
                         if myHD != 0 and myHD <= 2:
-                            myDist[myKeys[elmt]], myKeys[[elmt2 + 1]] = 1
+                            myDist[myKeys[elmt]] = 1
+                            myDist[myKeys[elmt2 + 1]] = 1
             
             
             firstRead = line #store the present line for the next group of lines
