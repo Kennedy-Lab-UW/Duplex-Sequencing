@@ -156,15 +156,21 @@ def main():
     parser.add_argument('--filt', 
             action="store", 
             type=str, 
-            default='osn', 
+            default='osnh', 
             dest='filt', 
             help="A string indicating which filters should be implemented.  Filters: \
-                    s: Softclipping filter.  \
-                    o: Overlap filter.  \
-                    n: N filter.  \
-                    ['osn']"
+                    s: Filter out softclipped reads.  \
+                    o: Filter out overlapping reads.  \
+                    n: Filter out reads with too many Ns.  \
+                    h: Filter reads based on hamming distance for derived families.  \
+                    ['osnh']"
             )
     o = parser.parse_args()
+    
+    hamming = False
+    if 'h' in o.filt:
+         hamming = True
+         o.filt.replace('h', '')
     
     if o.absolute:
         spath = repr(sys.argv[0]).replace("'", "").replace("PE_BASH_MAKER.py", "")
@@ -295,12 +301,20 @@ def main():
     outBash.write("#Find the DCSs \n\n")
     outBash.write("echo 'DuplexMaker start:' >&2\n")
     outBash.write("date >&2\n")
-    outBash.write(
-            "echo 'python %sDuplexMaker.py --infile %s.bam --outfile %s --Ncutoff %s --readlength %s --read_out %s' >&2\n" %
-            (spath, SSCSsort, DCSout, o.Ncut, readlength, o.progInd))
-    outBash.write(
-            "python %sDuplexMaker.py --infile %s.bam --outfile %s --Ncutoff %s --readlength %s --read_out %s >&2\n" %
-            (spath, SSCSsort, DCSout, o.Ncut, readlength, o.progInd))
+    if hamming = True:
+        outBash.write(
+                "echo 'python %sDuplexMaker.py --infile %s.bam --outfile %s --Ncutoff %s --readlength %s --read_out %s --hamming' >&2\n" %
+                (spath, SSCSsort, DCSout, o.Ncut, readlength, o.progInd))
+        outBash.write(
+                "python %sDuplexMaker.py --infile %s.bam --outfile %s --Ncutoff %s --readlength %s --read_out %s --hamming >&2\n" %
+                (spath, SSCSsort, DCSout, o.Ncut, readlength, o.progInd))
+    else:
+        outBash.write(
+                "echo 'python %sDuplexMaker.py --infile %s.bam --outfile %s --Ncutoff %s --readlength %s --read_out %s' >&2\n" %
+                (spath, SSCSsort, DCSout, o.Ncut, readlength, o.progInd))
+        outBash.write(
+                "python %sDuplexMaker.py --infile %s.bam --outfile %s --Ncutoff %s --readlength %s --read_out %s >&2\n" %
+                (spath, SSCSsort, DCSout, o.Ncut, readlength, o.progInd))
 
 
     DCSr1 = DCSout.replace(".bam",".r1.fq")
