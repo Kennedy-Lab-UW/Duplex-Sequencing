@@ -95,6 +95,7 @@ def main():
     duplexMade = 0
     uP = 0
     nC = 0
+    dT = 0
 
     fileDone=False #initialize end of file bool
     finished=False
@@ -194,9 +195,9 @@ def main():
                         a.isize = readDict[dictTag][5]
                         a.qual = qualScore
                         
-                        if o.hammingfilt: 
-                            if myDist[dictTag] != 0:
+                        if o.hammingfilt and myDist[dictTag] != 0:
                                 hammingBam.write(a)
+                                dT += 1
                         else:
             ##########################################################################################################################
             #Write SSCSs to output BAM file in read pairs.                                           #
@@ -273,7 +274,8 @@ def main():
     sys.stderr.write("Reads Processed: %s\n" % readNum)
     sys.stderr.write("Duplexes Made: %s\n" % duplexMade)
     sys.stderr.write("Unpaired Duplexes: %s\n" % uP)
-    sys.stderr.write("N-clipped Duplexes: %s\n\n" % nC)
+    sys.stderr.write("N-clipped Duplexes: %s\n" % nC)
+    sys.stderr.write('Derivitive Families Removed: %s\n\n' % dT)
 
 if __name__ == "__main__":
     main()
