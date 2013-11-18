@@ -39,7 +39,7 @@ class fastQRead:
         '''This class is meant to hold a single fastQ read.
         '''
         self.name=in1.strip().split("@")[1] if "@" in in1 else in1
-        self.seq=in2.strip()
+        self.seq=in2.strip().replace('.', 'N')
         self.spacer="+"
         self.qual=in4.strip()
         if len(self.seq)!=len(self.qual):
@@ -156,37 +156,34 @@ def main():
         #        print(read1)
         #        print(read2)
                 nospacer += 1
-
-            else :
-                #extract tags
-                tag1, tag2 = tagExtractFxn((read1.seq, read2.seq),o.blength)
-                
-                #header reconstruction
-                read1.name = hdrRenameFxn(read1.name, tag1, tag2) 
-                read2.name = hdrRenameFxn(read2.name, tag1, tag2)
-                
-                #fastq reconstruction
-                if (tag1.isalpha() and tag1.count('N') == 0) and (tag2.isalpha() and tag2.count('N') == 0) :
-                    rOut1 = read1[o.blength + o.slength:]
-                    rOut2 = read2[o.blength + o.slength:]
-                    
-                    out1.write(rOut1)
-                    out2.write(rOut2)
-                    goodreads += 1
-                else: 
-                    #sys.stderr.write('Error: something is wrong with the tags')
-                    #print(read1)
-                    #print(read2)
-                    badtag += 1
             
-                if ctr%o.rOut==0:
-                    sys.stderr.write("Total sequences processed: %s\n" % (ctr))
-                    sys.stderr.write("Sequences passing filter: %s\n" % (goodreads))
-                    sys.stderr.write("Missing spacers: %s\n" % (nospacer))
-                    sys.stderr.write("Bad tags: %s\n\n" % (badtag))
-                    if badtag == oldBad+o.rOut:
-                        print("Warning!  Potential file error between lines %s and %s.  " % ((ctr-o.rOut)*4,(ctr)*4))
-                    oldBad = badtag
+            
+            
+            #extract tags
+            tag1, tag2 = tagExtractFxn((read1.seq, read2.seq),o.blength)
+            
+            #header reconstruction
+            read1.name = hdrRenameFxn(read1.name, tag1, tag2) 
+            read2.name = hdrRenameFxn(read2.name, tag1, tag2)
+            
+            #fastq reconstruction
+            if tag1.count('N') != 0 or tag2.count('N') != 0:
+                badtag += 1
+            rOut1 = read1[o.blength + o.slength:]
+            rOut2 = read2[o.blength + o.slength:]
+            
+            out1.write(rOut1)
+            out2.write(rOut2)
+            goodreads += 1
+        
+            if ctr%o.rOut==0:
+                sys.stderr.write("Total sequences processed: %s\n" % (ctr))
+                sys.stderr.write("Sequences passing filter: %s\n" % (goodreads))
+                sys.stderr.write("Missing spacers: %s\n" % (nospacer))
+                sys.stderr.write("Bad tags: %s\n\n" % (badtag))
+                if badtag == oldBad+o.rOut:
+                    print("Warning!  Potential file error between lines %s and %s.  " % ((ctr-o.rOut)*4,(ctr)*4))
+                oldBad = badtag
 
     in1.close()
     in2.close()
@@ -195,7 +192,7 @@ def main():
 
     sys.stderr.write("Summary statistics:\n")
     sys.stderr.write("Total sequences processed: %s\n" % (ctr))
-    sys.stderr.write("Sequences passing filter: %s\n" % (goodreads))
+    sys.stderr.write("Good sequences: %s\n" % (goodreads))
     sys.stderr.write("Missing spacers: %s\n" % (nospacer))
     sys.stderr.write("Bad tags: %s\n\n" % (badtag))
 

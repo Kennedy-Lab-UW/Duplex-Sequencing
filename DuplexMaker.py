@@ -37,6 +37,7 @@ arguments:
 import sys
 import pysam
 import re
+import jellyfish
 from Bio.Seq import Seq
 from Bio.Alphabet import IUPAC
 from collections import defaultdict
@@ -69,6 +70,7 @@ def main():
     #parser.add_argument('-p', action='store_true', dest='pipe', help="Output consensus reads to stdout"  )
     parser.add_argument('--readlength', type=int, default=80, dest='read_length', help="Length of the input read that is being used. [80]")
     parser.add_argument('--read_out', type = int, default = 1000000, dest = 'rOut', help = 'How often you want to be told what the program is doing. [1000000]')
+    parser.add_argument('--hammingfilt', '-h', action = 'store_true', dest = 'hammingfilt', help = 'Optional: Filter reads based on hamming distance for derived families.  '
     o = parser.parse_args()
 
     ##########################################################################################################################
@@ -81,6 +83,8 @@ def main():
 
     inBam = pysam.Samfile(o.infile, "rb") #open the input BAM file
     outBam = pysam.Samfile(o.outfile, "wb", template = inBam) #open the output BAM file
+    if o.hammingfilt:
+        hammingBam = pysam.Samfile(o.outfile.replace('.bam', '_DT.bam'), 'wb', template = inBam)
     fastqFile1 = open(o.outfile.replace('.bam','')+".r1.fq",'w')
     fastqFile2 = open(o.outfile.replace('.bam','')+".r2.fq",'w')
     #outStd = pysam.Samfile('-', 'wb', template = inBam ) #open the stdOut writer
@@ -122,11 +126,10 @@ def main():
             readOne=False
         
         while line.pos == firstRead.pos and fileDone==False:
-
             tag = line.qname.split(":")[0] #extract the barcode
             #add the sequence to the read dictionary
-            if tag not in readDict:
-                    readDict[tag] = [line.flag, line.rname, line.pos, line.mrnm, line.mpos, line.isize, line.seq]
+
+            readDict[tag] = [line.flag, line.rname, line.pos, line.mrnm, line.mpos, line.isize, line.seq]
             #if fileDone==False:
             try: #keep StopIteration error from happening
                 line = bamEntry.next() #iterate the line
@@ -142,7 +145,19 @@ def main():
     ##########################################################################################################################
     #Send reads to DCSMaker                                                #
     ##########################################################################################################################
-
+            if o.hammingfilt:
+                myDist = {}
+                myKeys=[]
+                for elmt in readDict.keys():
+                    myDist[elmt] = 0
+                    myKeys.append(elmt)
+                for elmt in xrange(len(myKeys)):
+                    for elmt2 in xrange(len(myKeys) - 1):
+                        myHD = jellyfish.hamming_distance(myKeys[elmt], myKeys[elmt2 + 1])
+                        if myHD != 0 and myHD <= 2:
+                            myDist[myKeys[elmt]], myKeys[[elmt2 + 1]] = 1
+            
+            
             firstRead = line #store the present line for the next group of lines
             firstTag = firstRead.qname
             readOne=True
@@ -177,30 +192,35 @@ def main():
                         a.mpos=readDict[dictTag][4]
                         a.isize = readDict[dictTag][5]
                         a.qual = qualScore
-
-        ##########################################################################################################################
-        #Write SSCSs to output BAM file in read pairs.                                           #
-        ##########################################################################################################################
-                        if dictTag in consensusDict:
-                            
-                            if a.is_read1 == True:
-                                #if o.pipe==True:
-                                #   outStd.write(a)
-                                #   outStd.write(consensusDict[switchtag])UG
-                                fastqFile1.write('@:%s\n%s\n+\n%s\n' %(a.qname, a.seq, a.qual))
-                                outBam.write(a)
-                                fastqFile2.write('@:%s\n%s\n+\n%s\n' %(consensusDict[dictTag].qname, consensusDict[dictTag].seq, consensusDict[dictTag].qual))
-                                outBam.write(consensusDict.pop(dictTag))
-                            else:
-                                #if o.pipe==True:
-                                #        outStd.write(consensusDict[switchtag])
-                                #        outStd.write(a)
-                                fastqFile1.write('@:%s\n%s\n+\n%s\n' %(consensusDict[dictTag].qname, consensusDict[dictTag].seq, consensusDict[dictTag].qual))
-                                outBam.write(consensusDict.pop(dictTag))
-                                fastqFile2.write('@:%s\n%s\n+\n%s\n' %(a.qname, a.seq, a.qual))
-                                outBam.write(a)
+                        
+                        if o.hammingfilt: 
+                            if myDist[dictTag] != 0:
+                                hammingBam.write(a)
                         else:
-                            consensusDict[dictTag]=a
+            ##########################################################################################################################
+            #Write SSCSs to output BAM file in read pairs.                                           #
+            ##########################################################################################################################
+                            if dictTag in consensusDict:
+                                
+                                if a.is_read1 == True:
+                                    #if o.pipe==True:
+                                    #   outStd.write(a)
+                                    #   outStd.write(consensusDict[switchtag])UG
+                                    fastqFile1.write('@:%s\n%s\n+\n%s\n' %(a.qname, a.seq, a.qual))
+                                    outBam.write(a)
+                                    fastqFile2.write('@:%s\n%s\n+\n%s\n' %(consensusDict[dictTag].qname, consensusDict[dictTag].seq, consensusDict[dictTag].qual))
+                                    outBam.write(consensusDict.pop(dictTag))
+                                else:
+                                    #if o.pipe==True:
+                                    #        outStd.write(consensusDict[switchtag])
+                                    #        outStd.write(a)
+                                    fastqFile1.write('@:%s\n%s\n+\n%s\n' %(consensusDict[dictTag].qname, consensusDict[dictTag].seq, consensusDict[dictTag].qual))
+                                    outBam.write(consensusDict.pop(dictTag))
+                                    fastqFile2.write('@:%s\n%s\n+\n%s\n' %(a.qname, a.seq, a.qual))
+                                    outBam.write(a)
+                            else:
+                                consensusDict[dictTag]=a
+
                     del readDict[dictTag]
                     del readDict[switchtag]
                 
