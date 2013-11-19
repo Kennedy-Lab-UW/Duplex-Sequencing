@@ -251,7 +251,7 @@ def main():
             )
 
     PEsort = "PE." + r1 + "." + r2 + ".sort"
-
+    
     outBash.write("#Sort the paired end file \n\n")
     outBash.write("echo 'Sort 1 start:' >&2\n")
     outBash.write("date >&2\n")

@@ -39,7 +39,7 @@ class fastQRead:
         '''This class is meant to hold a single fastQ read.
         '''
         self.name=in1.strip().split("@")[1] if "@" in in1 else in1
-        self.seq=in2.strip().replace('.', 'N')
+        self.seq=in2.strip()
         self.spacer="+"
         self.qual=in4.strip()
         if len(self.seq)!=len(self.qual):
@@ -101,7 +101,7 @@ class fastqWriter:
         return(True)
 
 
-def tagExtractFxn(x, blen):
+def tagExtractFxn(x, blen, slen, y):
     '''this is the function that extracts the UID tags from both the 
     forward and reverse read.  Assigns read1 the sequence from some 
     position to the end, then read2 from some position to the end, 
@@ -113,10 +113,10 @@ def tagExtractFxn(x, blen):
 
 def hdrRenameFxn(x, y, z):
     '''this function renames the header with the formatting of 
-    *header coordinates,etc*, *tag from read1*, *tag from read2*, 
+    *header coordinates,etc*, *index seq*, *tag from read1*, *tag from read2*, *spacer from this read*
     *read designation from original header*
     '''
-    return("%s#%s%s/%s" % (x.split("#")[0], y, z, x.split("/")[-1]))
+    return("%s#%s%s/%s" % (x.split("#")[0], y, z,  x.split("/")[-1]))
 
 def main():
     parser = ArgumentParser()
@@ -157,25 +157,25 @@ def main():
         #        print(read2)
                 nospacer += 1
             
+            else:
+                #extract tags
+                tag1, tag2 = tagExtractFxn((read1.seq, read2.seq),o.blength)
+                
+                #header reconstruction
+                read1.name = hdrRenameFxn(read1.name, tag1, tag2) 
+                read2.name = hdrRenameFxn(read2.name, tag1, tag2)
+                
+                #fastq reconstruction
+                if tag1.count('N') != 0 or tag2.count('N') != 0:
+                    badtag += 1
+                else:
+                    rOut1 = read1[o.blength + o.slength:]
+                    rOut2 = read2[o.blength + o.slength:]
+                    
+                    out1.write(rOut1)
+                    out2.write(rOut2)
+                    goodreads += 1
             
-            
-            #extract tags
-            tag1, tag2 = tagExtractFxn((read1.seq, read2.seq),o.blength)
-            
-            #header reconstruction
-            read1.name = hdrRenameFxn(read1.name, tag1, tag2) 
-            read2.name = hdrRenameFxn(read2.name, tag1, tag2)
-            
-            #fastq reconstruction
-            if tag1.count('N') != 0 or tag2.count('N') != 0:
-                badtag += 1
-            rOut1 = read1[o.blength + o.slength:]
-            rOut2 = read2[o.blength + o.slength:]
-            
-            out1.write(rOut1)
-            out2.write(rOut2)
-            goodreads += 1
-        
             if ctr%o.rOut==0:
                 sys.stderr.write("Total sequences processed: %s\n" % (ctr))
                 sys.stderr.write("Sequences passing filter: %s\n" % (goodreads))

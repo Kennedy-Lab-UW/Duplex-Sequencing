@@ -204,59 +204,59 @@ def main():
                 print readNum
                 raise
             
-            if tag.count('N') == 0:
-                overlap=False
-                if 'o' in o.filt:
-                    if readWin[winPos%2].pos < readWin[winPos%2].mpos and readWin[winPos%2].mpos < readWin[winPos%2].pos + o.read_length and int(readWin[winPos%2].flag) in (83, 99, 147, 163):
-                        overlap=True
-                    elif readWin[winPos%2].pos > readWin[winPos%2].mpos and readWin[winPos%2].pos < readWin[winPos%2].mpos + o.read_length and int(readWin[winPos%2].flag) in (83, 99, 147, 163):
-                        overlap=True
-                    elif readWin[winPos%2].pos==readWin[winPos%2].mpos and int(readWin[winPos%2].flag) in (83, 99, 147, 163):
-                        overlap=True
-                readNum +=1
+        
+            overlap=False
+            if 'o' in o.filt:
+                if readWin[winPos%2].pos < readWin[winPos%2].mpos and readWin[winPos%2].mpos < readWin[winPos%2].pos + o.read_length and int(readWin[winPos%2].flag) in (83, 99, 147, 163):
+                    overlap=True
+                elif readWin[winPos%2].pos > readWin[winPos%2].mpos and readWin[winPos%2].pos < readWin[winPos%2].mpos + o.read_length and int(readWin[winPos%2].flag) in (83, 99, 147, 163):
+                    overlap=True
+                elif readWin[winPos%2].pos==readWin[winPos%2].mpos and int(readWin[winPos%2].flag) in (83, 99, 147, 163):
+                    overlap=True
+            readNum +=1
 
-                softClip=False
-                if 's' in o.filt:
-                    if readWin[winPos%2].cigar != None:
-                        for tupple in readWin[winPos%2].cigar:
-                            if tupple[0]==4:
-                                softClip=True
+            softClip=False
+            if 's' in o.filt:
+                if readWin[winPos%2].cigar != None:
+                    for tupple in readWin[winPos%2].cigar:
+                        if tupple[0]==4:
+                            softClip=True
 
 
-                if int( readWin[winPos%2].flag ) in goodFlag and overlap==False and softClip==False: #check if the given read is good data
-                    if ('A'*o.rep_filt in tag) or ('C'*o.rep_filt in tag) or ('G'*o.rep_filt in tag) or ('C'*o.rep_filt in tag): 
-                        #check for bad barcodes
-                        nM += 1
-                        nonMap.write(readWin[winPos%2])
-                        rT += 1
-                    else :
-                        #add the sequence to the read dictionary
-                        if tag not in readDict:
-                            readDict[tag] = [readWin[winPos%2].flag, readWin[winPos%2].rname, readWin[winPos%2].pos, readWin[winPos%2].mrnm, readWin[winPos%2].mpos, readWin[winPos%2].isize,{str(readWin[winPos%2].cigar):[0,readWin[winPos%2].cigar]}]
-
-                        if str(readWin[winPos%2].cigar) not in readDict[tag][6]:
-                            readDict[tag][6][str(readWin[winPos%2].cigar)]=[0,readWin[winPos%2].cigar]
-                        
-                        readDict[tag][6][str(readWin[winPos%2].cigar)].append(readWin[winPos%2].seq)
-                        readDict[tag][6][str(readWin[winPos%2].cigar)][0]+=1
-                else:
+            if int( readWin[winPos%2].flag ) in goodFlag and overlap==False and softClip==False: #check if the given read is good data
+                if ('A'*o.rep_filt in tag) or ('C'*o.rep_filt in tag) or ('G'*o.rep_filt in tag) or ('C'*o.rep_filt in tag): 
+                    #check for bad barcodes
                     nM += 1
                     nonMap.write(readWin[winPos%2])
-                    if int(readWin[winPos%2].flag) not in goodFlag:
-                        bF += 1
-                    elif overlap == True:
-                        oL += 1
-                    elif softClip == True:
-                        sC += 1
-                
-                winPos += 1
-                if readOne == False:
-                    try: #keep StopIteration error from happening
-                        readWin[winPos%2] = bamEntry.next() #iterate the line
-                    except:
-                        fileDone = True #tell the program that it has reached the end of the file
-                else:
-                    readOne = False
+                    rT += 1
+                else :
+                    #add the sequence to the read dictionary
+                    if tag not in readDict:
+                        readDict[tag] = [readWin[winPos%2].flag, readWin[winPos%2].rname, readWin[winPos%2].pos, readWin[winPos%2].mrnm, readWin[winPos%2].mpos, readWin[winPos%2].isize,{str(readWin[winPos%2].cigar):[0,readWin[winPos%2].cigar]}]
+
+                    if str(readWin[winPos%2].cigar) not in readDict[tag][6]:
+                        readDict[tag][6][str(readWin[winPos%2].cigar)]=[0,readWin[winPos%2].cigar]
+                    
+                    readDict[tag][6][str(readWin[winPos%2].cigar)].append(readWin[winPos%2].seq)
+                    readDict[tag][6][str(readWin[winPos%2].cigar)][0]+=1
+            else:
+                nM += 1
+                nonMap.write(readWin[winPos%2])
+                if int(readWin[winPos%2].flag) not in goodFlag:
+                    bF += 1
+                elif overlap == True:
+                    oL += 1
+                elif softClip == True:
+                    sC += 1
+            
+            winPos += 1
+            if readOne == False:
+                try: #keep StopIteration error from happening
+                    readWin[winPos%2] = bamEntry.next() #iterate the line
+                except:
+                    fileDone = True #tell the program that it has reached the end of the file
+            else:
+                readOne = False
         else:
 
 ##########################################################################################################################
