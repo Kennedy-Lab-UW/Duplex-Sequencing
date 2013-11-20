@@ -166,15 +166,15 @@ def main():
                 read2.name = hdrRenameFxn(read2.name, tag1, tag2)
                 
                 #fastq reconstruction
-                if tag1.count('N') != 0 or tag2.count('N') != 0:
-                    badtag += 1
-                else:
+                if (tag1.isalpha() and tag1.count('N') == 0) and (tag2.isalpha() and tag2.count('N') == 0):
                     rOut1 = read1[o.blength + o.slength:]
                     rOut2 = read2[o.blength + o.slength:]
-                    
-                    out1.write(rOut1)
-                    out2.write(rOut2)
-                    goodreads += 1
+                
+                out1.write(rOut1)
+                out2.write(rOut2)
+                else: 
+                    badtag += 1
+                goodreads += 1
             
             if ctr%o.rOut==0:
                 sys.stderr.write("Total sequences processed: %s\n" % (ctr))
