@@ -1,0 +1,248 @@
+Read Filter
+    A 1 indicates the following statement is true
+    A 0 indicates the following statement is false
+    Group 1: Neither Mapped(141, 77) (n)
+        77
+            1       Paired in sequencing
+            0       Proper Pair
+            1       Self unmapped
+            1       mate unmapped
+            0       self strand
+            0       mate strand
+            1       self read 1
+            0       self read 2
+        141
+            1       Paired in sequencing
+            0       Proper Pair
+            1       Self unmapped
+            1       mate unmapped
+            0       self strand
+            0       mate strand
+            0       self read 1
+            1       self read 2
+    Group 2: One mapped (181, 117, 137, 133, 73, 89, 69, 153) (m)
+        181
+            1       Paired in sequencing
+            0       Proper Pair
+            1       Self unmapped
+            0       mate unmapped
+            1       self strand
+            1       mate strand
+            0       self read 1
+            1       self read 2
+        117
+            1       Paired in sequencing
+            0       Proper Pair
+            1       Self unmapped
+            0       mate unmapped
+            1       self strand
+            1       mate strand
+            1       self read 1
+            0       self read 2
+        137
+            1       Paired in sequencing
+            0       Proper Pair
+            0       Self unmapped
+            1       mate unmapped
+            0       self strand
+            0       mate strand
+            0       self read 1
+            1       self read 2
+        133
+            1       Paired in sequencing
+            0       Proper Pair
+            1       Self unmapped
+            0       mate unmapped
+            0       self strand
+            0       mate strand
+            0       self read 1
+            1       self read 2
+        73
+            1       Paired in sequencing
+            0       Proper Pair
+            0       Self unmapped
+            1       mate unmapped
+            0       self strand
+            0       mate strand
+            1       self read 1
+            0       self read 2
+        89
+            1       Paired in sequencing
+            0       Proper Pair
+            0       Self unmapped
+            1       mate unmapped
+            1       self strand
+            0       mate strand
+            1       self read 1
+            0       self read 2
+        69
+            1       Paired in sequencing
+            0       Proper Pair
+            1       Self unmapped
+            0       mate unmapped
+            0       self strand
+            0       mate strand
+            1       self read 1
+            0       self read 2
+        153
+            1       Paired in sequencing
+            0       Proper Pair
+            0       Self unmapped
+            1       mate unmapped
+            1       self strand
+            0       mate strand
+            0       self read 1
+            1       self read 2
+    Group 3: Both mapped, non-propper pair (97, 81, 161, 145, 129, 65, 177, 113) (p)
+        97
+            1       Paired in sequencing
+            0       Proper Pair
+            0       Self unmapped
+            0       mate unmapped
+            0       self strand
+            1       mate strand
+            1       self read 1
+            0       self read 2
+        81
+            1       Paired in sequencing
+            0       Proper Pair
+            0       Self unmapped
+            0       mate unmapped
+            1       self strand
+            0       mate strand
+            1       self read 1
+            0       self read 2
+        161
+            1       Paired in sequencing
+            0       Proper Pair
+            0       Self unmapped
+            0       mate unmapped
+            0       self strand
+            1       mate strand
+            0       self read 1
+            1       self read 2
+        145
+            1       Paired in sequencing
+            0       Proper Pair
+            0       Self unmapped
+            0       mate unmapped
+            1       self strand
+            0       mate strand
+            0       self read 1
+            1       self read 2
+        129
+            1       Paired in sequencing
+            0       Proper Pair
+            0       Self unmapped
+            0       mate unmapped
+            0       self strand
+            0       mate strand
+            0       self read 1
+            1       self read 2
+        65
+            1       Paired in sequencing
+            0       Proper Pair
+            0       Self unmapped
+            0       mate unmapped
+            0       self strand
+            0       mate strand
+            1       self read 1
+            0       self read 2
+        177
+            1       Paired in sequencing
+            0       Proper Pair
+            0       Self unmapped
+            0       mate unmapped
+            1       self strand
+            1       mate strand
+            0       self read 1
+            1       self read 2
+        113
+            1       Paired in sequencing
+            0       Proper Pair
+            0       Self unmapped
+            0       mate unmapped
+            1       self strand
+            1       mate strand
+            1       self read 1
+            0       self read 2
+    Group 4: Both mapped, propper pair (99, 83, 163, 147) (d)
+        99
+            1       Paired in sequencing
+            1       Proper Pair
+            0       Self unmapped
+            0       mate unmapped
+            0       self strand
+            1       mate strand
+            1       self read 1
+            0       self read 2
+        83
+            1       Paired in sequencing
+            1       Proper Pair
+            0       Self unmapped
+            0       mate unmapped
+            1       self strand
+            0       mate strand
+            1       self read 1
+            0       self read 2
+        163
+            1       Paired in sequencing
+            1       Proper Pair
+            0       Self unmapped
+            0       mate unmapped
+            0       self strand
+            1       mate strand
+            0       self read 1
+            1       self read 2
+        147
+            1       Paired in sequencing
+            1       Proper Pair
+            0       Self unmapped
+            0       mate unmapped
+            1       self strand
+            0       mate strand
+            0       self read 1
+            1       self read 2
+    Group 5: Mapped Single Ended Reads (0, 16) (S)
+        0
+            0       Paired in sequencing
+            0       Proper Pair
+            0       Self unmapped
+            0       mate unmapped
+            0       self strand
+            0       mate strand
+            0       self read 1
+            0       self read 2
+        16
+            0       Paired in sequencing
+            0       Proper Pair
+            0       Self unmapped
+            0       mate unmapped
+            1       self strand
+            0       mate strand
+            0       self read 1
+            0       self read 2
+    Group 6: Unmapped Single Ended Reads (4) (s)
+        4
+            0       Paired in sequencing
+            0       Proper Pair
+            1       Self unmapped
+            0       mate unmapped
+            0       self strand
+            0       mate strand
+            0       self read 1
+            0       self read 2
+        
+--read_type 'dpm' # default for paired end
+--read_type 'S' # default for non-paired end
+
+--read_type 'd' # only case for which consensus pairing makes sense
+
+filters
+    overlap (o)
+    Ns (n)
+    Chromosome (C)# Future?
+    Softclip (s)
+    cigar (c)
+    
+    --filter 'os' #default?
