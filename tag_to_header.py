@@ -102,7 +102,7 @@ class fastqWriter:
         return(True)
 
 
-def tagExtractFxn(x, blen, slen, y):
+def tagExtractFxn(x, blen):
     '''this is the function that extracts the UID tags from both the 
     forward and reverse read.  Assigns read1 the sequence from some 
     position to the end, then read2 from some position to the end, 
