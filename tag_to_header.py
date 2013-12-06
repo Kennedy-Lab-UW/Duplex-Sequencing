@@ -3,7 +3,7 @@ Tag To Header
 Version 2.0
 By Joe Hiatt, Scott Kennedy(1), Brendan Kohrn and Mike Schmitt(1)
 (1) Department of Pathology, University of Washington School of Medicine, Seattle, WA 98195
-October 28, 2013
+November 26, 2013
 
 Isolate duplex tags, move them from within the sequenced read to the header region, and remove the spacer region.  
 
@@ -21,12 +21,13 @@ optional arguments:
   --barcode_length BLENGTH
                         Length of the duplex tag sequence. [12]
   --spacer_length SLENGTH
-                        Length of the spacer sequences used. [12]
+                        Length of the spacer sequences used. [5]
   --read_out ROUT       How often you want to be told what the program is
                         doing. [1000000]
   --adapter ADAPTERSEQ  Optional: Spacer sequence for filtering on the
                         presence of the spacer. This could be thrown off by
                         low quality scores.
+
 '''
 
 import sys
@@ -125,7 +126,7 @@ def main():
     parser.add_argument('--outfile1', default = None, dest = 'outfile1', help = 'Output file for first fastq reads.  ')
     parser.add_argument('--outfile2', default = None, dest = 'outfile2', help = 'Output file for second fastq reads.  ')
     parser.add_argument('--barcode_length', type = int, default = 12, dest = 'blength', help = 'Length of the duplex tag sequence. [12]')
-    parser.add_argument('--spacer_length', type = int, default = 5, dest = 'slength', help = 'Length of the spacer sequences used. [12]')
+    parser.add_argument('--spacer_length', type = int, default = 5, dest = 'slength', help = 'Length of the spacer sequences used. [5]')
     parser.add_argument('--read_out', type = int, default = 1000000, dest = 'rOut', help = 'How often you want to be told what the program is doing. [1000000]')
     parser.add_argument('--adapter',  default = None,  dest = 'adapterSeq', help = 'Optional: Spacer sequence for filtering on the presence of the spacer.  This could be thrown off by low quality scores.')
     o=parser.parse_args()
@@ -169,20 +170,18 @@ def main():
                 if (tag1.isalpha() and tag1.count('N') == 0) and (tag2.isalpha() and tag2.count('N') == 0):
                     rOut1 = read1[o.blength + o.slength:]
                     rOut2 = read2[o.blength + o.slength:]
-                
-                out1.write(rOut1)
-                out2.write(rOut2)
+                    out1.write(rOut1)
+                    out2.write(rOut2)
+                    goodreads += 1
                 else: 
                     badtag += 1
-                goodreads += 1
-            
             if ctr%o.rOut==0:
                 sys.stderr.write("Total sequences processed: %s\n" % (ctr))
                 sys.stderr.write("Sequences passing filter: %s\n" % (goodreads))
                 sys.stderr.write("Missing spacers: %s\n" % (nospacer))
                 sys.stderr.write("Bad tags: %s\n\n" % (badtag))
                 if badtag == oldBad+o.rOut:
-                    print("Warning!  Potential file error between lines %s and %s.  " % ((ctr-o.rOut)*4,(ctr)*4))
+                    sys.stderr.write("Warning!  Potential file error between lines %s and %s.  " % ((ctr-o.rOut)*4,(ctr)*4))
                 oldBad = badtag
 
     in1.close()

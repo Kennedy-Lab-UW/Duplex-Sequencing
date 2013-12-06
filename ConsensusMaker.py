@@ -4,7 +4,7 @@ Version 2.0
 By Brendan Kohrn and Scott Kennedy(1)
 (1) Department of Pathology, University of Washington School of Medicine, Seattle, WA 98195
 Based on work by Mike Schmitt and Joe Hiatt
-October 28, 2013
+November 26, 2013
 
 Written for Python 2.7.3
 Required modules: Pysam, Samtools
@@ -14,9 +14,9 @@ Inputs:
 
 Outputs:
     1: A paired-end BAM file containing SSCSs
-    2: A single-end BAM file containing unpaired SSCSs
+    2: A single-end BAM file containing unpaired SSCSs (if --read_type is 'd')
     3: A single-end BAM file containing reads with less common cigar strings
-    4: A single-end BAM file containing non-mapping reads
+    4: A single-end BAM file containing reads not in --read_type
     5: A tagcounts file
     
     Note that quality scores in outputs 1, 2, and 3 are just space fillers and do not signify anything about the quality of the sequence.  
@@ -50,13 +50,47 @@ optional arguments:
   --readlength READ_LENGTH
                         Length of the input read that is being used. [80]
   --read_type READ_TYPE
-                        Type of read. Options: dual_map: both reads map
-                        properly. Doesn't consider read pairs where only one
-                        read maps. mono_map: considers any read pair where one
-                        read maps. [mono_map]
+                        A string specifying which types of read to consider.  Read types: n: umapped reads.  m: Either read 1 or read 2 mapped, but not both.  p: Both read 1 and read 2 mapped, not a propper pair.  d: Both read 1 and read 2 mapped, propper pair.  s: Mapped single ended reads. ['dpm']
   --isize ISIZE         maximum distance between read pairs
   --read_out ROUT       How often you want to be told what the program is
                         doing. [1000000]
+
+Details of different arguments:
+    --minmem and --maxmem set the range of family sizes (constrained by cigar score) that can be used to make a consensus sequence.  Examples use --minmem of 3 and --maxmem of 1000
+        Example 1: 
+            Ten reads (readlength = 80) have a particular barcode.  Of these ten, nine of them have a cigar string of 80M, while one has a cigar string of 39M1I40M.  Only the nine with a cigar string of 80M are sent on to be made into a SSCS.  
+        Example 2:
+            Three reads (readlength 80) have a particular barcode.  Of these, two have a cigar string of 80M, and one has a cigar string of 20M1D60M.  No SSCS results.
+        Example 3: 
+            A family with over 1000 members exists.  A random sample of 1000 reads from that family is used to make a SSCS.
+    --cutoff sets the strictness of the consensus making.    
+        Example (--cutoff = 0.7):
+            Four reads (readlength = 10) are as follows:
+                Read 1: ACTGATACTT
+                Read 2: ACTGAAACCT
+                Read 3: ACTGATACCT
+                Read 4: ACTGATACTT
+            The resulting SSCS is:
+                ACTGATACNT
+    --Ncutoff, with --filt n enabled, sets the maximum percentage of Ns allowed in a SSCS.  
+        Example (--Ncutoff = .1, --readlength = 20):
+            Two SSCSs are generated as follows:
+                SSCS 1: ACGTGANCTAGTNCTNTACC
+                SSCS 2: GATCTAGTNCATGACCGATA
+            SSCS 2 passes the n filter (10%) with 1/20 = 5% Ns, while SSCS 1 does not with 3/20 = 15% Ns.
+    --readlength sets the length of the reads imputed.  If this value is set incorrectly, the program will often crash with an error message about sequence length not matching quality score length, or will output an empty SSCS bam file.  
+    --read_type sets which reads are considered to have 'good' flags.  Options are: 
+		d:  Paired-end reads where both reads in the pair map, and where the two are properly paired (read 2 maps in the opposite direction and on the opposite strand from read 1).  Flags are 99, 83, 163, and 147  .
+		p: Paired-end reads where both reads in the pair map, but the two are not properly paired.  Flags are 97, 81, 161, 145, 129, 65, 177, and 113.
+		m: Paired-end reads where only one read in the pair maps.  Flags are 181, 117, 137, 133, 73, 89, 69, and 153.
+		n: Paired-end reads where neither read in the pair maps, and single end unmapped reads.  Flags are 141, 77, and 4.  
+		s: Single end mapped reads.  Flags are 0 and 16.  
+    --filt sets which filters are used.  Options are: 
+		o: Overlap filter. Filters out any read pairs which overlap.  Only works on  reads of type d (see above).
+		s: Softclipping filter.  Filters out any reads which have been soft-clipped in alignment.  This avoids later problems with hard-clipping.  
+		n: N filter. Filters out consensus sequences with a higher percentage of Ns than the threshold imposed by --Ncutoff.  Without this option, --Ncutoff doesn't do anything.  
+    --isize
+        If not -1, sets the maximum distance between read 1 and read 2 for the two to not be considered unpaired.  Only works if --read_type is 'd'
 
 '''
 
