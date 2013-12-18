@@ -302,20 +302,13 @@ def main():
     outBash.write("#Find the DCSs \n\n")
     outBash.write("echo 'DuplexMaker start:' >&2\n")
     outBash.write("date >&2\n")
-    if hamming == True:
-        outBash.write(
-                "echo 'python %sDuplexMaker.py --infile %s.bam --outfile %s --Ncutoff %s --readlength %s --read_out %s --hamming' >&2\n" %
-                (spath, SSCSsort, DCSout, o.Ncut, readlength, o.progInd))
-        outBash.write(
-                "python %sDuplexMaker.py --infile %s.bam --outfile %s --Ncutoff %s --readlength %s --read_out %s --hamming >&2\n" %
-                (spath, SSCSsort, DCSout, o.Ncut, readlength, o.progInd))
-    else:
-        outBash.write(
-                "echo 'python %sDuplexMaker.py --infile %s.bam --outfile %s --Ncutoff %s --readlength %s --read_out %s' >&2\n" %
-                (spath, SSCSsort, DCSout, o.Ncut, readlength, o.progInd))
-        outBash.write(
-                "python %sDuplexMaker.py --infile %s.bam --outfile %s --Ncutoff %s --readlength %s --read_out %s >&2\n" %
-                (spath, SSCSsort, DCSout, o.Ncut, readlength, o.progInd))
+    
+    outBash.write(
+            "echo 'python %sDuplexMaker.py --infile %s.bam --outfile %s --Ncutoff %s --readlength %s --barcode_length %s --read_out %s' >&2\n" %
+            (spath, SSCSsort, DCSout, o.Ncut, readlength, o.blength, o.progInd))
+    outBash.write(
+            "python %sDuplexMaker.py --infile %s.bam --outfile %s --Ncutoff %s --readlength %s --barcode_length %s --read_out %s >&2\n" %
+            (spath, SSCSsort, DCSout, o.Ncut, readlength, o.blength, o.progInd))
 
 
     DCSr1 = DCSout.replace(".bam",".r1.fq")
@@ -339,7 +332,7 @@ def main():
             )
 
     DCSsort = "DCS." + r1 + "." + r2 + ".aln.sort"
-    outBash.write("echo 'Samtools sort and index start:' >&2\n")
+    outBash.write("echo 'Samtools sort:' >&2\n")
     outBash.write("date >&2\n")
     outBash.write(
             "echo 'samtools view -Sbu " + DCSaln + 
@@ -349,8 +342,19 @@ def main():
             "samtools view -Sbu " + DCSaln + 
             " | samtools sort - " + DCSsort + "\n\n"
             )
-    outBash.write("echo 'samtools index " + DCSsort + ".bam' >&2\n")
-    outBash.write("samtools index " + DCSsort + ".bam\n\n")
+    if hamming == True:
+        outBash.write("echo 'Hamming Filter start:' >&2\n")
+        outBash.write("date >&2\n")
+        outBash.write("echo 'python HammingFilt.py --infile %s.bam --read_out %s' >&2\n" % (DCSsort, o.progInd))
+        outBash.write("python HammingFilt.py --infile %s.bam --read_out %s\n\n" % (DCSsort, o.progInd))
+        DCSclean = DCSsort.replace('.bam', '.clean.bam')
+    else:
+        DCSclean = DCSsort
+    
+    outBash.write("echo 'Samtools index start:' >&2")
+    outBash.write("date >&2\n")
+    outBash.write("echo 'samtools index %s.good.bam' >&2\n")
+    outBash.write("samtools index " + DCSclean + ".bam\n\n")
 
     outBash.write("echo 'rm *.sam' >&2\n")
     outBash.write("rm *.sam \n")

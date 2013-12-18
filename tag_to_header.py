@@ -1,9 +1,10 @@
+#!/usr/bin/env python
 '''
 Tag To Header
 Version 2.0
 By Joe Hiatt, Scott Kennedy(1), Brendan Kohrn and Mike Schmitt(1)
 (1) Department of Pathology, University of Washington School of Medicine, Seattle, WA 98195
-November 26, 2013
+December 17, 2013
 
 Isolate duplex tags, move them from within the sequenced read to the header region, and remove the spacer region.  
 
@@ -102,7 +103,7 @@ class fastqWriter:
         return(True)
 
 
-def tagExtractFxn(x, blen, slen, y):
+def tagExtractFxn(x, blen):
     '''this is the function that extracts the UID tags from both the 
     forward and reverse read.  Assigns read1 the sequence from some 
     position to the end, then read2 from some position to the end, 
@@ -153,11 +154,7 @@ def main():
             
             ctr += 1
             if o.adapterSeq != None and (read1.seq[o.blength:o.blength + o.slength] != o.adapterSeq or read2[o.blength:o.blength + o.slength] != o.adapterSeq):
-        #        sys.stderr.write('Error: something is wrong with the spacers')
-        #        print(read1)
-        #        print(read2)
                 nospacer += 1
-            
             else:
                 #extract tags
                 tag1, tag2 = tagExtractFxn((read1.seq, read2.seq),o.blength)

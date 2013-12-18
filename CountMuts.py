@@ -41,11 +41,11 @@ optional arguments:
 
 """
 
+from __future__ import print_function
 from argparse import ArgumentParser
 import sys
 import re
 from math import sqrt
-
 
 def Wilson(positive,  total) :
     
@@ -225,7 +225,7 @@ def CountMutations(o, f, fOut):
 def main():
     parser = ArgumentParser()
     parser.add_argument('-i', '--infile', action ='store', dest = 'inFile', help = 'An imput file. If None, defaults to stdin. [None]', default = None)
-    parser.add_argument('-o', '--outfile', action = 'store', dest = 'outFile', help - 'A filename for the output file.  If None, outputs to stdout.  [None]', default = None)
+    parser.add_argument('-o', '--outfile', action = 'store', dest = 'outFile', help = 'A filename for the output file.  If None, outputs to stdout.  [None]', default = None)
     parser.add_argument("-d", "--depth", action="store", type=int, dest="mindepth", 
                       help="Minimum depth for counting mutations at a site [20]", default=20)
     parser.add_argument("-c", "--min_clonality", action="store", type=float, dest="min_clonality",
