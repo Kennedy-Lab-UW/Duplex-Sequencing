@@ -91,7 +91,7 @@ def main():
     bamEntry = inBam.fetch( until_eof = True ) # Initialize the iterator
     firstRead = bamEntry.next() # Get the first read
     readDict = {} # Initialize the read dictionary
-    firstTag=firstRead.qname.split(":")[0]
+    firstTag=firstRead.qname
     qualScore = firstRead.qual # Set a dummy quality score
     consensusDict={}
     cigDum = firstRead.cigar #set a dummy cigar score
@@ -105,7 +105,7 @@ def main():
             readOne=False
         
         while line.pos == firstRead.pos and fileDone==False:
-            tag = line.qname.split(":")[0] # Extract the barcode
+            tag = line.qname # Extract the barcode
             # Add the sequence to the read dictionary
 
             readDict[tag] = [line.flag, line.rname, line.pos, line.mrnm, line.mpos, line.isize, line.seq]
@@ -126,7 +126,7 @@ def main():
             dictKeys = readDict.keys()
             
             for dictTag in readDict.keys(): # Extract sequences to send to the DCSmaker
-                switchtag = dictTag[o.blength:]+dictTag[:o.blength]
+                switchtag = dictTag.split(':')[0][o.blength:]+dictTag.split(':')[0][:o.blength] + (':1' if dictTag.split(':')[1] == '2' else ':2')
                 
                 try:
                     consensus = DSCMaker( [readDict[dictTag][6], readDict[switchtag][6]],  o.read_length )
