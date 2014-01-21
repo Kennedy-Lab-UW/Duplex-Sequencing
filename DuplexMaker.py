@@ -158,11 +158,13 @@ def main():
             # Write SSCSs to output BAM file in read pairs.
                         if dictTag in consensusDict:
                             if a.is_read1 == True:
+                                consensusDict[dictTag].qname = a.qname
                                 fastqFile1.write('@:%s\n%s\n+\n%s\n' %(a.qname, a.seq, a.qual))
                                 outBam.write(a)
                                 fastqFile2.write('@:%s\n%s\n+\n%s\n' %(consensusDict[dictTag].qname, consensusDict[dictTag].seq, consensusDict[dictTag].qual))
                                 outBam.write(consensusDict.pop(dictTag))
                             else:
+                                a.qname = consensusDict[dictTag].qname
                                 fastqFile1.write('@:%s\n%s\n+\n%s\n' %(consensusDict[dictTag].qname, consensusDict[dictTag].seq, consensusDict[dictTag].qual))
                                 outBam.write(consensusDict.pop(dictTag))
                                 fastqFile2.write('@:%s\n%s\n+\n%s\n' %(a.qname, a.seq, a.qual))
