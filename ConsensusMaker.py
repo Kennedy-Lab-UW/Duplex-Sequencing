@@ -5,7 +5,7 @@ Version 2.0
 By Brendan Kohrn and Scott Kennedy(1)
 (1) Department of Pathology, University of Washington School of Medicine, Seattle, WA 98195
 Based on work by Mike Schmitt and Joe Hiatt
-December 17, 2013
+January 21, 2014
 
 Written for Python 2.7.3
 Required modules: Pysam, Samtools
