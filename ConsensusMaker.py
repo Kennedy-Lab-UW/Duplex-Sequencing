@@ -157,6 +157,26 @@ def consensusMaker (groupedReadsList,  cutoff,  readLength) :
             consensusRead += 'N'
     return consensusRead
 
+def tagStats(tagCountsFile):
+    familySizeCounts=defaultdict( lambda: 0 )
+
+    fIn = open(tagSCountsFile, 'r')
+    fOut = open(tagCountsFile.replace('.tagcounts', '.tagstats'), 'w')
+    for line in fIn:
+        familySizeCounts[ line.strip().split()[1].split(":")[0]] += 1
+    fIn.close()
+    
+    totals = 0
+    for size in familySizeCounts.keys():
+        familySizeCounts[size] *= size
+        totals += familySizeCounts[size]
+    
+    for size in sorted(familySizeCounts.keys(), key = lambda x:familySizeCounts[x], reverse = True)
+        fOut.write("\n".join(["%s\t%d" % (size, familySizeCounts[size]/totals))
+    
+    fOut.close()
+    return(True)
+
 def main():
     #Parameters to be input.
     parser=ArgumentParser()
@@ -407,6 +427,7 @@ def main():
     tagFile = open( o.tagfile, "w" )
     tagFile.write ( "\n".join( [ "%s\t%d" % ( SMI, tagDict[SMI] ) for SMI in sorted( tagDict.keys(), key=lambda x: tagDict[x], reverse=True ) ] ))
     tagFile.close()
+    tagStats(o.tagfile)
 
 if __name__ == "__main__":
     main()
