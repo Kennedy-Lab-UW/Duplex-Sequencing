@@ -101,14 +101,15 @@ def main():
         # Reinitialize first line
         readNum += 1
         if readOne==True:
-            readDict[firstTag] = [firstRead.flag, firstRead.rname, firstRead.pos, firstRead.mrnm, firstRead.mpos, firstRead.isize, firstRead.seq]
+            if firstRead.is_unmapped == False:
+                readDict[firstTag] = firstRead
             readOne=False
         
         while line.pos == firstRead.pos and fileDone==False:
             tag = line.qname # Extract the barcode
             # Add the sequence to the read dictionary
-
-            readDict[tag] = [line.flag, line.rname, line.pos, line.mrnm, line.mpos, line.isize, line.seq]
+            if line.is_unmapped == False:
+                readDict[tag] = line
             try: # Keep StopIteration error from happening
                 line = bamEntry.next() # Itterate the line
                 readNum += 1
@@ -126,10 +127,10 @@ def main():
             dictKeys = readDict.keys()
             
             for dictTag in readDict.keys(): # Extract sequences to send to the DCSmaker
-                switchtag = dictTag.split(':')[0][o.blength:]+dictTag.split(':')[0][:o.blength] + (':1' if dictTag.split(':')[1] == '2' else ':2')
+                switchtag = dictTag.split(':')[0][o.blength:] + dictTag.split(':')[0][:o.blength] + (':1' if dictTag.split(':')[1] == '2' else ':2')
                 
                 try:
-                    consensus = DSCMaker( [readDict[dictTag][6], readDict[switchtag][6]],  o.read_length )
+                    consensus = DSCMaker( (readDict[dictTag].seq, readDict[switchtag].seq),  o.read_length )
                     duplexMade += 1
                     # Filter out consensuses with too many Ns in them
                     if consensus.count("N")/ len(consensus) > o.Ncutoff:
@@ -137,34 +138,34 @@ def main():
                     else:
                         # Write a line to the consensusDictionary
                         a = pysam.AlignedRead()
-                        a.qname = dictTag
-                        a.flag = readDict[dictTag][0]
-                        
-                        if a.is_reverse == True:
+                        if readDict[dictTag].is_read1 == True:
+                            typedRead = dictTag
+                        else:
+                            typedRead = switchtag
+                        a.qname = typedRead.split(':')[0]
+                        a.flag = readDict[typedRead].flag
+                        if readDict[typedRead].is_reverse == True:
                             tmpSeq=Seq(consensus,IUPAC.unambiguous_dna)
                             a.seq=str(tmpSeq.reverse_complement())
                         else:
                             a.seq = consensus
-                        
-                        a.rname = readDict[dictTag][1]
-                        a.pos = readDict[dictTag][2]
+                        a.rname = readDict[typedRead].rname
+                        a.pos = readDict[typedRead].pos
                         a.mapq = 255
                         a.cigar = cigDum
-                        a.mrnm = readDict[dictTag][3]
-                        a.mpos=readDict[dictTag][4]
-                        a.isize = readDict[dictTag][5]
+                        a.mrnm = readDict[typedRead].mrnm
+                        a.mpos=readDict[typedRead].mpos
+                        a.isize = readDict[typedRead].isize
                         a.qual = qualScore
                         
             # Write SSCSs to output BAM file in read pairs.
                         if dictTag in consensusDict:
                             if a.is_read1 == True:
-                                consensusDict[dictTag].qname = a.qname
                                 fastqFile1.write('@:%s\n%s\n+\n%s\n' %(a.qname, a.seq, a.qual))
                                 outBam.write(a)
                                 fastqFile2.write('@:%s\n%s\n+\n%s\n' %(consensusDict[dictTag].qname, consensusDict[dictTag].seq, consensusDict[dictTag].qual))
                                 outBam.write(consensusDict.pop(dictTag))
                             else:
-                                a.qname = consensusDict[dictTag].qname
                                 fastqFile1.write('@:%s\n%s\n+\n%s\n' %(consensusDict[dictTag].qname, consensusDict[dictTag].seq, consensusDict[dictTag].qual))
                                 outBam.write(consensusDict.pop(dictTag))
                                 fastqFile2.write('@:%s\n%s\n+\n%s\n' %(a.qname, a.seq, a.qual))

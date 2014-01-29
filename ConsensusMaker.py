@@ -160,19 +160,19 @@ def consensusMaker (groupedReadsList,  cutoff,  readLength) :
 def tagStats(tagCountsFile):
     familySizeCounts=defaultdict( lambda: 0 )
 
-    fIn = open(tagSCountsFile, 'r')
+    fIn = open(tagCountsFile, 'r')
     fOut = open(tagCountsFile.replace('.tagcounts', '.tagstats'), 'w')
     for line in fIn:
-        familySizeCounts[ line.strip().split()[1].split(":")[0]] += 1
+        familySizeCounts[int(line.strip().split()[1].split(":")[0])] += 1
     fIn.close()
     
     totals = 0
     for size in familySizeCounts.keys():
-        familySizeCounts[size] *= size
-        totals += familySizeCounts[size]
+        familySizeCounts[size] *= int(size)
+        totals += int(familySizeCounts[size])
     
-    for size in sorted(familySizeCounts.keys(), key = lambda x:familySizeCounts[x], reverse = True)
-        fOut.write("\n".join(["%s\t%d" % (size, familySizeCounts[size]/totals))
+    for size in sorted(familySizeCounts.keys()):
+        fOut.write("%s\t%s\n" % (size, float(familySizeCounts[size])/float(totals)))
     
     fOut.close()
     return(True)
@@ -339,7 +339,7 @@ def main():
                         if cigStr != maxCig:
                             for n in xrange(2, len(readDict[dictTag][6][cigStr][2:])):
                                 a = pysam.AlignedRead()
-                                a.qname = dictTag.split(':')[0]
+                                a.qname = dictTag
                                 a.flag = readDict[dictTag][0]
                                 a.seq = readDict[dictTag][6][cigStr][n]
                                 a.rname = readDict[dictTag][1]
@@ -359,7 +359,7 @@ def main():
                     if (consensus.count("N" )/ len(consensus) <= o.Ncutoff and 'n' in o.filt) or ('n' not in o.filt):
                         # Write a line to the consensusDictionary
                         a = pysam.AlignedRead()
-                        a.qname = dictTag.split(':')[0]
+                        a.qname = dictTag
                         a.flag = readDict[dictTag][0]
                         a.seq = consensus
                         a.rname = readDict[dictTag][1]
@@ -420,7 +420,7 @@ def main():
     sys.stderr.write("\tRepetitive Duplex Tag: %s\n" % rT)
     sys.stderr.write("Reads with Less Common Cigar Strings: %s\n" % LCC)
     sys.stderr.write("Consensuses Made: %s\n" % ConMade)
-    sys.stderr.write("Unpaired Consensuses: %s\n" % UP)
+    #sys.stderr.write("Unpaired Consensuses: %s\n" % UP)
     sys.stderr.write("Consensuses with Too Many Ns: %s\n\n" % nC)
 
     # Write the tag counts file.
