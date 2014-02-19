@@ -66,7 +66,7 @@ def main():
     # Parameters to be input.
     parser=ArgumentParser()
     parser.add_argument("--infile", action="store", dest="infile", help="input BAM file", default='sys.stdin')
-    parser.add_argument("--outfile",  action="store", dest="outfile", help="output BAM file",  default='sys.stdout')
+    parser.add_argument("--outfile",  action="store", dest="outfile", help="output file prefix",  default='sys.stdout')
     parser.add_argument('--Ncutoff', type=float, default=1.0, dest='Ncutoff', help="Maximum percentage of Ns allowed in a consensus [1.0]")
     parser.add_argument('--readlength', type=int, default=80, dest='read_length', help="Length of the input read that is being used. [80]")
     parser.add_argument('--barcode_length', type = int, default = 12, dest = 'blength', help = 'Length of the duplex tag sequence. Should match the value in tag_to_header.  [12]')
@@ -75,7 +75,7 @@ def main():
 
     # Initialization of all global variables, main input/output files, and main iterator and dictionaries.
     inBam = pysam.Samfile(o.infile, "rb") # Open the input BAM file
-    outBam = pysam.Samfile(o.outfile, "wb", template = inBam) # Open the output BAM file
+    #outBam = pysam.Samfile(o.outfile, "wb", template = inBam) # Open the output BAM file
     fastqFile1 = open(o.outfile.replace('.bam','')+".r1.fq",'w')
     fastqFile2 = open(o.outfile.replace('.bam','')+".r2.fq",'w')
 
@@ -162,14 +162,14 @@ def main():
                         if dictTag in consensusDict:
                             if a.is_read1 == True:
                                 fastqFile1.write('@:%s\n%s\n+\n%s\n' %(a.qname, a.seq, a.qual))
-                                outBam.write(a)
+                                #outBam.write(a)
                                 fastqFile2.write('@:%s\n%s\n+\n%s\n' %(consensusDict[dictTag].qname, consensusDict[dictTag].seq, consensusDict[dictTag].qual))
-                                outBam.write(consensusDict.pop(dictTag))
+                                #outBam.write(consensusDict.pop(dictTag))
                             else:
                                 fastqFile1.write('@:%s\n%s\n+\n%s\n' %(consensusDict[dictTag].qname, consensusDict[dictTag].seq, consensusDict[dictTag].qual))
-                                outBam.write(consensusDict.pop(dictTag))
+                                #outBam.write(consensusDict.pop(dictTag))
                                 fastqFile2.write('@:%s\n%s\n+\n%s\n' %(a.qname, a.seq, a.qual))
-                                outBam.write(a)
+                                #outBam.write(a)
                         else:
                             consensusDict[dictTag]=a
 
@@ -201,18 +201,18 @@ def main():
         a.qual = qualScore
         if consensusDict[consTag].is_read1 == False:
             fastqFile1.write('@:%s\n%s\n+\n%s\n' %(a.qname, a.seq, a.qual))
-            outBam.write(a)
+            #outBam.write(a)
             fastqFile2.write('@:%s\n%s\n+\n%s\n' %(consensusDict[consTag].qname, consensusDict[consTag].seq, consensusDict[consTag].qual))
-            outBam.write(consensusDict.pop(consTag))
+            #outBam.write(consensusDict.pop(consTag))
         else:
             fastqFile1.write('@:%s\n%s\n+\n%s\n' %(consensusDict[consTag].qname, consensusDict[consTag].seq, consensusDict[consTag].qual))
-            outBam.write(consensusDict.pop(consTag))
+            #outBam.write(consensusDict.pop(consTag))
             fastqFile2.write('@:%s\n%s\n+\n%s\n' %(a.qname, a.seq, a.qual))
-            outBam.write(a)
+            #outBam.write(a)
         uP += 1
     fastqFile1.close()
     fastqFile2.close()
-    outBam.close()
+    #outBam.close()
 
     # Write summary statistics.  Duplexes made includes unpaired duplexes    
     sys.stderr.write("Summary Statistics: \n")
