@@ -1,103 +1,196 @@
-#By Joe Hiatt, Scott Kennedy and Mike Schmitt
-#Version 1.21
-#February 5, 2013
+#!/usr/bin/env python
+'''
+Tag To Header
+Version 2.0
+By Joe Hiatt, Scott Kennedy(1), Brendan Kohrn and Mike Schmitt(1)
+(1) Department of Pathology, University of Washington School of Medicine, Seattle, WA 98195
+December 17, 2013
+
+Isolate duplex tags, move them from within the sequenced read to the header region, and remove the spacer region.  
+
+usage: tag_to_header.py [-h] [--infile1 INFILE1] [--infile2 INFILE2]
+                        [--outfile1 OUTFILE1] [--outfile2 OUTFILE2]
+                        [--barcode_length BLENGTH] [--spacer_length SLENGTH]
+                        [--read_out ROUT] [--adapter ADAPTERSEQ]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --infile1 INFILE1     First input raw fastq file.
+  --infile2 INFILE2     Second input raw fastq file.
+  --outfile1 OUTFILE1   Output file for first fastq reads.
+  --outfile2 OUTFILE2   Output file for second fastq reads.
+  --barcode_length BLENGTH
+                        Length of the duplex tag sequence. [12]
+  --spacer_length SLENGTH
+                        Length of the spacer sequences used. [5]
+  --read_out ROUT       How often you want to be told what the program is
+                        doing. [1000000]
+  --adapter ADAPTERSEQ  Optional: Spacer sequence for filtering on the
+                        presence of the spacer. This could be thrown off by
+                        low quality scores.
+
+'''
 
 import sys
-from optparse import OptionParser
+from argparse import ArgumentParser
+from Bio import SeqIO
 
-opts = OptionParser()
-opts.add_option('', '--adapter1',  type='string',  default=None,  dest='adapterSeq1')
-opts.add_option('', '--adapter2',  type='string',  default=None,  dest='adapterSeq2')
-opts.add_option('','--infile1',type='string',default=None,dest='infile1')
-opts.add_option('','--infile2',type='string',default=None,dest='infile2')
-opts.add_option('','--outfile1',type='string',default=None,dest='outfile1')
-opts.add_option('','--outfile2',type='string',default=None,dest='outfile2')
-o,args=opts.parse_args()
 
-inFile1 = open(o.infile1,  'r')
-inFile2 = open(o.infile2,  'r')
-outFile1 = open(o.outfile1,  'w')
-outFile2 = open(o.outfile2,  'w')
+class fastQRead:
+    def __init__(self, in1, in2, in3, in4):
+        '''This class is meant to hold a single fastQ read.
+        '''
+        self.name=in1.strip().split("@")[1] if "@" in in1 else in1
+        self.seq=in2.strip()
+        self.spacer="+"
+        self.qual=in4.strip()
+        if len(self.seq)!=len(self.qual):
+            raise ValueError("Sequence and quality scores of different lengths!/n%s/n%s/n%s/n%s" % (in1, in2, "+", in4))
 
- #this is the function that extracts the UID tags from both the forward and reverse read.  Assigns read1 the sequence from some position to the end, then read2 from some position to the end
- #then assigns tag1 from the 5'-end to length of the UID tag for read1 and then read 2.  Change as necessary to your appropriate adapter design.
-tagExtractFxn ='lambda x:(x[0][17:], x[1][17:], x[0][:12], x[1][:12])'
+    def __getitem__(self, index):
+        '''This should allow slicing of the read to proceed properly.
+        '''
+        if isinstance(index, int):
+            return self.seq[index]
+        elif isinstance(index, slice):
+            answer = self.__class__(self.name, self.seq[index], self.spacer, self.qual[index])
+            return answer
+        raise ValueError("Invalid index")
 
-#this function renames the header with the formatting of *header coordinates,etc*, *tag from read1*, *tag from read2*, *read designation from original header*
-hdrRenameFxn ='lambda x,y,z:"%s#%s%s/%s" % (x.split("#")[0], y, z, x.split("/")[-1])'
 
-tagExtractFxn = eval (tagExtractFxn)
-hdrRenameFxn = eval (hdrRenameFxn)
-
-infilelist = [inFile1,  inFile2] 
-outfilelist = [ outFile1, outFile2 ]
-
-ctr = 0
-totalreads = 0
-goodreads = 0
-badtag = 0
-nospacer = 0
-
-for line1 in infilelist[0]:
-    line1 = line1.strip()
-    line2 = infilelist[1].next().strip()
-
-    ctr += 1
+class fastQItterator:
+    def __init__(self, inFile):
+        '''This class will go through a fastQ file one line at a time.
+        '''
+        self.source=inFile
+        self.eof=False
     
-    if ctr%4==1:
-        hdr1 = line1
-        hdr2 = line2
+    def next(self):
+        new=[]
+        for j in xrange(4):
+            try:
+                tmp=self.source.next()
+            except StopIteration:
+                self.eof=True
+                return("EOF") 
+            new.append(tmp)
+        newRead=fastQRead(new[0],new[1],new[2],new[3])
+        return(newRead)
 
-    elif ctr%4==2:
-        read1 = line1
-        read2 = line2
+    def close(self):
+        self.source.close()
+        return(True)
 
-    elif ctr%4==0:
-        totalreads += 1
 
-        if o.adapterSeq1 != None and o.adapterSeq2 != None and ( read1[12:16] != o.adapterSeq1 or read2[12:16] != o.adapterSeq2 )  : #filtering logic is contained here changes the values as necessary to the location of your adapter spacers (0 indexed)
-            nospacer += 1
-
-        else :
-            #extract tags
-            read1, read2,  tag1,  tag2 = tagExtractFxn((read1, read2))
-            line1, line2,  trash,  trash2 = tagExtractFxn (( line1, line2 ))
-            
-            #header reconstruction
-            hdr1 = hdrRenameFxn ( hdr1, tag1, tag2 ) 
-            hdr2 = hdrRenameFxn ( hdr2, tag1, tag2 )
-            
-            #tag1Hash = int(tag1.count('A')) + int(tag1.count('C')) + int(tag1.count('G')) + int(tag1.count('T'))
-            #tag2Hash = int(tag1.count('A')) + int(tag1.count('C')) + int(tag1.count('G')) + int(tag1.count('T'))
-            
-            #fastq reconstruction
-            if (tag1.isalpha() and tag1.count('N') == 0) and (tag2.isalpha() and tag2.count('N') == 0) :
-                outfilelist[ 0 ].write( "%s\n%s\n+\n%s\n"%( hdr1, read1[4:], line1[4:] ) ) # keeps nucleotides 5 onwards (1-indexed) from read that is already trimmed of UID and adapter spacer
-                outfilelist[ 1 ].write( "%s\n%s\n+\n%s\n"%( hdr2, read2[4:], line2[4:] ) ) # keeps nucleotides 5 onwards (1-indexed) from read that is already trimmed of UID and adapter spacer
-                #outfilelist[ 0 ].write( "%s\n%s\n+\n%s\n"%( hdr1, read1, line1 ) ) # keeps nucleotides 8 onwards (1-indexed) from read that is already trimmed of UID and adapter spacer
-                #outfilelist[ 1 ].write( "%s\n%s\n+\n%s\n"%( hdr2, read2, line2 ) ) # keeps nucleotides 8 onwards (1-indexed) from read that is already trimmed of UID and adapter spacer
-
-                goodreads += 1
-
-            else: badtag += 1
+class fastqWriter:
+    def __init__(self, outFile):
+        self.file=outFile
+        self.firstLine=True
     
-    if ctr%400000==0:
-        sys.stderr.write( "processed %d reads...\n"%(ctr/4) )
-        print "Total sequences processed:", totalreads
-        print "Sequences passing filter:", goodreads
-        print "Missing spacers:", nospacer
-        print "Bad tags:", badtag
-        continue
+    def write(self, read):
+        if self.firstLine==True:
+            self.file.write("@" + read.name)
+            self.firstLine=False
+        else:
+            self.file.write("\n@" + read.name)
+        self.file.write("\n" + read.seq)
+        self.file.write("\n" + read.spacer)
+        self.file.write("\n" + read.qual)
+        return(True)
     
-for file in infilelist:
-    file.close()
+    def close(self):
+        self.file.close()
+        return(True)
 
-for file in outfilelist:
-    file.close()
 
-print " "
-print "Summary statistics:"
-print "Total sequences processed:", totalreads
-print "Sequences passing filter:", goodreads
-print "Missing spacers:", nospacer
-print "Bad tags:", badtag
+def tagExtractFxn(x, blen):
+    '''this is the function that extracts the UID tags from both the 
+    forward and reverse read.  Assigns read1 the sequence from some 
+    position to the end, then read2 from some position to the end, 
+    then assigns tag1 from the 5'-end to length of the UID tag for 
+    read1 and then read 2.
+    '''
+    return(x[0][:blen], x[1][:blen])
+
+
+def hdrRenameFxn(x, y, z):
+    '''this function renames the header with the formatting of 
+    *header coordinates,etc*, *index seq*, *tag from read1*, *tag from read2*, *spacer from this read*
+    *read designation from original header*
+    '''
+    return("%s#%s%s/%s" % (x.split("#")[0], y, z,  x.split("/")[-1]))
+
+def main():
+    parser = ArgumentParser()
+    parser.add_argument('--infile1', default = None, dest = 'infile1', help = 'First input raw fastq file.  ')
+    parser.add_argument('--infile2', default = None, dest = 'infile2', help = 'Second input raw fastq file.  ')
+    parser.add_argument('--outfile1', default = None, dest = 'outfile1', help = 'Output file for first fastq reads.  ')
+    parser.add_argument('--outfile2', default = None, dest = 'outfile2', help = 'Output file for second fastq reads.  ')
+    parser.add_argument('--barcode_length', type = int, default = 12, dest = 'blength', help = 'Length of the duplex tag sequence. [12]')
+    parser.add_argument('--spacer_length', type = int, default = 5, dest = 'slength', help = 'Length of the spacer sequences used. [5]')
+    parser.add_argument('--read_out', type = int, default = 1000000, dest = 'rOut', help = 'How often you want to be told what the program is doing. [1000000]')
+    parser.add_argument('--adapter',  default = None,  dest = 'adapterSeq', help = 'Optional: Spacer sequence for filtering on the presence of the spacer.  This could be thrown off by low quality scores.')
+    o=parser.parse_args()
+
+
+    in1=fastQItterator(open(o.infile1, 'rU'))
+    in2=fastQItterator(open(o.infile2, 'rU'))
+    out1=fastqWriter(open(o.outfile1, 'w'))
+    out2=fastqWriter(open(o.outfile2, 'w'))
+
+    ctr=0
+    nospacer = 0
+    goodreads = 0
+    badtag = 0
+    oldBad = 0
+    isEOF=False
+
+    while isEOF==False:
+        read1 = in1.next()
+        read2 = in2.next()
+        if read1 == "EOF" or read2 == "EOF":
+            isEOF = True
+        else:
+            
+            ctr += 1
+            if o.adapterSeq != None and (read1.seq[o.blength:o.blength + o.slength] != o.adapterSeq or read2[o.blength:o.blength + o.slength] != o.adapterSeq):
+                nospacer += 1
+            else:
+                #extract tags
+                tag1, tag2 = tagExtractFxn((read1.seq, read2.seq),o.blength)
+                
+                #header reconstruction
+                read1.name = hdrRenameFxn(read1.name, tag1, tag2) 
+                read2.name = hdrRenameFxn(read2.name, tag1, tag2)
+                
+                #fastq reconstruction
+                if (tag1.isalpha() and tag1.count('N') == 0) and (tag2.isalpha() and tag2.count('N') == 0):
+                    rOut1 = read1[o.blength + o.slength:]
+                    rOut2 = read2[o.blength + o.slength:]
+                    out1.write(rOut1)
+                    out2.write(rOut2)
+                    goodreads += 1
+                else: 
+                    badtag += 1
+            if ctr%o.rOut==0:
+                sys.stderr.write("Total sequences processed: %s\n" % (ctr))
+                sys.stderr.write("Sequences passing filter: %s\n" % (goodreads))
+                sys.stderr.write("Missing spacers: %s\n" % (nospacer))
+                sys.stderr.write("Bad tags: %s\n\n" % (badtag))
+                if badtag == oldBad+o.rOut:
+                    sys.stderr.write("Warning!  Potential file error between lines %s and %s.  " % ((ctr-o.rOut)*4,(ctr)*4))
+                oldBad = badtag
+
+    in1.close()
+    in2.close()
+    out1.close()
+    out2.close()
+
+    sys.stderr.write("Summary statistics:\n")
+    sys.stderr.write("Total sequences processed: %s\n" % (ctr))
+    sys.stderr.write("Good sequences: %s\n" % (goodreads))
+    sys.stderr.write("Missing spacers: %s\n" % (nospacer))
+    sys.stderr.write("Bad tags: %s\n\n" % (badtag))
+
+if __name__ == "__main__":
+    main()
