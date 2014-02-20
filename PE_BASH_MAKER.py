@@ -298,7 +298,7 @@ def main():
             )
 
 
-    DCSout = SSCSout.replace("SSCS","DCS")
+    DCSout = SSCSout.replace("SSCS","DCS").replace(".bam","")
     outBash.write("#Find the DCSs \n\n")
     outBash.write("echo 'DuplexMaker start:' >&2\n")
     outBash.write("date >&2\n")
@@ -311,11 +311,11 @@ def main():
             (spath, SSCSsort, DCSout, o.Ncut, readlength, o.blength, o.progInd))
 
 
-    DCSr1 = DCSout.replace(".bam",".r1.fq")
+    DCSr1 = DCSout + ".r1.fq"
     DCSr1aln = DCSr1.replace(".fq",".aln")
-    DCSr2 = DCSout.replace(".bam",".r2.fq")
+    DCSr2 = DCSout + ".r2.fq"
     DCSr2aln = DCSr2.replace(".fq",".aln")
-    DCSaln = DCSout.replace(".bam",".aln.sam")
+    DCSaln = DCSout + ".aln.sam"
     outBash.write("echo 'BWA 2 start:' >&2\n")
     outBash.write("date >&2\n")
     outBash.write("echo 'bwa aln " + o.ref + " " + DCSr1  + " > " + DCSr1aln + "' >&2\n")
