@@ -1,94 +1,96 @@
-Duplex-Sequencing
+Duplex Sequencing
 =================
-README
+##README
 
-Duplex Sequencing software package
-Version 2.0
-October 28, 2013
-Programs by Scott Kennedy(1), Brendan Kohrn, and Mike Schmitt(1)
+Duplex Sequencing software package  
+Version 2.0  
+February 20, 2014  
+Programs by Scott Kennedy(1), Brendan Kohrn, and Mike Schmitt(1)  
+Several steps are based on prior work by Joe Hiatt  
 (1) Department of Pathology, University of Washington School of Medicine, Seattle, WA 98195
-Several steps are based on prior work by Joe Hiatt
 
-1. Glossery
-    Duplex Consensus Sequence (DCS):
+1. Glossery  
+    -Duplex Consensus Sequence (DCS):  
         A construct created by comparing two SSCSs.  Quality scores and cigar strings attached to DCS sequences are meaningless, though cigar strings regain meaning after reallignment.  
-    Duplex tag:
+        
+    -Duplex tag:  
         A random sequence of nucleotides that enables the identification of sequences resulting from the same starting molecule.  
-    Family:  
+        
+    -Family:  
         A group of reads that shares the same duplex tag. 
-    Read: 
-        A DNA sequence which has not been compressed by ConsensusMaker.py.  A raw read has not yet been modified by tag_to_header.py, while an SMI read has.
-    Single Stranded Consensus Sequence (SSCS):
+
+    -Read:  
+        A DNA sequence which has not been compressed by *ConsensusMaker.py*.  A raw read has not yet been modified by *tag_to_header.py*, while an SMI read has.  
+
+    -Single Stranded Consensus Sequence (SSCS):  
         A construct created by comparing multiple reads and deciding ambiguities by simple majority.  SSCSs are created by ConsensusMaker.py.  Quality scores attached to SSCSs are meaningless. although the cigar strings still have meaning.  
 
-2. Summary of process
+2. Summary of process  
     These programs are meant to be run in order, and result in the transformation of two input .FASTQ files containing data from two reads of an Ilumina sequencing run (or another next-generation sequencer) into a paired-end BAM file containing DCSs.  They will also generate a file containing each different tag present, and how many times it occured, as well as a file, called extraConsensus.bam containing SSCSs that, for one reason or another, didn't have a mate (This is possible even if all reads origionaly had mates if the mate had too few or too many reads).  
 
-3. Changes in this version from the last version (1.21)
-    Ability to run paired-end files
-    Bash script writing program
-    Choose which reads to make consensuses with  (dual_map v. mono_map)
-    Customizable file names
-    Filter for 'good' reads
-    Filter for 'good' SSCS's (not too many N's)
-    Filter for most common cigar string
-    Filter out reads with soft-clipping
+3. Changes in this version from the last version (1.21)  
+    Ability to run paired-end files  
+    Bash script writing program  
+    Choose which reads to make consensuses with  (dual_map v. mono_map)  
+    Customizable file names  
+    Filter for 'good' reads  
+    Filter for 'good' SSCS's (not too many N's)  
+    Filter for most common cigar string  
+    Filter out reads with soft-clipping  
 
-4. Dependencies
-    The following programs and packages must be installed on your computer.
+4. Dependencies  
+    The following programs and packages must be installed on your computer.  
 
-    BWA (written with V 0.6.2)
-    Samtools (written with V 0.1.17)
-    Python (written with V 2.7.3)
-    Pysam (written with V 0.7.5)
-    BioPython (written with V 1.62)
+    BWA (written with V 0.6.2)  
+    Samtools (written with V 0.1.17)  
+    Python (written with V 2.7.3)  
+    Pysam (written with V 0.7.5)  
+    BioPython (written with V 1.62)  
 
-5. Inputs:
-	read-1-raw-data.fq
-	read-2-raw-data.fq
-
-6. Usage
-
+5. Inputs:  
+	read-1-raw-data.fq  
+	read-2-raw-data.fq  
+ 
+6. Usage  
     Create a folder with both your fastq files in it.  
-    Run PE_BASH_MAKER.py, making sure to imput the correct read length (option --rlength), using the syntax shown below. Although it is recomended that all non-optional inputs be provided, the only inputs that are truely required are --ref, --r1src, and --r2src.  
+    Run *PE_BASH_MAKER.py*, making sure to imput the correct read length (option --rlength), using the syntax shown below. Although it is recomended that all non-optional inputs be provided, the only inputs that are truely required are --ref, --r1src, and --r2src.  
 
-           PE_BASH_MAKER.py [-h] [--ref REF] [--r1src R1SRC] [--r2src R2SRC]
-                            [--min MINMEM] [--max MAXMEM] [--cut CUTOFF]
-                            [--Ncut NCUT] [--rlength RLENGTH] [--blength BLENGTH]
-                            [--slength SLENGTH] [--progInd PROGIND]
-                            [--read_type READ_TYPE] [--isize ISIZE] [--absolute]
-                            [--parallel]
+           PE_BASH_MAKER.py [-h] [--ref REF] [--r1src R1SRC] [--r2src R2SRC]  
+                            [--min MINMEM] [--max MAXMEM] [--cut CUTOFF]  
+                            [--Ncut NCUT] [--rlength RLENGTH] [--blength BLENGTH]  
+                            [--slength SLENGTH] [--progInd PROGIND]  
+                            [--read_type READ_TYPE] [--isize ISIZE] [--absolute]  
+                            [--parallel]  
 
-    Arguments:
-      -h, --help            show this help message and exit
-      --ref REF             .FASTA file containing the reference genome
-      --r1src R1SRC         .fq file containing the raw read1 data
-      --r2src R2SRC         .fq file containing the raw read2 data
-      --min MINMEM          Minimum members for SSCS consensus [3]
-      --max MAXMEM          Maximum members for SSCS consensus [1000]
-      --cut CUTOFF          Mimimum percent matching for base choice in SSCS
-                            consensus [0.8]
-      --Ncut NCUT           Maxumum percent N's allowed [0.1]
-      --rlength RLENGTH     Length of a single read [85]
-      --blength BLENGTH     length of the barcode sequence on a unprocessed single
-                            read. [12]
-      --slength SLENGTH     length of the spacer sequence in a unprocessed single
-                            read.
-      --progInd PROGIND     how often you want to be told what a program is doing
-                            [1000000]
-      --read_type READ_TYPE
-                            Type of read. Options: dual_map: both reads map
-                            properly. Doesn't consider read pairs where only one
-                            read maps. mono_map: considers any read pair where one
-                            read maps. [mono_map]
-      --isize ISIZE         Optional: Maximum distance between read pairs [-1]
-      --absolute            Optional: Treat the program path as an absolute path
-      --parallel            Optional: Perform the alignments of both reads in
-                            parallel
+          Arguments:  
+          -h, --help            show this help message and exit  
+          --ref REF             .FASTA file containing the reference genome  
+          --r1src R1SRC         .fq file containing the raw read1 data  
+          --r2src R2SRC         .fq file containing the raw read2 data  
+          --min MINMEM          Minimum members for SSCS consensus [3]  
+          --max MAXMEM          Maximum members for SSCS consensus [1000]  
+          --cut CUTOFF          Mimimum percent matching for base choice in SSCS consensus [0.8]  
+          --Ncut NCUT           Maxumum percent N's allowed [0.1]  
+          --rlength RLENGTH     Length of a single read [85]  
+          --blength BLENGTH     length of the barcode sequence on a unprocessed single read. [12]  
+          --slength SLENGTH     length of the spacer sequence in a unprocessed single read.  
+          --progInd PROGIND     how often you want to be told what a program is doing  
+                                [1000000]  
+          --read_type READ_TYPE  
+                                Type of read. Options: dual_map: both reads map  
+                                properly. Doesn't consider read pairs where only one  
+                                read maps. mono_map: considers any read pair where one  
+                                read maps. [mono_map]  
+          --isize ISIZE         Optional: Maximum distance between read pairs [-1]  
+          --absolute            Optional: Treat the program path as an absolute path  
+          --parallel            Optional: Perform the alignments of both reads in  
+                                parallel  
 
-    Run the bash script from the command line with:
+    Run the bash script from the command line with:  
 
-    bash scriptname.sh 3>&1 1>&2 2>&3 | tee -a log.txt
+    ```bash
+    bash scriptname.sh 3>&1 1>&2 2>&3 | tee -a log.txt   
+    ```
 
     where scriptname.sh is the newly-created bash script (.sh file), and log.txt is the desired name of your log file.  This should run the rest of the process through to an output paired-end BAM file, copying the contents of stderr to a log file for documentation and reporting purposes.  
 
@@ -96,33 +98,33 @@ Several steps are based on prior work by Joe Hiatt
 
     It is strongly sugested that the final sorted BAM file undergo post-processing with picard-tools-1.70/AddOrReplaceReadGroups.jar and GATK/GenomeAnalysisTK.jar, before generating statistics.  
 
-7. Data Outputs:
-    * indicates a custome string representing one of the input files.  
-
-	BAM file containing position-sorted paired-end reads: 
-                                                PE.*.*.bam
-    BAM file containing paired-end SSCSs:       SSCS.*.*.bam
-    BAM file containing unpaired SSCSs:         SSCS.*.*_UP.bam
-    BAM file containing non-mapping or otherwise bad reads: 
-                                                SSCS.*.*_NM.bam
-    BAM file containing good reads with less common cigar scores:
-                                                SSCS.*.*_LCC.bam
-    tagcounts file:                             PE.*.*.tagcounts
-    BAM file containing paired-end DCSs:        DCS.*.*.bam
-    BAM file containing unpaired DCSs:          DCS.*.*_UP.bam
-
-    --note that these SSCS reads are all aligned relative to the reference genome, and have thus been reverse-complemented when necessary by the aligner. Thus these SSCS reads do NOT inform whether there is a strand bias due to DNA damage. Doing so requires looking at forward-mapping and reverse-mapping reads separately after the initial alignment. We intend to automate this type of analysis in a future version of our software.
-
-
-8. Live Outputs
-
-    The file Duplex-Process-Numbers.txt describes the number of reads in each file and the live outputs from each step.  
-
-9. Analysis
-    --While the main pipeline does no analysis, there are a number of options.  A shell script to perform analysis based on mutation frequency is provided, and approximates the analysis found in version 1.21.  If this script is to be used,  GATK and Picard Tools must be present on the computer, and the paths to both programs must be set propperly within the script.  Once this is done, the script can be run from any folder, using
-        
-        bash /PATH/PostDCSProcessing.sh DCS.*.*.aln.sort.bam /REFPATH/ref_genome.fasta minDepth minClonality maxClonality 2>&1 | tee -a log.txt
+7. Data Outputs:  
+    These are only valid when using the *PE_BASH_MAKER.py* script
+    \* indicates a custome string representing one of the input files.  
     
+    File Description                                               | File name
+    -------------------------------------------------------------- | ---------------------------------
+    BAM file containing position-sorted paired-end reads:          | PE.\*.\*.bam
+    BAM file containing paired-end SSCSs:                          | SSCS.\*.\*.bam
+    BAM file containing unpaired SSCSs:                            | SSCS.\*.\*\_UP.bam
+    BAM file containing non-mapping or otherwise bad reads:        | SSCS.\*.\*\_NM.bam
+    BAM file containing good reads with less common cigar scores:  | SSCS.\*.\*\_LCC.bam
+    tagcounts file:                                                | PE.\*.\*.tagcounts
+    Tagstats file:                                                 | PE.\*.\*.tagstats
+    Fastq files containing DCSs:                                   | DCS.\*.\*.r1.fq and PE.\*.\*.r2.fq
+    BAM file containing paired-end, sorted, alligned DCSs          | DCS.\*.\*.aln.sort.bam
+
+    --note that these SSCS reads are all aligned relative to the reference genome, and have thus been reverse-complemented when necessary by the aligner. Thus these SSCS reads do NOT inform whether there is a strand bias due to DNA damage. Doing so requires looking at forward-mapping and reverse-mapping reads separately after the initial alignment. We intend to automate this type of analysis in a future version of our software.  
+
+8. Live Outputs  
+
+    The file Duplex-Process-Numbers.txt describes the number of reads in each file and the live outputs from each step.    
+
+9. Analysis  
+    --While the main pipeline does no analysis, there are a number of options.  A shell script to perform analysis based on mutation frequency is provided, and approximates the analysis found in version 1.21.  If this script is to be used,  GATK and Picard Tools must be present on the computer, and the paths to both programs must be set propperly within the script.  Once this is done, the script can be run from any folder, using  
+        ```bash
+        bash /PATH/PostDCSProcessing.sh DCS.*.*.aln.sort.bam /REFPATH/ref_genome.fasta minDepth minClonality maxClonality 2>&1 | tee -a log.txt
+        ```
     where minDepth is an integer, minClonality is a decimal and maxClonality is a decimal.  
 
     --We have noticed that alignment errors at the ends of reads can result in false mutations. To eliminate these, we hard-clip the first and last 5 nt of each read after alignment: DCS.*.*.readgroups.clipped.bam
@@ -153,11 +155,11 @@ Several steps are based on prior work by Joe Hiatt
 
     This information is also found at the top of each program, respectivly.  
 
-    PE_BASH_MAKER.py
-        PE Bash Maker V 1.0
-        by Brendan Kohrn
+    PE_BASH_MAKER.py  
+        PE Bash Maker V 1.0  
+        by Brendan Kohrn  
         
-        Write a bash script to run the process.  
+        Write a bash script to run the process.    
         
         This program makes a shell script so that the user will not need to 
         enter the commands for all the programs himself.  When using it, 
