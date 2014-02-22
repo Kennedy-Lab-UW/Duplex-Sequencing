@@ -101,14 +101,16 @@ def main():
         # Reinitialize first line
         readNum += 1
         if readOne==True:
-            readDict[firstTag] = [firstRead.flag, firstRead.rname, firstRead.pos, firstRead.mrnm, firstRead.mpos, firstRead.isize, firstRead.seq]
-            readOne=False
+            if firstRead.is_unmapped == False:
+                readDict[firstTag] = [firstRead.flag, firstRead.rname, firstRead.pos, firstRead.mrnm, firstRead.mpos, firstRead.isize, firstRead.seq]
+                readOne=False
         
         while line.pos == firstRead.pos and fileDone==False:
             tag = line.qname.split(":")[0] # Extract the barcode
             # Add the sequence to the read dictionary
 
-            readDict[tag] = [line.flag, line.rname, line.pos, line.mrnm, line.mpos, line.isize, line.seq]
+            if line.is_unmapped == False:
+                readDict[tag] = [line.flag, line.rname, line.pos, line.mrnm, line.mpos, line.isize, line.seq]
             try: # Keep StopIteration error from happening
                 line = bamEntry.next() # Itterate the line
                 readNum += 1
