@@ -160,33 +160,33 @@ Several steps are based on prior work by Joe Hiatt
                                 parallelOptional: Perform the alignments of both reads in parallel.  This is faster but requires more memory (minimum 16 GB recommended for the human genome). 
 
 
-    tag_to_header.py
-        Tag To Header
-        Version 2.0
-        By Scott Kennedy, Joe Hiatt, Brendan Kohrn and Mike Schmitt
-        October 23, 2013
+    tag_to_header.py  
+        Tag To Header  
+	Version 2.0  
+	By Joe Hiatt, Scott Kennedy(1), Brendan Kohrn and Mike Schmitt(1)  
+	(1) Department of Pathology, University of Washington School of Medicine, Seattle, WA 98195  
+	March 4, 2014  
+	
+	Isolate duplex tags, move them from within the sequenced read to the header region, and remove the spacer  
+	region.  
 
-        Parses duplex tags from the sequence reads and appends the tag to the header (i.e. QNAME field) of each read.  Also removes the spacer region.  
-
-        Usage: tag_to_header.py [-h] [--infile1 INFILE1] [--infile2 INFILE2]
-                                [--outfile1 OUTFILE1] [--outfile2 OUTFILE2]
-                                [--barcode_length BLENGTH] [--spacer_length SLENGTH]
-                                [--read_out ROUT] [--adapter ADAPTERSEQ]
-
-        Optional arguments:
-          -h, --help            show this help message and exit
-          --infile1 INFILE1     Name of raw FASTQ file for read 1.
-          --infile2 INFILE2     Name of raw FASTQ file for read 2.
-          --outfile1 OUTFILE1   Name of output file for first FASTQ read file.
-          --outfile2 OUTFILE2   Name of output file for second FASTQ read file.
-          --barcode_length BLENGTH
-                                Length of the duplex tag sequence. [12]
-          --spacer_length SLENGTH
-                                Length of the spacer sequences used. [12]
-          --read_out ROUT
-          --adapter ADAPTERSEQ  Optional: Spacer sequence for filtering on the
-                                presence of the spacer. This could be thrown off by
-                                low quality scores.
+	Usage: tag_to_header.py --infile1 INFILE1.fq --infile2 INFILE2.fq --outfile1 OUTFILE1.fq.smi  
+	       --outfile2 OUTFILE2.fq.smi --barcode_length BLENGTH --spacer_length SLENGTH  
+	       [--read_out ROUT] [--adapter ADAPTERSEQ]  
+       <table><tr><td>
+	Required arguments:</td><td></td></tr>
+	<tr><td>--infile1, --infile2 </td><td>Input fastq files containing the raw sequence data.  </td></tr>
+	<tr><td>--outfile1, --outfile2 </td><td>Output fastq  files for post-tag_to_header sequences.  </td></tr>
+	<tr><td>--barcode_length </td><td>Length of the duplex tag sequence. [12]  </td></tr>
+	<tr><td>--spacer_length</td><td>Length of the spacer sequences used. [5] </td></tr> 
+	</table>
+	
+	<table
+	<tr><td>Optional arguments:</td><td></td></tr>
+	<tr>  <td>-h</td><td>Show a help message and exit.  Useful for entering commands because it shows all the arguments. Should only be entered by itself.   </td></tr>
+	  <tr><td>--adapter</td><td>Optional: Spacer sequence for filtering on the presence of the spacer.  This could be thrown off by low quality scores.  </td></tr>
+	<tr><td>--read_out </td><td>How often you want to be told what the program is doing. Defaults to 1000000.  </td></tr>
+	</table>
 
     ConsensusMaker.py
         Consensus Maker
@@ -212,81 +212,66 @@ Several steps are based on prior work by Joe Hiatt
             
             Note that quality scores in outputs 1, 2, and 3 are just space fillers and do not signify anything about the quality of the sequence.   
 
-        Usage: ConsensusMaker.py [-h] [--infile INFILE] [--tagfile TAGFILE]
-                                 [--outfile OUTFILE] [--rep_filt REP_FILT]
-                                 [--minmem MINMEM] [--maxmem MAXMEM] [--cutoff CUTOFF]
-                                 [--Ncutoff NCUTOFF] [--readlength READ_LENGTH]
-                                 [--read_type READ_TYPE] [--isize ISIZE]
-                                 [--read_out ROUT]
+        ConsensusMaker.py
+	Usage: 	ConsensusMaker.py --infile INFILE --tagfile TAGFILE --outfile OUTFILE  --minmem MINMEM --maxmem MAXMEM 
+		--cutoff CUTOFF --Ncutoff NCUTOFF --readlength READ_LENGTH --read_type READ_TYPE --filt FILT 
+		[--isize ISIZE] [--read_out ROUT] [--rep_filt REP_FILT]
+	<table><tr><td>Required arguments:</td><td></td></tr>
+		<tr><td>--infile</td><td>Sorted, paired-end .bam file containing aligned sequences.  </td></tr>
+		<tr><td>--outfile</td><td>Output bam file for SSCSs.  </td></tr>
+		<tr><td>--tagfile</td><td>output tagcounts file</td></tr>
+		<tr><td>--minmem</td><td>Minimum number of reads allowed to comprise a consensus. [3]</td></tr>
+		<tr><td>--maxmem</td><td>Maximum number of reads allowed to comprise a consensus. [1000]</td></tr></table>
+		
+		
+	Details:  
+	<table><tr><td>--minmem,  --maxmem</td><td> set the range of family sizes (constrained by cigar string) that can be used to make a consensus sequence.  Examples use --minmem of 3 and --maxmem of 1000  </td></tr>
+		<tr><td></td><td><table><tr><td>Example 1:</td><td>Ten reads (readlength = 80) have a particular barcode.  Of these ten, nine of them have a cigar string of 80M, while one has a cigar string of 39M1I40M.  Only the nine with a cigar string of 80M are sent on to be made into a SSCS.  </td></tr>
+		<tr><td>Example 2:</td><td>Three reads (readlength 80) have a particular barcode.  Of these, two have a cigar string of 80M, and one has a cigar string of 20M1D60M.  No SSCS results.  </td></tr>
+		<tr><td>Example 3: </td><td>A family with over 1000 members exists.  A random sample of 1000 reads from that family is used to make a SSCS.</td></tr></table></td></tr>
+	<tr><td>--cutoff</td><td>Percentage of nucleotides at a given position in a read that must be identical in order for a consensus be called at that position. [0.7]</td></tr></table>
+		Example:
+--cutoff = 0.7	Four reads (readlength = 10) are as follows:
+			Read 1: ACTGATACTT
+			Read 2: ACTGAAACCT
+			Read 3: ACTGATACCT
+			Read 4: ACTGATACTT
+			The resulting SSCS is:
+			             ACTGATACNT
+	--Ncutoff	With --filt 'n', maximum fraction of Ns allowed in a consensus [1.0]
+		Example:
+--Ncutoff = .1, 
+--readlength = 20	Two SSCSs are generated as follows:
+      			SSCS 1: ACGTGANCTAGTNCTNTACC
+        			SSCS 2: GATCTAGTNCATGACCGATA
+        			SSCS 2 passes the N filter (10%) with 1/20 = 5% Ns, while SSCS 1 does not with 3/20 = 15% Ns.
+	--readlength 	Length of the input read that is being used. [80]
+If this value is set incorrectly, the program will often crash with an error message about sequence length not matching quality score length, or will output an empty SSCS bam file.  
+	--read_type	A string specifying which types of read to consider. ['dpm']
+		Options are:		
+    			d:  Paired-end reads where both reads in the pair map, and where the two are properly paired (read 2 maps in the opposite direction and on the opposite strand from read 1).  
+			Flags are 99, 83, 163, and 147.
 
-        Optional arguments:
-          -h, --help            show this help message and exit
-          --infile INFILE       Name of input BAM file
-          --tagfile TAGFILE     Name of output tagcounts file that contains statistics on tag family size.  Used to for quality control purposes.
-          --outfile OUTFILE     Name of output BAM file
-          --rep_filt REP_FILT   Remove tags with homomeric runs of nucleotides of
-                                length x. [9]
-          --minmem MINMEM       Minimum number of reads allowed to comprise a
-                                consensus. [3]
-          --maxmem MAXMEM       Maximum number of reads allowed to comprise a
-                                consensus. [1000]
-          --cutoff CUTOFF       Percentage of nucleotides at a given position in a
-                                read that must be identical in order for a consensus
-                                to be called at that position. [0.7]
-          --Ncutoff NCUTOFF     Maximum fraction of Ns allowed in a consensus [1.0]
-          --readlength READ_LENGTH Length of the input read that is being used. [84]
-                                
-          --read_type READ_TYPE Type of reads allowed to be considered for consensus making. d: Properly paired reads, p: Paired-end reads where
-                                both reads in the pair map, but the two are not properly paired,  m: Paired-end reads where only one read in the pair maps, n: Paired-end reads where neither read maps, s: Single end mapped reads (compatibility option, not recommended for use)[dpm]
-          --filt                Sets which filters are used. o: Overlap filter, s: Softclipping filter, n: N filter [osn]
-          --Ncutoff             with '--filt n' enabled, sets the maximum percentage of Ns allowed in a SSCS [0.3]
-          --isize ISIZE         maximum distance between read pairs
-          --read_out ROUT       How often you want to be told what the program is
-                                doing. [1000000]
+   	 		p: Paired-end reads where both reads in the pair map, but the two are not properly paired.  
+			Flags are 97, 81, 161, 145, 129, 65, 177, and 113.
+		   	m: Paired-end reads where only one read in the pair maps.  
+			Flags are 181, 117, 137, 133, 73, 89, 69, and 153.
+		    	n: Paired-end reads where neither read in the pair maps, and single end unmapped reads. 
+			Flags are 141, 77, and 4.  
+    			s: Single end mapped reads. 
+			Flags are 0 and 16.  
+	--filt 	A string indicating which filters should be implemented.  ['os']’
+		Filters are:		
+    			o: Overlap filter. Filters out any read pairs which overlap.  Only works on  reads of type d (see above).
+    			s: Softclipping filter.  Filters out any reads which have been soft- clipped in alignment.  This avoids later problems.
+    			n: N filter. Filters out consensus sequences with a higher percentage of Ns than the threshold imposed by --Ncutoff.  Without this option, 
+--Ncutoff doesn't do anything.  
+Optional arguments:
+	-h	Show a help message and exit.  Useful for entering commands because it shows all the arguments. Should only be entered by itself.  
+	--isize 	If not -1, sets the maximum distance between read 1 and read 2 for the two to not be considered unpaired.  Only works if --read_type is 'd' [-1].
+	--rep_filt 	Remove tags with homomeric runs of nucleotides of length x. [9]
+	--read_out	How often you want to be told what the program is doing. Defaults to 1000000.  In most cases, this is higher than the number of SSCS reads.  
 
-        Details of different arguments:
-            --minmem and --maxmem set the range of family sizes that can be used to make a consensus sequence.  Examples use --minmem of 3 and --maxmem of 1000
-                Example 1: 
-                    10 reads (read length = 80) have the same tag sequence.  Of these 10, 9 of them have a CIGAR string of 80M, while one has a cigar string of 39M1I40M.  Only the 9 with a CIGAR string of 80M are sent on to be made into a SSCS.  
-                Example 2:
-                    3 reads (read length = 80) have the same tag sequence.  Of these, 2 have a CIGAR string of 80M, and one has a cigar string of 20M1D60M.  No SSCS results.
-                Example 3: 
-                    A family with over 1000 members exists.  A random sample of 1000 reads from that family is used to make a SSCS.
-
-            --cutoff sets the strictness of the consensus making.    
-                Example (--cutoff = 0.7):
-                    Four reads (readlength = 10) are as follows:
-                        Read 1: ACTGATACTT
-                        Read 2: ACTGAAACCT
-                        Read 3: ACTGATACCT
-                        Read 4: ACTGATACTT
-                    The resulting SSCS is:
-                        ACTGATACNT
-
-            --Ncutoff, with --filt n enabled, sets the maximum percentage of Ns allowed in a SSCS.  
-                Example (--Ncutoff = .1, --readlength = 20):
-                    Two SSCSs are generated as follows:
-                        SSCS 1: ACGTGANCTAGTNCTNTACC
-                        SSCS 2: GATCTAGTNCATGACCGATA
-                    SSCS 2 passes the n filter (10%) with 1/20 = 5% Ns, while SSCS 1 does not with 3/20 = 15% Ns.
-
-            --readlength sets the length of the reads.  If this value is set incorrectly, the program will often crash with an error message about sequence length not matching quality score length or will output an empty SSCS bam file.  
-
-            --read_type sets which reads are considered for consensus making.  Options are: 
-                d:  Paired-end reads where both reads in the pair map, and where the two are properly paired (read 2 maps in the opposite direction and on the opposite strand from read 1).  Flags are 99, 83, 163, and 147  .
-                p: Paired-end reads where both reads in the pair map, but the two are not properly paired.  Flags are 97, 81, 161, 145, 129, 65, 177, and 113.
-                m: Paired-end reads where only one read in the pair maps.  Flags are 181, 117, 137, 133, 73, 89, 69, and 153.
-                n: Paired-end reads where neither read in the pair maps and single end unmapped reads.  Flags are 141, 77, and 4.  
-                s: Single end mapped reads.  Flags are 0 and 16.
-                Importantly, more than 1 option can be invoked simultaneously 
-
-            --filt sets which filters are used.  Options are: 
-                o: Overlap filter. Filters out any read pairs which overlap.  Only works on  reads of type d (see above).
-                s: Softclipping filter.  Filters out any reads which have been soft-clipped in alignment.  This avoids later problems with hard-clipping.  
-                n: N filter. Filters out consensus sequences with a higher percentage of Ns than the threshold imposed by --Ncutoff.  Without this option, --Ncutoff doesn't do anything.  
-
-            --isize
-                If not -1, sets the maximum distance between read 1 and read 2 for the two to not be considered unpaired.  Only works if --read_type is 'd'
 
     DuplexMaker.py
         DCS Filter
