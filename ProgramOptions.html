@@ -1,0 +1,414 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+<title>Untitled Document</title>
+</head>
+
+<body>
+<table border="0" cellspacing="0" cellpadding="0" width="583">
+  <tr>
+    <td width="583" colspan="9" valign="top"><p><strong><u>tag_to_header.py</u></strong></p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p><em>Usage: </em></p></td>
+    <td width="516" colspan="8" valign="top"><p>tag_to_header.py    --infile1 INFILE1.fq --infile2 INFILE2.fq --outfile1 OUTFILE1.fq.smi --outfile2    OUTFILE2.fq.smi --barcode_length BLENGTH --spacer_length SLENGTH [--read_out    ROUT] [--adapter ADAPTERSEQ]</p></td>
+  </tr>
+  <tr>
+    <td width="583" colspan="9" valign="top"><p><em>Required arguments:</em></p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--infile1, <br />
+      --infile2</p></td>
+    <td width="390" colspan="7" valign="top"><p>Inp<a name="_GoBack" id="_GoBack"></a>ut fastq files containing the raw sequence data. </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>outfile1, <br />
+      --outfile2</p></td>
+    <td width="390" colspan="7" valign="top"><p>Output    fastq &nbsp;files for post-tag_to_header    sequences.</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--barcode_length</p></td>
+    <td width="390" colspan="7" valign="top"><p>Length    of the duplex tag sequence. [12]</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--spacer_length</p></td>
+    <td width="390" colspan="7" valign="top"><p>Length    of the spacer sequences used. [5]</p></td>
+  </tr>
+  <tr>
+    <td width="583" colspan="9" valign="top"><p><em>Optional arguments:</em></p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>-h</p></td>
+    <td width="390" colspan="7" valign="top"><p>Show a    help message and exit.&nbsp; Useful for    entering commands because it shows all the arguments. Should only be entered    by itself.&nbsp; </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--adapter</p></td>
+    <td width="390" colspan="7" valign="top"><p>Optional:    Spacer sequence for filtering on the presence of the spacer. This could be    thrown off by low quality scores.</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--read_out</p></td>
+    <td width="390" colspan="7" valign="top"><p>How    often you want to be told what the program is doing. Defaults to    1000000.&nbsp; In most cases, this is higher    than the number of SSCS reads.&nbsp; </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="236" colspan="5" valign="top"><p>&nbsp;</p></td>
+    <td width="38" valign="top"><p>&nbsp;</p></td>
+    <td width="116" valign="top"><p>&nbsp;</p></td>
+  </tr>
+  <tr>
+    <td width="583" colspan="9" valign="top"><p><strong><u>ConsensusMaker.py</u></strong></p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p><em>Usage: </em></p></td>
+    <td width="516" colspan="8" valign="top"><p>ConsensusMaker.py    --infile INFILE --tagfile TAGFILE --outfile OUTFILE&nbsp; --minmem MINMEM --maxmem MAXMEM --cutoff    CUTOFF --Ncutoff NCUTOFF --readlength READ_LENGTH --read_type READ_TYPE    --filt FILT [--isize ISIZE] [--read_out ROUT] [--rep_filt REP_FILT]</p></td>
+  </tr>
+  <tr>
+    <td width="583" colspan="9" valign="top"><p><em>Required arguments:</em></p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--infile </p></td>
+    <td width="390" colspan="7" valign="top"><p>Sorted,    paired-end .bam file containing aligned sequences.&nbsp; </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--outfile</p></td>
+    <td width="390" colspan="7" valign="top"><p>Output    bam file for SSCSs.&nbsp; </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--tagfile </p></td>
+    <td width="390" colspan="7" valign="top"><p>output    tagcounts file</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--minmem</p></td>
+    <td width="390" colspan="7" valign="top"><p>Minimum    number of reads allowed to comprise a consensus. [3]</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--maxmem</p></td>
+    <td width="390" colspan="7" valign="top"><p>Maximum    number of reads allowed to comprise a consensus. [1000]</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="390" colspan="7" valign="top"><p>--minmem    and --maxmem set the range of family sizes (constrained by cigar string) that    can be used to make a consensus sequence.&nbsp;    Examples use --minmem of 3 and --maxmem of 1000</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="126" colspan="4" valign="top"><p>Example    1: </p></td>
+    <td width="264" colspan="3" valign="top"><p>Ten    reads (readlength = 80) have a particular barcode.&nbsp; Of these ten, nine of them have a cigar    string of 80M, while one has a cigar string of 39M1I40M.&nbsp; Only the nine with a cigar string of 80M    are sent on to be made into a SSCS.</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="126" colspan="4" valign="top"><p>Example    2:</p></td>
+    <td width="264" colspan="3" valign="top"><p>Three    reads (readlength 80) have a particular barcode.&nbsp; Of these, two have a cigar string of 80M,    and one has a cigar string of 20M1D60M.&nbsp;    No SSCS results.</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="126" colspan="4" valign="top"><p>Example    3: </p></td>
+    <td width="264" colspan="3" valign="top"><p>A    family with over 1000 members exists.&nbsp;    A random sample of 1000 reads from that family is used to make a SSCS.</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--cutoff</p></td>
+    <td width="390" colspan="7" valign="top"><p>Percentage    of nucleotides at a given position in a read that must be identical in order    for a consensus be called at that position. [0.7] </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="126" colspan="4" valign="top"><p>Example:<br />
+      --cutoff    = 0.7</p></td>
+    <td width="264" colspan="3" valign="top"><p>Four    reads (readlength = 10) are as follows:</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="126" colspan="4" valign="top"><p>&nbsp;</p></td>
+    <td width="264" colspan="3" valign="top"><p>Read    1: ACTGATACTT</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="126" colspan="4" valign="top"><p>&nbsp;</p></td>
+    <td width="264" colspan="3" valign="top"><p>Read    2: ACTGAAACCT</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="126" colspan="4" valign="top"><p>&nbsp;</p></td>
+    <td width="264" colspan="3" valign="top"><p>Read    3: ACTGATACCT</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="126" colspan="4" valign="top"><p>&nbsp;</p></td>
+    <td width="264" colspan="3" valign="top"><p>Read    4: ACTGATACTT</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="126" colspan="4" valign="top"><p>&nbsp;</p></td>
+    <td width="264" colspan="3" valign="top"><p>The    resulting SSCS is:</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="126" colspan="4" valign="top"><p>&nbsp;</p></td>
+    <td width="264" colspan="3" valign="top"><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ACTGATACNT</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--Ncutoff</p></td>
+    <td width="390" colspan="7" valign="top"><p>With    --filt 'n', maximum fraction of Ns allowed in a consensus [1.0]</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="126" colspan="4" valign="top"><p>Example:<br />
+      --Ncutoff    = .1, <br />
+      --readlength    = 20</p></td>
+    <td width="264" colspan="3" valign="top"><p>Two    SSCSs are generated as follows:</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="66" colspan="2" valign="top"><p>&nbsp;</p></td>
+    <td width="324" colspan="5" valign="top"><p>SSCS    1: ACGTGANCTAGTNCTNTACC</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="66" colspan="2" valign="top"><p>&nbsp;</p></td>
+    <td width="324" colspan="5" valign="top"><p>SSCS    2: GATCTAGTNCATGACCGATA</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="66" colspan="2" valign="top"><p>&nbsp;</p></td>
+    <td width="324" colspan="5" valign="top"><p>SSCS 2    passes the N filter (10%) with 1/20 = 5% Ns, while SSCS 1 does not with 3/20    = 15% Ns.</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--readlength </p></td>
+    <td width="390" colspan="7" valign="top"><p>Length    of the input read that is being used. [80]<br />
+      If    this value is set incorrectly, the program will often crash with an error message    about sequence length not matching quality score length, or will output an    empty SSCS bam file.&nbsp; </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--read_type</p></td>
+    <td width="390" colspan="7" valign="top"><p>A    string specifying which types of read to consider. ['dpm']</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="236" colspan="5" valign="top"><p>Options    are:</p></td>
+    <td width="38" valign="top"><p>&nbsp;</p></td>
+    <td width="116" valign="top"><p>&nbsp;</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;&nbsp;&nbsp; </p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="54" valign="top"><p>&nbsp;</p></td>
+    <td width="336" colspan="6" valign="top"><p>d:&nbsp; Paired-end reads where both reads in the    pair map, and where the two are properly paired (read 2 maps in the opposite    direction and on the opposite strand from read 1).&nbsp; </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="72" colspan="3" valign="top"><p>&nbsp;</p></td>
+    <td width="318" colspan="4" valign="top"><p>Flags    are 99, 83, 163, and 147.</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;&nbsp; </p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="54" valign="top"><p>&nbsp;</p></td>
+    <td width="336" colspan="6" valign="top"><p>p:    Paired-end reads where both reads in the pair map, but the two are not    properly paired.&nbsp; </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="72" colspan="3" valign="top"><p>&nbsp;</p></td>
+    <td width="318" colspan="4" valign="top"><p>Flags    are 97, 81, 161, 145, 129, 65, 177, and 113.</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="54" valign="top"><p>&nbsp;&nbsp; </p></td>
+    <td width="336" colspan="6" valign="top"><p>m:    Paired-end reads where only one read in the pair maps.&nbsp; </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="72" colspan="3" valign="top"><p>&nbsp;</p></td>
+    <td width="318" colspan="4" valign="top"><p>Flags    are 181, 117, 137, 133, 73, 89, 69, and 153.</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="54" valign="top"><p>&nbsp;&nbsp;&nbsp; </p></td>
+    <td width="336" colspan="6" valign="top"><p>n:    Paired-end reads where neither read in the pair maps, and single end unmapped    reads. </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="72" colspan="3" valign="top"><p>&nbsp;</p></td>
+    <td width="318" colspan="4" valign="top"><p>Flags    are 141, 77, and 4.&nbsp; </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;&nbsp;&nbsp; </p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="54" valign="top"><p>&nbsp;</p></td>
+    <td width="336" colspan="6" valign="top"><p>s:    Single end mapped reads. </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="72" colspan="3" valign="top"><p>&nbsp;</p></td>
+    <td width="318" colspan="4" valign="top"><p>Flags    are 0 and 16.&nbsp; </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--filt </p></td>
+    <td width="390" colspan="7" valign="top"><p>A    string indicating which filters should be implemented.&nbsp; ['os']&rsquo;</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="236" colspan="5" valign="top"><p>Filters    are:</p></td>
+    <td width="38" valign="top"><p>&nbsp;</p></td>
+    <td width="116" valign="top"><p>&nbsp;</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;&nbsp;&nbsp; </p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="54" valign="top"><p>&nbsp;</p></td>
+    <td width="336" colspan="6" valign="top"><p>o:    Overlap filter. Filters out any read pairs which overlap.&nbsp; Only works on&nbsp; reads of type d (see above).</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;&nbsp;&nbsp; </p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="54" valign="top"><p>&nbsp;</p></td>
+    <td width="336" colspan="6" valign="top"><p>s:    Softclipping filter.&nbsp; Filters out any    reads which have been soft- clipped in alignment.&nbsp; This avoids later problems.</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;&nbsp;&nbsp; </p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="54" valign="top"><p>&nbsp;</p></td>
+    <td width="336" colspan="6" valign="top"><p>n: N    filter. Filters out consensus sequences with a higher percentage of Ns than    the threshold imposed by --Ncutoff.&nbsp;    Without this option, <br />
+      --Ncutoff    doesn't do anything.&nbsp; </p></td>
+  </tr>
+  <tr>
+    <td width="583" colspan="9" valign="top"><p><em>Optional arguments:</em></p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>-h</p></td>
+    <td width="390" colspan="7" valign="top"><p>Show a    help message and exit.&nbsp; Useful for    entering commands because it shows all the arguments. Should only be entered    by itself.&nbsp; </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--isize </p></td>
+    <td width="390" colspan="7" valign="top"><p>If not    -1, sets the maximum distance between read 1 and read 2 for the two to not be    considered unpaired.&nbsp; Only works if    --read_type is 'd' [-1].</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--rep_filt </p></td>
+    <td width="390" colspan="7" valign="top"><p>Remove    tags with homomeric runs of nucleotides of length x. [9]</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--read_out</p></td>
+    <td width="390" colspan="7" valign="top"><p>How    often you want to be told what the program is doing. Defaults to    1000000.&nbsp; In most cases, this is higher    than the number of SSCS reads.&nbsp; </p></td>
+  </tr>
+  <tr>
+    <td width="583" colspan="9" valign="top"><p><strong><u>DuplexMaker.py</u></strong></p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p><em>Usage: </em></p></td>
+    <td width="516" colspan="8" valign="top"><p>DuplexMaker.py    --infile INFILE --outfile OUTFILE --Ncutoff NCUTOFF --readlength READ_LENGTH    --barcode_length BLENGTH [--read_out ROUT]</p></td>
+  </tr>
+  <tr>
+    <td width="583" colspan="9" valign="top"><p><em>Required arguments:</em></p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--infile</p></td>
+    <td width="390" colspan="7" valign="top"><p>Input    .bam file containing sorted SSCSs. </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--outfile </p></td>
+    <td width="390" colspan="7" valign="top"><p>Output    .bam file.</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--Ncutoff</p></td>
+    <td width="390" colspan="7" valign="top"><p>&nbsp;&nbsp;&nbsp;&nbsp; Maximum percentage of Ns allowed in a    consensus [1.0]</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="126" colspan="4" valign="top"><p>Example:<br />
+      --Ncutoff    = .1<br />
+      --readlength    = 20</p></td>
+    <td width="264" colspan="3" valign="top"><p>Two    DCSs are generated as follows:</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="72" colspan="3" valign="top"><p>&nbsp;</p></td>
+    <td width="318" colspan="4" valign="top"><p>DCS 1:    ACGTGANCTAGTNCTNTACC</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="72" colspan="3" valign="top"><p>&nbsp;</p></td>
+    <td width="318" colspan="4" valign="top"><p>DCS 2:    GATCTAGTNCATGACCGATA</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="72" colspan="3" valign="top"><p>&nbsp;</p></td>
+    <td width="318" colspan="4" valign="top"><p>DCS 2    passes the n filter (10%) with 1/20 = 5% Ns, while DCS 1 does not with 3/20 =    15% Ns.</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--readlength</p></td>
+    <td width="390" colspan="7" valign="top"><p>Length    of the input read that is being used. [80]<br />
+      If    this value is set incorrectly, the program will often crash with an error message    about sequence length not matching quality score length, or will output an    empty DCS bam file.&nbsp; </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--barcode_length</p></td>
+    <td width="390" colspan="7" valign="top"><p>Length    of the barcode sequence. Should match the value in tag_to_header.&nbsp; [12]</p></td>
+  </tr>
+  <tr>
+    <td width="583" colspan="9" valign="top"><p><em>Optional Arguments:</em></p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>-h</p></td>
+    <td width="390" colspan="7" valign="top"><p>Show a    help message and exit.&nbsp; Useful for    entering commands because it shows all the arguments. Should only be entered    by itself.&nbsp; </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--read_out</p></td>
+    <td width="390" colspan="7" valign="top"><p>How    often you want to be told what the program is doing. Defaults to    1000000.&nbsp; In most cases, this is higher    than the number of SSCS reads.&nbsp; </p></td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+</body>
+</html>
