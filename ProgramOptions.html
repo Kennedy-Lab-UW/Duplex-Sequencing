@@ -3,10 +3,99 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
 <title>Untitled Document</title>
+<style type="text/css">
+<!--
+.style1 {
+	color: #FF0000;
+	font-weight: bold;
+}
+-->
+</style>
 </head>
 
 <body>
-<table border="0" cellspacing="0" cellpadding="0" width="583">
+<table border="1" cellspacing="0" cellpadding="0" width="583">
+  <tr>
+    <td width="583" colspan="9" valign="top"><p><strong><u>PE_BASH_MAKER.py</u></strong></p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p><em>Usage: </em></p></td>
+    <td width="516" colspan="8" valign="top"><p>PE_BASH_MAKER.py    --ref REF --r1src R1SRC.fq --r2src R2SRC.fq<br />
+      &nbsp;--min MINMEM --max MAXMEM --cut CUTOFF --Ncut    NCUT <br />
+      --rlength    RLENGTH --blength BLENGTH --slength SLENGTH <br />
+      --read_type    READ_TYPE --filt FILT [--progInd PROGIND] [--isize ISIZE] [--absolute] [--parallel]</p></td>
+  </tr>
+  <tr>
+    <td width="583" colspan="9" valign="top"><p><em>Required arguments:</em></p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--ref</p></td>
+    <td width="390" colspan="7" valign="top"><p>The    reference genome.</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--r1src, <br />
+      --r2src</p></td>
+    <td width="390" colspan="7" valign="top"><p>Input fastq    files containing the raw sequence data. </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--min,    --max</p></td>
+    <td width="390" colspan="7" valign="top"><p>Equivalent    to --minmem, --maxmem used in ConsensusMaker.py, see below.&nbsp; </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--blength</p></td>
+    <td width="390" colspan="7" valign="top"><p>Equivalent    to --barcode_length used in tag_to_header.py, see below.&nbsp; </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--slength</p></td>
+    <td width="390" colspan="7" valign="top"><p>Equivalent    to --spacer_length used in tag_to_header.py, see below.&nbsp; </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--rlength</p></td>
+    <td width="390" colspan="7" valign="top"><p>Length    of the original untrimmed read [101]. </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--cut,    --Ncut,<br />
+      --read_type,    --filt</p></td>
+    <td width="390" colspan="7" valign="top"><p>Equivalent    to the options of the same name in ConsensusMaker.py, see below.&nbsp; </p></td>
+  </tr>
+  <tr>
+    <td width="583" colspan="9" valign="top"><p><em>Optional arguments:</em></p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>-h</p></td>
+    <td width="390" colspan="7" valign="top"><p>Show a    help message and exit.&nbsp; Useful for    entering commands because it shows all the arguments. Should only be entered    by itself.&nbsp; </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--progInd</p></td>
+    <td width="390" colspan="7" valign="top"><p>Equivalent    to --read_out in tag_to+header.py, see&nbsp;    below.&nbsp; </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--isize</p></td>
+    <td width="390" colspan="7" valign="top"><p>Equivalent    to the command of the same name in ConsensusMaker.py, see below.</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--absolute</p></td>
+    <td width="390" colspan="7" valign="top"><p>The    location entered for the program when running is an absolute position, not a    relative position.</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--parallel</p></td>
+    <td width="390" colspan="7" valign="top"><p>Run    alignments in parallel.&nbsp; Not currently    supported.&nbsp; </p></td>
+  </tr>
+  <tr>
+    <td width="583" colspan="9" valign="top"><p><strong><u>&nbsp;</u></strong></p></td>
+  </tr>
   <tr>
     <td width="583" colspan="9" valign="top"><p><strong><u>tag_to_header.py</u></strong></p></td>
   </tr>
@@ -25,7 +114,7 @@
   </tr>
   <tr>
     <td width="67" valign="top"><p>&nbsp;</p></td>
-    <td width="126" valign="top"><p>outfile1, <br />
+    <td width="126" valign="top"><p>--outfile1, <br />
       --outfile2</p></td>
     <td width="390" colspan="7" valign="top"><p>Output    fastq &nbsp;files for post-tag_to_header    sequences.</p></td>
   </tr>
@@ -407,6 +496,174 @@
     <td width="67" valign="top"><p>&nbsp;</p></td>
     <td width="126" valign="top"><p>--read_out</p></td>
     <td width="390" colspan="7" valign="top"><p>How    often you want to be told what the program is doing. Defaults to    1000000.&nbsp; In most cases, this is higher    than the number of SSCS reads.&nbsp; </p></td>
+  </tr>
+  <tr>
+    <td width="583" colspan="9" valign="top"><p><strong><u>CountMuts.py</u></strong></p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p><em>Usage: </em></p></td>
+    <td width="516" colspan="8" valign="top"><p>Cat INFILE.pileup    | CountMuts.py d MINDEPTH -C MAX_CLONALITY <br />
+      -c MIN_CLONALITY    -n N_CUTOFF [-s START] [-e END] [-u]</p></td>
+  </tr>
+  <tr>
+    <td width="583" colspan="9" valign="top"><p><em>Required arguments:</em></p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>-d</p></td>
+    <td width="390" colspan="7" valign="top"><p>Minimum    depth for counting mutations at a site <br />
+      (default    = 20).</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>-C</p></td>
+    <td width="390" colspan="7" valign="top"><p>Upper    cutoff of mutant reads for scoring a clonal mutation &nbsp;(default = 0.1).</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>-c</p></td>
+    <td width="390" colspan="7" valign="top"><p>Lower cutoff    of mutant reads for scoring a clonal mutation (default = 0).</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>-n</p></td>
+    <td width="390" colspan="7" valign="top"><p>Maximum    fraction of N's allowed to score a position (default = 0.05).</p></td>
+  </tr>
+  <tr>
+    <td width="583" colspan="9" valign="top"><p><em>Optional Arguments:</em></p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>-h</p></td>
+    <td width="390" colspan="7" valign="top"><p>Show a    help message and exit.&nbsp; Useful for    entering commands because it shows all the arguments. Should only be entered    by itself.&nbsp; </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>-s</p></td>
+    <td width="390" colspan="7" valign="top"><p>Position    at which to start scoring for mutations<br />
+      (default    = 0).&nbsp; </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>-e</p></td>
+    <td width="390" colspan="7" valign="top"><p>Position    at which to stop scoring for mutations. If set to 0, no position filtering    will be performed (default = 0).</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>-u</p></td>
+    <td width="390" colspan="7" valign="top"><p>Only    count one mutation of a given type per position</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="390" colspan="7" valign="top"><p>&nbsp;</p></td>
+  </tr>
+  <tr>
+    <td width="583" colspan="9" valign="top"><p><strong><u>mut-position.py</u></strong></p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p><em>Usage: </em></p></td>
+    <td width="516" colspan="8" valign="top"><p>mut-position.py    -i INFILE -o OUTFILE -d MINDEPTH<br />
+      -c    CLONAL_MIN -C CLONAL_MAX -n NUM_MUTS</p></td>
+  </tr>
+  <tr>
+    <td width="583" colspan="9" valign="top"><p><em>Required arguments:</em></p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>-i</p></td>
+    <td width="390" colspan="7" valign="top"><p>An    imput file.&nbsp; If None, defaults to stdin    [None].</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>-o</p></td>
+    <td width="390" colspan="7" valign="top"><p>A    filename for the output file.&nbsp; If None,    outputs to stdout [None]. </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>-d</p></td>
+    <td width="390" colspan="7" valign="top"><p>Minimum    depth for counting mutations at a site <br />
+      (default    = 20).</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>-C</p></td>
+    <td width="390" colspan="7" valign="top"><p>Upper    cutoff of mutant reads for scoring a clonal mutation &nbsp;(default = 0.1).</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>-c</p></td>
+    <td width="390" colspan="7" valign="top"><p>Lower cutoff    of mutant reads for scoring a clonal mutation (default = 0).</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>-n</p></td>
+    <td width="390" colspan="7" valign="top"><p>Minimum    number of mutations for scoring a site [0]</p></td>
+  </tr>
+  <tr>
+    <td width="583" colspan="9" valign="top"><p><em>Optional Arguments:</em></p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>-h</p></td>
+    <td width="390" colspan="7" valign="top"><p>Show a    help message and exit.&nbsp; Useful for    entering commands because it shows all the arguments. Should only be entered    by itself.&nbsp; </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="390" colspan="7" valign="top"><p>&nbsp;</p></td>
+  </tr>
+  <tr>
+    <td width="583" colspan="9" valign="top"><p><strong><u>muts_by_read_position.py</u></strong></p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p><em>Usage: </em></p></td>
+    <td width="516" colspan="8" valign="top"><p>muts_by_read_position.py    -i INFILE -o OUTFILE -l RLENGTH -C MAX_CLONALITY</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p><em>&nbsp;</em></p></td>
+    <td width="516" colspan="8" valign="top"><p class="style1">NOTE: This program is    still under development and is not supported.&nbsp;    It can still be used to gain a general idea of bias in N generation    and mutations throughout a read, but values may be a bit off.&nbsp; </p></td>
+  </tr>
+  <tr>
+    <td width="583" colspan="9" valign="top"><p><em>Required arguments:</em></p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>-i</p></td>
+    <td width="390" colspan="7" valign="top"><p>An    imput file.&nbsp; If None, defaults to stdin    [None].</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>-o</p></td>
+    <td width="390" colspan="7" valign="top"><p>A    filename for the output file.&nbsp; If None,    outputs to generates one from the input file name.&nbsp; Required if -i is not used [None]. </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>-l</p></td>
+    <td width="390" colspan="7" valign="top"><p>The    length of a single read</p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>-C</p></td>
+    <td width="390" colspan="7" valign="top"><p>Maximum    clonality to allow when considering a position &nbsp;[0.1].&nbsp; </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>-n</p></td>
+    <td width="390" colspan="7" valign="top"><p>Maximum    fraction of N's allowed to score a position (default = 0.05).</p></td>
+  </tr>
+  <tr>
+    <td width="583" colspan="9" valign="top"><p><em>Optional Arguments:</em></p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>-h</p></td>
+    <td width="390" colspan="7" valign="top"><p>Show a    help message and exit.&nbsp; Useful for    entering commands because it shows all the arguments. Should only be entered    by itself.&nbsp; </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>&nbsp;</p></td>
+    <td width="390" colspan="7" valign="top"><p>&nbsp;</p></td>
   </tr>
 </table>
 <p>&nbsp;</p>
