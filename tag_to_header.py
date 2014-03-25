@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 '''
 Tag To Header
-Version 2.0
+Version 2.0.1
 By Joe Hiatt, Scott Kennedy(1), Brendan Kohrn and Mike Schmitt(1)
 (1) Department of Pathology, University of Washington School of Medicine, Seattle, WA 98195
-December 17, 2013
+March 24, 2014
 
 Isolate duplex tags, move them from within the sequenced read to the header region, and remove the spacer region.  
 
@@ -40,7 +40,7 @@ class fastQRead:
     def __init__(self, in1, in2, in3, in4):
         '''This class is meant to hold a single fastQ read.
         '''
-        self.name=in1.strip().split("@")[1] if "@" in in1 else in1
+        self.name=in1.strip().strip("@")[1]
         self.seq=in2.strip()
         self.spacer="+"
         self.qual=in4.strip()
@@ -118,7 +118,7 @@ def hdrRenameFxn(x, y, z):
     *header coordinates,etc*, *index seq*, *tag from read1*, *tag from read2*, *spacer from this read*
     *read designation from original header*
     '''
-    return("%s#%s%s/%s" % (x.split("#")[0], y, z,  x.split("/")[-1]))
+    return("%s#%s%s/%s" % (x.split("#")[0].split("/")[0], y, z,  x.split("/")[1]))
 
 def main():
     parser = ArgumentParser()
