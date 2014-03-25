@@ -257,7 +257,7 @@ def main():
                 sys.stderr.write("Reads processed:" + str(readNum) + "\n")
             
             try:
-                tag = readWin[winPos%2].qname.split('#')[1] + (":1" if readWin[winPos%2].is_read1 == True else (":2" if readWin[winPos%2].is_read2 == True else ":se"))
+                tag = readWin[winPos%2].qname.split('|')[1].split('/')[0] + (":1" if readWin[winPos%2].is_read1 == True else (":2" if readWin[winPos%2].is_read2 == True else ":se"))
                 tagDict[tag] += 1
             except:
                 print readNum
