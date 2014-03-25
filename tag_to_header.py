@@ -118,7 +118,7 @@ def hdrRenameFxn(x, y, z):
     *header coordinates,etc*, *index seq*, *tag from read1*, *tag from read2*, *spacer from this read*
     *read designation from original header*
     '''
-    return("%s#%s%s/%s" % (x.split("#")[0].split("/")[0], y, z,  x.split("/")[1]))
+    return("%s|%s%s/%s" % (x.split("/")[0], y, z,  x.split("/")[1]))
 
 def main():
     parser = ArgumentParser()
