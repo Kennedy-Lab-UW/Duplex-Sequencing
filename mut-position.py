@@ -83,7 +83,7 @@ def MutPos(o, f, fOut)
           if    (
                 depth < o.mindepth
                 or
-                ((float(max(linebins[4].count('T'),linebins[4].count('C'),linebins[4].count('G'),linebins[4].count('A'),ins1,ins2,ins3,ins4,del1,del2,del3,del4)) / float(depth)) > o.clonal_max)
+                ((float(max(linebins[4].count('T'),linebins[4].count('C'),linebins[4].count('G'),linebins[4].count('A'),max(ins),max(dels))) / float(depth)) > o.clonal_max)
                 or
                 ((float(max(linebins[4].count('T'),linebins[4].count('C'),linebins[4].count('G'),linebins[4].count('A'),linebins[4].count('+1'),linebins[4].count('+2'),linebins[4].count('+3'),linebins[4].count('+4'),linebins[4].count('-1'),linebins[4].count('-2'),linebins[4].count('-3'),linebins[4].count('-4'))) / float(depth)) < o.clonal_min)
                 or    
