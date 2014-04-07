@@ -23,7 +23,7 @@ import re
 import csv
 import string
 
-def MutPos(o, f, fOut)
+def MutPos(o, f, fOut):
     lines = f.readlines()
 
     chrom=[]
@@ -54,7 +54,7 @@ def MutPos(o, f, fOut)
           linebins[4] = linebins[4].replace('N','')      
 
     #count and remove insertions
-          ins = {}
+          ins = {0:0}
           newIns = map(int, re.findall(r'\+\d+', linebins[4]))
           for length in newIns:
               if length not in ins:
@@ -65,7 +65,7 @@ def MutPos(o, f, fOut)
               linebins[4] = re.sub(rmStr, '', linebins[4])
           
     #count and remove deletions
-          dels = {}
+          dels = {0:0}
           newDels = map(str, re.findall(r'-\d+', linebins[4]))
           for length in newDels:
               length = int(length[1:])
@@ -85,9 +85,9 @@ def MutPos(o, f, fOut)
                 or
                 ((float(max(linebins[4].count('T'),linebins[4].count('C'),linebins[4].count('G'),linebins[4].count('A'),max(ins),max(dels))) / float(depth)) > o.clonal_max)
                 or
-                ((float(max(linebins[4].count('T'),linebins[4].count('C'),linebins[4].count('G'),linebins[4].count('A'),linebins[4].count('+1'),linebins[4].count('+2'),linebins[4].count('+3'),linebins[4].count('+4'),linebins[4].count('-1'),linebins[4].count('-2'),linebins[4].count('-3'),linebins[4].count('-4'))) / float(depth)) < o.clonal_min)
+                ((float(max(linebins[4].count('T'),linebins[4].count('C'),linebins[4].count('G'),linebins[4].count('A'),max(ins),max(dels))) / float(depth)) < o.clonal_min)
                 or    
-                (max(float(linebins[4].count('T')),float(linebins[4].count('C')),float(linebins[4].count('G')),float(linebins[4].count('A')),float(linebins[4].count('+1')),float(linebins[4].count('+2')),float(linebins[4].count('+3')),float(linebins[4].count('+4')),float(linebins[4].count('-1')),float(linebins[4].count('-2')),float(linebins[4].count('-3')),float(linebins[4].count('-4'))) < o.num_muts) 
+                (max(float(linebins[4].count('T')),float(linebins[4].count('C')),float(linebins[4].count('G')),float(linebins[4].count('A')),float(max(ins)),float(max(dels))) < o.num_muts)
                 ):
                 pass
                                                         
@@ -117,14 +117,14 @@ def MutPos(o, f, fOut)
 def main():
     parser = ArgumentParser()
     parser.add_argument('-i', '--infile', action ='store', dest = 'inFile', help = 'An imput file. If None, defaults to stdin. [None]', default = None)
-    parser.add_argument('-o', '--outfile', action = 'store', dest = 'outFile', help - 'A filename for the output file.  If None, outputs to stdout.  [None]', default = None)
+    parser.add_argument('-o', '--outfile', action = 'store', dest = 'outFile', help = 'A filename for the output file.  If None, outputs to stdout.  [None]', default = None)
     parser.add_argument("-d", "--depth", action="store", type=int, dest="mindepth", 
                       help="Minimum depth for counting mutations at a site [20]", default=20)
     parser.add_argument("-c", "--min_clonality", action="store", type=float, dest="clonal_min",
                       help="Cutoff of mutant reads for scoring a clonal mutation [0]", default=0)
     parser.add_argument("-C", "--max_clonality", action="store", type=float, dest="clonal_max",
                       help="Cutoff of mutant reads for scoring a clonal mutation [0.3]", default=0.3)
-    parser.add_argument("-n", "--num_muts", action="store", type='int', dest="num_muts", 
+    parser.add_argument("-n", "--num_muts", action="store", type=int, dest="num_muts",
                       help="Minimum number of mutations for scoring a site [0]", default=0)
     o = parser.parse_args()
     if o.inFile != None:
