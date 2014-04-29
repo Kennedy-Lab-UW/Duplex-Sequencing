@@ -49,8 +49,8 @@ def MutPos(o, f, fOut):
           linebins[4] = linebins[4].replace('n','N')
 
     #remove start line, end line, and N entries, as well as 1st and last nucleotide of a read.
-          linebins[4] = re.sub('.\$','',linebins[4])
-          linebins[4] = re.sub('\^..','',linebins[4])    
+          linebins[4] = re.sub('\$','',linebins[4])
+          linebins[4] = re.sub('\^.','',linebins[4])    
           linebins[4] = linebins[4].replace('N','')      
 
     #count and remove insertions
