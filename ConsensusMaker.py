@@ -121,7 +121,6 @@ def consensusMaker (groupedReadsList,  cutoff,  readLength) :
     '''The consensus maker uses a simple "majority rules" algorithm to qmake a consensus at each base position.  If no nucleotide majority reaches above the minimum theshold (--cutoff), the position is considered undefined and an 'N' is placed at that position in the read.'''
     nucIdentityList=[0, 0, 0, 0, 0, 0] # In the order of T, C, G, A, N, Total
     nucKeyDict = {0:'T', 1:'C', 2:'G', 3:'A', 4:'N'}
-    seqDict = {}
     consensusRead = ''
 
     for i in xrange(readLength) : # Count the types of nucleotides at a position in a read. i is the nucleotide index within a read in groupedReadsList
@@ -137,24 +136,22 @@ def consensusMaker (groupedReadsList,  cutoff,  readLength) :
                     nucIdentityList[3] += 1
                 elif groupedReadsList[j][i] == 'N':
                     nucIdentityList[4] += 1
+                else:
+                    nucIdentityList[4] += 1
                 nucIdentityList[5] += 1
                 seqDict[i] = nucIdentityList
             except:
-                seqDict[i] = nucIdentityList
-                nucIdentityList=[0, 0, 0, 0, 0, 0]
                 break
-        nucIdentityList=[0, 0, 0, 0, 0, 0] # Reset for the next nucleotide position
-
-    for i in xrange(readLength) :# Rebuild consensus read taking into account the cutoff percentage
         try:
             for j in [0, 1, 2, 3, 4] :
-                if float(seqDict[i][j])/float(seqDict[i][5]) > cutoff :
+                if float(nucIdentityList[j])/float(nucIdentityList[5]) > cutoff :
                     consensusRead += nucKeyDict[j]
                     break
                 elif j==4:
                     consensusRead += 'N'
         except:
             consensusRead += 'N'
+        nucIdentityList=[0, 0, 0, 0, 0, 0] # Reset for the next nucleotide position
     return consensusRead
 
 def tagStats(tagCountsFile):
