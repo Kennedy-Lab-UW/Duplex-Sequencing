@@ -8,7 +8,7 @@
 This script gives position-specific mutation frequencies from a tagcounts file given as stdin.
 
 The output is tab-delimited and specifies:
-chromosome number, template base, nucleotide position, depth, mutations to T, C, G, A, insertions, deletions
+chromosome number, template base, nucleotide position, depth, mutations to T, C, G, A, insertions, deletions, N's
 
 Usage:
 
@@ -37,6 +37,7 @@ def MutPos(o, f, fOut):
     Acount=[]
     inscount=[]
     delcount=[]
+    Ncount=[]
     for i,line in enumerate( lines ):
 
           linebins = line.split()
@@ -51,7 +52,7 @@ def MutPos(o, f, fOut):
     #remove start line, end line, and N entries, as well as 1st and last nucleotide of a read.
           linebins[4] = re.sub('\$','',linebins[4])
           linebins[4] = re.sub('\^.','',linebins[4])    
-          linebins[4] = linebins[4].replace('N','')      
+          #linebins[4] = linebins[4].replace('N','')      
 
     #count and remove insertions
           ins = {0:0}
@@ -100,6 +101,7 @@ def MutPos(o, f, fOut):
                 Ccount.append(linebins[4].count('C'))
                 Gcount.append(linebins[4].count('G'))
                 Acount.append(linebins[4].count('A'))
+                Ncount.append(linebins[4].count('N'))
                 inscount.append(sum(ins))
                 delcount.append(sum(dels))
                 chrom.append(linebins[0])
@@ -108,7 +110,7 @@ def MutPos(o, f, fOut):
                 depths.append(depth)
                 muts.append(mut)
                                                       
-    script_output=zip(chrom, template, pos, depths, muts, Tcount, Ccount, Gcount, Acount, inscount, delcount)
+    script_output=zip(chrom, template, pos, depths, muts, Tcount, Ccount, Gcount, Acount, inscount, delcount, Ncount)
 
     csv_writer = csv.writer(fOut, delimiter='\t')
     csv_writer.writerows(script_output)
