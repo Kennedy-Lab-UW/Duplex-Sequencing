@@ -139,7 +139,6 @@ def consensusMaker (groupedReadsList,  cutoff,  readLength) :
                 else:
                     nucIdentityList[4] += 1
                 nucIdentityList[5] += 1
-                seqDict[i] = nucIdentityList
             except:
                 break
         try:
