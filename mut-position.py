@@ -1,8 +1,8 @@
 #!/bin/env python
 
-#By Mike Schmitt
-#Version 1.2
-#June 14, 2012
+#By Mike Schmitt and Brendan Kohrn
+#Version 1.3
+#April 30, 2014
 
 """
 This script gives position-specific mutation frequencies from a tagcounts file given as stdin.
@@ -10,11 +10,7 @@ This script gives position-specific mutation frequencies from a tagcounts file g
 The output is tab-delimited and specifies:
 chromosome number, template base, nucleotide position, depth, mutations to T, C, G, A, insertions, deletions, N's
 
-Usage:
 
-cat seq.pileup | python count-muts.py
-
-Mike Schmitt, Jan 9, 2012
 """
 
 from argparse import ArgumentParser
