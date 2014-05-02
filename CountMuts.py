@@ -220,7 +220,7 @@ def CountMutations(o, f, fOut):
     print("\nTotal insertion events: %s" % totalins, file = fOut)
     print("Overall insert frequency:\t%.2e\t%.2e\t%.2e" % Wilson(totalins, max(totalseq, 1)), file = fOut)
     print("\nTotal deletion events: %s" % totaldels, file = fOut)
-    print("Overall insert frequency:\t%.2e\t%.2e\t%.2e" % Wilson(totaldels, max(totalseq, 1)), file = fOut)
+    print("Overall deletion frequency:\t%.2e\t%.2e\t%.2e" % Wilson(totaldels, max(totalseq, 1)), file = fOut)
 
 def main():
     parser = ArgumentParser()
