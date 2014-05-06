@@ -25,20 +25,23 @@ Arguments:
   --min MINMEM          Minimum members for SSCS consensus [3]
   --max MAXMEM          Maximum members for SSCS consensus [1000]
   --cut CUTOFF          Mimimum percent matching for base choice in SSCS
-                        consensus [0.8]
-  --Ncut NCUT           Maxumum percent N's allowed [0.1]
-  --rlength RLENGTH     Length of a single read [85]
+                        consensus [0.7]
+  --Ncut NCUT           Maxumum percent N's allowed [1]
+  --rlength RLENGTH     Length of a single read [101]
   --blength BLENGTH     Length of the barcode sequence on a unprocessed single
-                        read. [12]
+                        read [12]
   --slength SLENGTH     Length of the spacer sequence in a unprocessed single
-                        read.
+                        read [5]
   --progInd PROGIND     How often you want to be told what a program is doing
                         [1000000]
   --read_type READ_TYPE
-                        Type of read. Options: dual_map: both reads map
-                        properly. Doesn't consider read pairs where only one
-                        read maps. mono_map: considers any read pair where one
-                        read maps. [mono_map]
+                        A string specifying which types of read to consider.  Read types: 
+                        n: Neither read 1 or read 2 mapped.  
+                        m: Either read 1 or read 2 mapped, but not both.  
+                        p: Both read 1 and read 2 mapped, not a propper pair.  
+                        d: Both read 1 and read 2 mapped, propper pair.  
+                        s: Single ended reads. 
+                        [dpm]"
   --isize ISIZE         Optional: Maximum distance between read pairs [-1]
   --absolute            Optional: Treat the program path as an absolute path
   --parallel            Optional: Perform the alignments of both reads in
@@ -87,13 +90,13 @@ def main():
     parser.add_argument("--cut", 
             action = "store", 
             dest = "cutOff", 
-            help = "Mimimum percent matching for base choice in SSCS consensus [0.8]", 
+            help = "Mimimum percent matching for base choice in SSCS consensus [0.7]", 
             default = ".7"
             )
     parser.add_argument("--Ncut", 
             action = "store", 
             dest = "Ncut", 
-            help = "Maxumum percent N's allowed [0.1]", 
+            help = "Maxumum percent N's allowed [1]", 
             default = "1"
             )
     parser.add_argument("--rlength", 
@@ -163,7 +166,7 @@ def main():
                     o: Filter out overlapping reads.  \
                     n: Filter out reads with too many Ns.  \
                     h: Filter reads based on hamming distance for derived families.  \
-                    ['osnh']"
+                    ['osn']"
             )
     o = parser.parse_args()
     
