@@ -32,7 +32,7 @@ optional arguments:
   --outfile OUTFILE     output BAM file
   --Ncutoff NCUTOFF     Maximum percentage of Ns allowed in a consensus [1.0]
   --readlength READ_LENGTH
-                        Length of the input read that is being used. [80]
+                        Length of the input read that is being used. [84]
   --barcode_length BLENGTH
                         Length of the duplex tag sequence. Should match the value in tag_to_header.  [12]
   --read_out ROUT       How often you want to be told what the program is
@@ -68,7 +68,7 @@ def main():
     parser.add_argument("--infile", action="store", dest="infile", help="input BAM file", default='sys.stdin')
     parser.add_argument("--outfile",  action="store", dest="outfile", help="output BAM file",  default='sys.stdout')
     parser.add_argument('--Ncutoff', type=float, default=1.0, dest='Ncutoff', help="Maximum percentage of Ns allowed in a consensus [1.0]")
-    parser.add_argument('--readlength', type=int, default=80, dest='read_length', help="Length of the input read that is being used. [80]")
+    parser.add_argument('--readlength', type=int, default=84, dest='read_length', help="Length of the input read that is being used. [84]")
     parser.add_argument('--barcode_length', type = int, default = 12, dest = 'blength', help = 'Length of the duplex tag sequence. Should match the value in tag_to_header.  [12]')
     parser.add_argument('--read_out', type = int, default = 1000000, dest = 'rOut', help = 'How often you want to be told what the program is doing. [1000000]')
     o = parser.parse_args()
