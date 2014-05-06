@@ -88,13 +88,13 @@ def main():
             action = "store", 
             dest = "cutOff", 
             help = "Mimimum percent matching for base choice in SSCS consensus [0.8]", 
-            default = ".8"
+            default = ".7"
             )
     parser.add_argument("--Ncut", 
             action = "store", 
             dest = "Ncut", 
             help = "Maxumum percent N's allowed [0.1]", 
-            default = ".1"
+            default = "1"
             )
     parser.add_argument("--rlength", 
             type = int, 
@@ -156,7 +156,7 @@ def main():
     parser.add_argument('--filt', 
             action="store", 
             type=str, 
-            default='osnh', 
+            default='osn', 
             dest='filt', 
             help="A string indicating which filters should be implemented.  Filters: \
                     s: Filter out softclipped reads.  \
