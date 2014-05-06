@@ -50,7 +50,7 @@ optional arguments:
   --Ncutoff NCUTOFF     With --filt 'n', maximum fraction of Ns allowed in a
                         consensus [1.0]
   --readlength READ_LENGTH
-                        Length of the input read that is being used. [80]
+                        Length of the input read that is being used. [84]
   --read_type READ_TYPE
                         A string specifying which types of read to consider.
                         Read types: n: Neither read 1 or read 2 mapped. m:
@@ -63,8 +63,7 @@ optional arguments:
                         doing. [1000000]
   --filt FILT           A string indicating which filters should be
                         implemented. Filters: s: Softclipping filter. o:
-                        Overlap filter. n: N filter. c: Cigar string filter.
-                        ['os']
+                        Overlap filter. n: N filter. ['osn']
 
 
 Details of different arguments:
@@ -184,11 +183,11 @@ def main():
     parser.add_argument('--maxmem', type=int, default=1000, dest='maxmem', help="Maximum number of reads allowed to comprise a consensus. [1000]")
     parser.add_argument('--cutoff', type=float, default=.7, dest='cutoff', help="Percentage of nucleotides at a given position in a read that must be identical in order for a consensus to be called at that position. [0.7]")
     parser.add_argument('--Ncutoff', type=float, default=1, dest='Ncutoff', help="With --filt 'n', maximum fraction of Ns allowed in a consensus [1.0]")
-    parser.add_argument('--readlength', type=int, default=80, dest='read_length', help="Length of the input read that is being used. [80]")
+    parser.add_argument('--readlength', type=int, default=84, dest='read_length', help="Length of the input read that is being used. [80]")
     parser.add_argument('--read_type', type=str, action="store", dest='read_type', default="dpm", help="A string specifying which types of read to consider.  Read types: n: Neither read 1 or read 2 mapped.  m: Either read 1 or read 2 mapped, but not both.  p: Both read 1 and read 2 mapped, not a propper pair.  d: Both read 1 and read 2 mapped, propper pair.  s: Single ended reads\n\t\t['dpm']")
     parser.add_argument('--isize', type = int, default=-1, dest='isize', help="maximum distance between read pairs")
     parser.add_argument('--read_out', type = int, default = 1000000, dest = 'rOut', help = 'How often you want to be told what the program is doing. [1000000]')
-    parser.add_argument('--filt', type=str, default='os', dest='filt', help="A string indicating which filters should be implemented.  Filters: s: Softclipping filter.  o: Overlap filter.  n: N filter.  c: Cigar string filter.  ['os']")
+    parser.add_argument('--filt', type=str, default='osn', dest='filt', help="A string indicating which filters should be implemented.  Filters: s: Softclipping filter.  o: Overlap filter.  n: N filter.  ['osn']")
     o = parser.parse_args()
 
     # Initialization of all global variables, main input/output files, and main iterator and dictionaries.
