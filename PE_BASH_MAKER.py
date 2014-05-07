@@ -345,19 +345,11 @@ def main():
             "samtools view -Sbu " + DCSaln + 
             " | samtools sort - " + DCSsort + "\n\n"
             )
-    if hamming == True:
-        outBash.write("echo 'Hamming Filter start:' >&2\n")
-        outBash.write("date >&2\n")
-        outBash.write("echo 'python HammingFilt.py --infile %s.bam --read_out %s' >&2\n" % (DCSsort, o.progInd))
-        outBash.write("python HammingFilt.py --infile %s.bam --read_out %s\n\n" % (DCSsort, o.progInd))
-        DCSclean = DCSsort.replace('.bam', '.clean.bam')
-    else:
-        DCSclean = DCSsort
     
-    outBash.write("echo 'Samtools index start:' >&2")
+    outBash.write("echo 'Samtools index start:' >&2\n")
     outBash.write("date >&2\n")
-    outBash.write("echo 'samtools index %s.good.bam' >&2\n")
-    outBash.write("samtools index " + DCSclean + ".bam\n\n")
+    outBash.write("echo 'samtools index %s.bam' >&2\n" % DCSsort )
+    outBash.write("samtools index " + DCSsort + ".bam\n\n")
 
     outBash.write("echo 'rm *.sam' >&2\n")
     outBash.write("rm *.sam \n")
