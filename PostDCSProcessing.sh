@@ -36,7 +36,7 @@ java -Xmx2g -jar $gaTK/GenomeAnalysisTK.jar -T RealignerTargetCreator -R $refGen
 
 java -Xmx2g -jar $gaTK/GenomeAnalysisTK.jar -T IndelRealigner -R $refGenome -I ${1/.aln.sort.bam/.filt.readgroups.bam} -targetIntervals ${1/.aln.sort.bam/.filt.readgroups.intervals}  -o ${1/.aln.sort.bam/.filt.readgroups.realign.bam}
 
-java -Xmx2g -jar $gaTK/GenomeAnalysisTK.jar -T ClipReads -I ${1/.aln.sort.bam/.filt.readgroups.bam} -o ${1/.aln.sort.bam/.filt.readgroups.clipped.bam} -R $refGenome --cyclesToTrim "1-4,81-84" --clipRepresentation SOFTCLIP_BASES
+java -Xmx2g -jar $gaTK/GenomeAnalysisTK.jar -T ClipReads -I ${1/.aln.sort.bam/.filt.readgroups.realignbam} -o ${1/.aln.sort.bam/.filt.readgroups.clipped.bam} -R $refGenome --cyclesToTrim "1-4,81-84" --clipRepresentation SOFTCLIP_BASES
 
 #----------------generating stats from final file---------------
 samtools mpileup -B -A -d 500000 -f $refGenome ${1/.aln.sort.bam/.filt.readgroups.clipped.bam} | tee ${1/.aln.sort.bam/.pileup} | python $progPath/CountMuts.py -d $3 -c $4 -C $5 -u | tee ${1%%.aln.sort.bam}.d${3}-c${4}-${5}.unique.countmuts
