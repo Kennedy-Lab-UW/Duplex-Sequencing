@@ -245,11 +245,11 @@ def main():
             outBash.write("bwa aln " + o.ref + " " + out2 + " > " + aln2 + "\n")
 
     outBash.write(
-            "echo 'bwa sampe " + o.ref + " " + aln1 + " " + aln2 + " " + out1 + 
+            "echo 'bwa sampe -s " + o.ref + " " + aln1 + " " + aln2 + " " + out1 + 
             " " + out2 + " > " + PE + "' >&2\n"
             )
     outBash.write(
-            "bwa sampe " + o.ref + " " + aln1 + " " + aln2 + " " + out1 + 
+            "bwa sampe -s " + o.ref + " " + aln1 + " " + aln2 + " " + out1 + 
             " " + out2 + " > " + PE + "\n\n"
             )
 
@@ -326,11 +326,11 @@ def main():
     outBash.write("echo 'bwa aln " + o.ref + " " + DCSr2  + " > " + DCSr2aln + "' >&2\n")
     outBash.write("bwa aln " + o.ref + " " + DCSr2  + " > " + DCSr2aln + "\n\n")
     outBash.write(
-            "echo 'bwa sampe " + o.ref + " " + DCSr1aln + " " + DCSr2aln + " " + 
+            "echo 'bwa sampe -s " + o.ref + " " + DCSr1aln + " " + DCSr2aln + " " + 
             DCSr1 + " " + DCSr2 + " > " + DCSaln + "' >&2\n"
             )
     outBash.write(
-            "bwa sampe " + o.ref + " " + DCSr1aln + " " + DCSr2aln + " " + 
+            "bwa sampe -s " + o.ref + " " + DCSr1aln + " " + DCSr2aln + " " + 
             DCSr1 + " " + DCSr2 + " > " + DCSaln + "\n\n"
             )
 
