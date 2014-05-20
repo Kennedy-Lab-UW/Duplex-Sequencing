@@ -30,7 +30,7 @@ optional arguments:
                         (default = 0)
   -n N_CUTOFF, --n_cutoff N_CUTOFF
                         Maximum fraction of N's allowed to score a position
-                        (default = 0.5)
+                        (default = 0.05)
   -s START, --start START
                         Position at which to start scoring for mutations
                         (default = 0)
@@ -233,7 +233,7 @@ def main():
     parser.add_argument("-C", "--max_clonality", action="store", type=float, dest="max_clonality",
                       help="Cutoff of mutant reads for scoring a clonal mutation [0.3]", default=0.3)
     parser.add_argument("-n", "--n_cutoff", action="store", type=float, dest="n_cutoff",
-                      help="Maximum fraction of N's allowed to score a position [0.5]", default=0.05)
+                      help="Maximum fraction of N's allowed to score a position [0.05]", default=0.05)
     parser.add_argument("-s", "--start", action="store", type=int, dest="start",
                       help="Position at which to start scoring for mutations [0]", default=0)
     parser.add_argument("-e", "--end", action="store", type=int, dest="end",
