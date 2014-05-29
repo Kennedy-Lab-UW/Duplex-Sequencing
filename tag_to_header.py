@@ -40,7 +40,7 @@ class fastQRead:
     def __init__(self, in1, in2, in3, in4):
         '''This class is meant to hold a single fastQ read.
         '''
-        self.name=in1.strip().strip("@")
+        self.name=in1.strip().strip("@").replace(' ', '_')
         self.seq=in2.strip()
         self.spacer="+"
         self.qual=in4.strip()
