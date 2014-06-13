@@ -163,6 +163,8 @@ def main():
     outBash.write("\n")
     outBash.close()
     inBash.close()
+    
+    print("Script made.  Run with:\n%s.script.sh\n" % o.runID)
 
 if __name__ == "__main__":
     main()
