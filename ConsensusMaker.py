@@ -279,7 +279,7 @@ def main():
 
             # Check if the given read is good data
             if int( readWin[winPos%2].flag ) in goodFlag and overlap==False and softClip==False: 
-                if ('A'*o.rep_filt in tag) or ('C'*o.rep_filt in tag) or ('G'*o.rep_filt in tag) or ('C'*o.rep_filt in tag): 
+                if ('A'*o.rep_filt in tag) or ('C'*o.rep_filt in tag) or ('G'*o.rep_filt in tag) or ('T'*o.rep_filt in tag): 
                     # Check for bad barcodes
                     nM += 1
                     nonMap.write(readWin[winPos%2])
