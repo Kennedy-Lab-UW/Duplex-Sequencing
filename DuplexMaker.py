@@ -119,7 +119,7 @@ def main():
                 readNum += 1
             
             if readNum % o.rOut == 0:
-                sys.stderr.write("%s reads processed\nPosition = %s\n" % (readNum, line.pos))
+                sys.stderr.write("%s reads processed\n" % readNum)
         else:
             # Send reads to DCSMaker
             firstRead = line # Store the present line for the next group of lines
