@@ -122,10 +122,10 @@ def hdrRenameFxn(x, y, z):
 
 def main():
     parser = ArgumentParser()
-    parser.add_argument('--infile1', default = None, dest = 'infile1', help = 'First input raw fastq file.  ', required=True)
-    parser.add_argument('--infile2', default = None, dest = 'infile2', help = 'Second input raw fastq file.  ', required=True)
-    parser.add_argument('--outfile1', default = None, dest = 'outfile1', help = 'Output file for first fastq reads.  ', required=True)
-    parser.add_argument('--outfile2', default = None, dest = 'outfile2', help = 'Output file for second fastq reads.  ', required=True)
+    parser.add_argument('--infile1', dest = 'infile1', help = 'First input raw fastq file.  ', required=True)
+    parser.add_argument('--infile2', dest = 'infile2', help = 'Second input raw fastq file.  ', required=True)
+    parser.add_argument('--outfile1', dest = 'outfile1', help = 'Output file for first fastq reads.  ', required=True)
+    parser.add_argument('--outfile2', dest = 'outfile2', help = 'Output file for second fastq reads.  ', required=True)
     parser.add_argument('--barcode_length', type = int, default = 12, dest = 'blength', help = 'Length of the duplex tag sequence. [12]')
     parser.add_argument('--spacer_length', type = int, default = 5, dest = 'slength', help = 'Length of the spacer sequences used. [5]')
     parser.add_argument('--read_out', type = int, default = 1000000, dest = 'rOut', help = 'How often you want to be told what the program is doing. [1000000]')
