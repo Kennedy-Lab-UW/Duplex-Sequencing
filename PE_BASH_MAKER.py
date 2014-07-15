@@ -23,57 +23,60 @@ def main():
     parser.add_argument("--ref", 
             action = "store", 
             dest = "ref", 
-            help = ".FASTA file containing the reference genome"
+            help = ".FASTA file containing the reference genome", 
+            required=True
             )
     parser.add_argument("--r1src", 
             action = "store", 
             dest = "r1src", 
             help = ".fq file containing the raw read1 data", 
+            required=True
             )
     parser.add_argument("--r2src", 
             action = "store", 
             dest = "r2src", 
             help = ".fq file containing the raw read2 data", 
+            required=True
             )
     parser.add_argument("--min", 
             action = "store", 
             dest = "minMem", 
-            help = "Minimum members for SSCS consensus [3]", 
+            help = "Minimum members for SSCS consensus [3]"
             )
     parser.add_argument("--max", 
             action = "store", 
             dest = "maxMem", 
-            help = "Maximum members for SSCS consensus [1000]", 
+            help = "Maximum members for SSCS consensus [1000]"
             )
     parser.add_argument("--cut", 
             action = "store", 
             dest = "cutOff", 
-            help = "Mimimum percent matching for base choice in SSCS consensus [0.8]", 
+            help = "Mimimum percent matching for base choice in SSCS consensus [0.8]"
             )
     parser.add_argument("--Ncut", 
             action = "store", 
             dest = "Ncut", 
-            help = "Maxumum percent N's allowed [0.1]", 
+            help = "Maxumum percent N's allowed [0.1]"
             )
     parser.add_argument("--rlength", 
             action = "store", 
             dest = "rlength", 
-            help = "Length of a single read [101]", 
+            help = "Length of a single read [101]"
             )
     parser.add_argument("--blength", 
             action = "store", 
             dest = "blength", 
-            help = "Length of the barcode sequence on a unprocessed single read. [12]", 
+            help = "Length of the barcode sequence on a unprocessed single read. [12]"
             )
     parser.add_argument("--slength",  
             action = "store", 
             dest = "slength", 
-            help = "Length of the spacer sequence in a unprocessed single read.",
+            help = "Length of the spacer sequence in a unprocessed single read."
             )
     parser.add_argument("--progInd", 
             action = "store", 
             dest = "progInd", 
-            help = "How often you want to be told what a program is doing [1000000]", 
+            help = "How often you want to be told what a program is doing [1000000]"
             )
     parser.add_argument("--read_type", 
             type = str, 
@@ -99,12 +102,12 @@ def main():
                     s: Filter out softclipped reads.  \
                     o: Filter out overlapping reads.  \
                     n: Filter out reads with too many Ns.  \
-                    h: Filter reads based on hamming distance for derived families.  \
-                    ['osnh']"
+                    ['osn']"
             )
     parser.add_argument("--runIdentifier",
             dest = "runID",
-            help = "An identifier for this particular sample and sequencing run."
+            help = "An identifier for this particular sample and sequencing run.", 
+            required=True
             )
     parser.add_argument("--repFilt",
             action = "store",
