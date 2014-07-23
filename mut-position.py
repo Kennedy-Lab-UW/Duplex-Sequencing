@@ -121,7 +121,7 @@ def main():
     parser.add_argument("-c", "--min_clonality", action="store", type=float, dest="clonal_min",
                       help="Cutoff of mutant reads for scoring a clonal mutation [0]", default=0)
     parser.add_argument("-C", "--max_clonality", action="store", type=float, dest="clonal_max",
-                      help="Cutoff of mutant reads for scoring a clonal mutation [0.3]", default=0.3)
+                      help="Cutoff of mutant reads for scoring a clonal mutation [1]", default=1)
     parser.add_argument("-n", "--num_muts", action="store", type=int, dest="num_muts",
                       help="Minimum number of mutations for scoring a site [0]", default=0)
     o = parser.parse_args()
