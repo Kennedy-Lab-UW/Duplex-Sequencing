@@ -4,7 +4,7 @@ Duplex Sequencing
 
 Duplex Sequencing software package  
 Version 2.0  
-February 20, 2014  
+August 11, 2014  
 Programs by Scott Kennedy(1), Brendan Kohrn, and Mike Schmitt(1)  
 Several steps are based on prior work by Joe Hiatt  
 (1) Department of Pathology, University of Washington School of Medicine, Seattle, WA 98195
