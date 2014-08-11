@@ -1,7 +1,7 @@
 """
-PE Bash Maker V 1.1
+PE Bash Maker V 1.11
 by Brendan Kohrn
-June 4, 2014
+August 11, 2014
 
 Write a bash script to run the process.  
 
@@ -114,11 +114,19 @@ def main():
             dest = "repFilt",
             help = "Remove tags with homomeric runs of nucleotides of length x."
             )
+    parser.add_argument("--template", 
+            action = "store", 
+            dest="template",
+            help="Template to use with bash maker.  If not specified, defaults to bash_template.sh."
+            )
     o = parser.parse_args()
     outBash = open(o.runID + ".script.sh", "w")
     
-    spath = repr(sys.argv[0]).replace("'", "").replace("PE_BASH_MAKER2.py", "")
-    inBash = open(spath + "bash_template.sh", "r")
+    if o.template:
+        inBash = open(o.template, "r")
+    else:
+        spath = repr(sys.argv[0]).replace("'", "").replace("PE_BASH_MAKER.py", "")
+        inBash = open(spath + "bash_template.sh", "r")
     
     for line in inBash:
         if line.strip() != "#NONDEFAULTS":
