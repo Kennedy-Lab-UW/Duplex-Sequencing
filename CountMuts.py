@@ -2,8 +2,8 @@
 Count Muts Unique
 
 by Brendan Kohrn and Mike Schmitt
-Version 1.4
-October 28, 2013
+Version 1.41
+August 20, 2014
 Modified from count-muts.py and count-muts-unique.py
 Edited by Brendan Kohrn to fix a problem with 0 depth where no 0 depth should be and to allow n-length indels, and to merge the two conditions into one program.  
 
@@ -85,11 +85,12 @@ def CountMutations(o, f, fOut):
     GtoT = 0
     GtoC = 0
 
-    ins = {}
+    ins = {0:0}
 
-    dels = {}
+    dels = {0:0}
 
-
+    #mpFile = open("testMPfile.mutpos", "w") #ADDED
+    #mpFirst = True #ADDED
     for line in f:
           linebins = line.split()
 
@@ -102,6 +103,32 @@ def CountMutations(o, f, fOut):
 
     #count depth
           depth = int(linebins[3]) - linebins[4].count('N')
+          
+      #count and remove insertions
+          newIns = map(int, re.findall(r'\+\d+', linebins[4]))
+          print(newIns)
+          if o.unique:
+              newIns = list(set(newIns))
+          for length in newIns:
+              if length not in ins:
+                  ins[length] = 1
+              else:
+                  ins[length] += 1
+              rmStr = r'\+' + str(length) + "."*length
+              linebins[4] = re.sub(rmStr, '', linebins[4])
+  
+#count and remove deletions
+          newDels = map(str, re.findall(r'-\d+', linebins[4]))
+          if o.unique:
+              newDels = list(set(newDels))
+          for length in newDels:
+              length = int(length[1:])
+              if length not in dels:
+                  dels[length] = 1
+              else:
+                  dels[length] += 1
+              rmStr = r'-' + str(length) + "."*length
+              linebins[4] = re.sub(rmStr, '', linebins[4])
 
     #skip sites that fall outside of specified start/end ranges, that have insufficient depth or that have clonal mutations or excess frequency of N's:
           if o.end !=0 and int(linebins[1]) < o.start:
@@ -112,42 +139,17 @@ def CountMutations(o, f, fOut):
                 pass
           elif depth < o.mindepth:
                 pass
-          elif (float(max(linebins[4].count('T'),linebins[4].count('C'),linebins[4].count('G'),linebins[4].count('A'),linebins[4].count('+1'),linebins[4].count('+2'),linebins[4].count('+3'),linebins[4].count('+4'),linebins[4].count('-1'),linebins[4].count('-2'),linebins[4].count('-3'),linebins[4].count('-4'))) / float(depth)) > o.max_clonality:
+          elif (float(max(linebins[4].count('T'),linebins[4].count('C'),linebins[4].count('G'),linebins[4].count('A'), (max(newIns.count(n) for n in list(set(newIns))) if newIns != [] else 0), (max(newDels.count(m) for m in list(set(newDels))) if newDels != [] else 0))) / float(depth)) > o.max_clonality:
                 pass
-          elif (float(max(linebins[4].count('T'),linebins[4].count('C'),linebins[4].count('G'),linebins[4].count('A'),linebins[4].count('+1'),linebins[4].count('+2'),linebins[4].count('+3'),linebins[4].count('+4'),linebins[4].count('-1'),linebins[4].count('-2'),linebins[4].count('-3'),linebins[4].count('-4'))) / float(depth)) < o.min_clonality:
+          elif (float(max(linebins[4].count('T'),linebins[4].count('C'),linebins[4].count('G'),linebins[4].count('A'), (max(newIns.count(n) for n in list(set(newIns))) if newIns != [] else 0), (max(newDels.count(m) for m in list(set(newDels))) if newDels != [] else 0))) / float(depth)) < o.min_clonality:
                 pass
           else:
             
               #remove N entries
-                linebins[4] = linebins[4].replace('N','')
+                #linebins[4] = linebins[4].replace('N','')
               #remove start line and end line markers
                 linebins[4] = re.sub('\$','',linebins[4])
                 linebins[4] = re.sub('\^.','',linebins[4])
-        
-    #count and remove insertions
-                newIns = map(int, re.findall(r'\+\d+', linebins[4]))
-                if o.unique:
-                    newIns = list(set(newIns))
-                for length in newIns:
-                    if length not in ins:
-                        ins[length] = 1
-                    else:
-                        ins[length] += 1
-                    rmStr = r'\+' + str(length) + "."*length
-                    linebins[4] = re.sub(rmStr, '', linebins[4])
-          
-    #count and remove deletions
-                newDels = map(str, re.findall(r'-\d+', linebins[4]))
-                if o.unique:
-                    newDels = list(set(newDels))
-                for length in newDels:
-                    length = int(length[1:])
-                    if length not in dels:
-                        dels[length] = 1
-                    else:
-                        dels[length] += 1
-                    rmStr = r'-' + str(length) + "."*length
-                    linebins[4] = re.sub(rmStr, '', linebins[4])
          
     #count point mutations
            
@@ -174,6 +176,11 @@ def CountMutations(o, f, fOut):
                       if linebins[4].count('A') > 0: GtoA += (1 if o.unique else linebins[4].count('A'))
                       if linebins[4].count('T') > 0: GtoT += (1 if o.unique else linebins[4].count('T'))
                       if linebins[4].count('C') > 0: GtoC += (1 if o.unique else linebins[4].count('C'))
+                #if mpFirst: #ADDED
+                    #mpFirst = False #ADDED
+                #else: #ADDED
+                    #mpFile.write("\n") #ADDED
+                #mpFile.write("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (linebins[0],linebins[2], linebins[1], depth, linebins[4].count('T') + linebins[4].count('C') + linebins[4].count('G') + linebins[4].count('A'), linebins[4].count('T'), linebins[4].count('C'), linebins[4].count('G'), linebins[4].count('A'), len(newIns), len(newDels), linebins[4].count('N'))) #ADDED
 
     totalseq = Aseq + Tseq + Cseq + Gseq
     totalptmut = AtoT + AtoC + AtoG + TtoA + TtoC + TtoG + CtoA + CtoT + CtoG + GtoA + GtoT + GtoC
@@ -181,7 +188,7 @@ def CountMutations(o, f, fOut):
                                                 
     totalins = sum(ins[n] for n in ins.keys())
     totaldels = sum(dels[n] for n in dels.keys())
-                                                
+    #mpFile.close() #ADDED
 
     print("\nMinimum depth: %s" % o.mindepth, file = fOut)
     print("Clonality: %s - %s" % (o.min_clonality, o.max_clonality), file = fOut)
@@ -227,17 +234,17 @@ def main():
     parser.add_argument('-i', '--infile', action ='store', dest = 'inFile', help = 'An imput file. If None, defaults to stdin. [None]', default = None)
     parser.add_argument('-o', '--outfile', action = 'store', dest = 'outFile', help = 'A filename for the output file.  If None, outputs to stdout.  [None]', default = None)
     parser.add_argument("-d", "--depth", action="store", type=int, dest="mindepth", 
-                      help="Minimum depth for counting mutations at a site [20]", default=20)
+                      help="Minimum depth for counting mutations at a site [%(default)s]", default=20)
     parser.add_argument("-c", "--min_clonality", action="store", type=float, dest="min_clonality",
-                      help="Cutoff of mutant reads for scoring a clonal mutation [0]", default=0)
+                      help="Cutoff of mutant reads for scoring a clonal mutation [%(default)s]", default=0)
     parser.add_argument("-C", "--max_clonality", action="store", type=float, dest="max_clonality",
-                      help="Cutoff of mutant reads for scoring a clonal mutation [0.3]", default=0.3)
+                      help="Cutoff of mutant reads for scoring a clonal mutation [%(default)s]", default=0.3)
     parser.add_argument("-n", "--n_cutoff", action="store", type=float, dest="n_cutoff",
-                      help="Maximum fraction of N's allowed to score a position [0.05]", default=0.05)
+                      help="Maximum fraction of N's allowed to score a position [%(default)s]", default=0.05)
     parser.add_argument("-s", "--start", action="store", type=int, dest="start",
-                      help="Position at which to start scoring for mutations [0]", default=0)
+                      help="Position at which to start scoring for mutations [%(default)s]", default=0)
     parser.add_argument("-e", "--end", action="store", type=int, dest="end",
-                      help="Position at which to stop scoring for mutations. If set to 0, no position filtering will be performed [0]", default=0)
+                      help="Position at which to stop scoring for mutations. If set to 0, no position filtering will be performed [%(default)s]", default=0)
     parser.add_argument('-u', '--unique', action='store_true', dest='unique', help='Run countMutsUnique instead of countMuts')
 
     o = parser.parse_args()
