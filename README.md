@@ -50,50 +50,50 @@ Several steps are based on prior work by Joe Hiatt
     Run *PE_BASH_MAKER.py*, making sure to input the correct read length (option --rlength), using the syntax shown below. Although it is recommended that all non-optional inputs be provided, the only inputs that are truely required are --ref, --r1src, --r2src, and --runIdentifier.  Note that read_type s will not work with the default bash template.  
 
 
-usage: PE_BASH_MAKER.py [-h] --ref REF --r1src R1SRC --r2src R2SRC
-                        [--min MINMEM] [--max MAXMEM] [--cut CUTOFF]
-                        [--Ncut NCUT] [--rlength RLENGTH] [--blength BLENGTH]
-                        [--slength SLENGTH] [--progInd PROGIND]
-                        [--read_type READ_TYPE] [--isize ISIZE] [--filt FILT]
-                        --runIdentifier RUNID [--repFilt REPFILT]
-                        [--template TEMPLATE]
-
-optional arguments:
-  -h, --help            show this help message and exit
-  --ref REF             .FASTA file containing the reference genome
-  --r1src R1SRC         .fq file containing the raw read1 data
-  --r2src R2SRC         .fq file containing the raw read2 data
-  --min MINMEM          Minimum members for SSCS consensus [3]
-  --max MAXMEM          Maximum members for SSCS consensus [1000]
-  --cut CUTOFF          Mimimum percent matching for base choice in SSCS
-                        consensus [0.8]
-  --Ncut NCUT           Maxumum percent N's allowed [0.1]
-  --rlength RLENGTH     Length of a single read [101]
-  --blength BLENGTH     Length of the barcode sequence on a unprocessed single
-                        read. [12]
-  --slength SLENGTH     Length of the spacer sequence in a unprocessed single
-                        read.
-  --progInd PROGIND     How often you want to be told what a program is doing
-                        [1000000]
-  --read_type READ_TYPE
-                        A string specifying which types of read to consider.
-                        Read types: n: Neither read 1 or read 2 mapped. m:
-                        Either read 1 or read 2 mapped, but not both. p: Both
-                        read 1 and read 2 mapped, not a propper pair. d: Both
-                        read 1 and read 2 mapped, propper pair. s: Single
-                        ended reads. ['dpm']
-  --isize ISIZE         Optional: Maximum distance between read pairs [-1]
-  --filt FILT           A string indicating which filters should be
-                        implemented. Filters: s: Filter out softclipped reads.
-                        o: Filter out overlapping reads. n: Filter out reads
-                        with too many Ns. ['osn']
-  --runIdentifier RUNID
-                        An identifier for this particular sample and
-                        sequencing run.
-  --repFilt REPFILT     Remove tags with homomeric runs of nucleotides of
-                        length x.
-  --template TEMPLATE   Template to use with bash maker. If not specified,
-                        defaults to bash_template.sh.
+usage: PE_BASH_MAKER.py [-h] --ref REF --r1src R1SRC --r2src R2SRC  
+                        [--min MINMEM] [--max MAXMEM] [--cut CUTOFF]  
+                        [--Ncut NCUT] [--rlength RLENGTH] [--blength BLENGTH]  
+                        [--slength SLENGTH] [--progInd PROGIND]  
+                        [--read_type READ_TYPE] [--isize ISIZE] [--filt FILT]  
+                        --runIdentifier RUNID [--repFilt REPFILT]  
+                        [--template TEMPLATE]  
+  
+optional arguments:  
+  -h, --help            show this help message and exit  
+  --ref REF             .FASTA file containing the reference genome  
+  --r1src R1SRC         .fq file containing the raw read1 data  
+  --r2src R2SRC         .fq file containing the raw read2 data  
+  --min MINMEM          Minimum members for SSCS consensus [3]  
+  --max MAXMEM          Maximum members for SSCS consensus [1000]  
+  --cut CUTOFF          Mimimum percent matching for base choice in SSCS  
+                        consensus [0.8]  
+  --Ncut NCUT           Maxumum percent N's allowed [0.1]  
+  --rlength RLENGTH     Length of a single read [101]  
+  --blength BLENGTH     Length of the barcode sequence on a unprocessed single  
+                        read. [12]  
+  --slength SLENGTH     Length of the spacer sequence in a unprocessed single  
+                        read.  
+  --progInd PROGIND     How often you want to be told what a program is doing  
+                        [1000000]  
+  --read_type READ_TYPE  
+                        A string specifying which types of read to consider.  
+                        Read types: n: Neither read 1 or read 2 mapped. m:  
+                        Either read 1 or read 2 mapped, but not both. p: Both  
+                        read 1 and read 2 mapped, not a propper pair. d: Both  
+                        read 1 and read 2 mapped, propper pair. s: Single  
+                        ended reads. ['dpm']  
+  --isize ISIZE         Optional: Maximum distance between read pairs [-1]  
+  --filt FILT           A string indicating which filters should be  
+                        implemented. Filters: s: Filter out softclipped reads.  
+                        o: Filter out overlapping reads. n: Filter out reads  
+                        with too many Ns. ['osn']  
+  --runIdentifier RUNID  
+                        An identifier for this particular sample and  
+                        sequencing run.  
+  --repFilt REPFILT     Remove tags with homomeric runs of nucleotides of  
+                        length x.  
+  --template TEMPLATE   Template to use with bash maker. If not specified,  
+                        defaults to bash_template.sh.  
 
 
     Run the bash script from the command line with:  
