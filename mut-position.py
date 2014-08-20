@@ -1,8 +1,8 @@
 #!/bin/env python
 
 #By Mike Schmitt and Brendan Kohrn
-#Version 1.3
-#April 30, 2014
+#Version 1.31
+#August 20, 2014
 
 """
 This script gives position-specific mutation frequencies from a tagcounts file given as stdin.
@@ -51,40 +51,31 @@ def MutPos(o, f, fOut):
           #linebins[4] = linebins[4].replace('N','')      
 
     #count and remove insertions
-          ins = {0:0}
           newIns = map(int, re.findall(r'\+\d+', linebins[4]))
           for length in newIns:
-              if length not in ins:
-                  ins[length] = 1
-              else:
-                   ins[length] += 1
               rmStr = r'\+' + str(length) + "."*length
               linebins[4] = re.sub(rmStr, '', linebins[4])
           
     #count and remove deletions
-          dels = {0:0}
           newDels = map(str, re.findall(r'-\d+', linebins[4]))
           for length in newDels:
               length = int(length[1:])
-              if length not in dels:
-                   dels[length] = 1
-              else:
-                   dels[length] += 1
               rmStr = r'-' + str(length) + "."*length
               linebins[4] = re.sub(rmStr, '', linebins[4])
+          linebins[4] = linebins[4].replace('*','')
 
     #count depth                                                                                                
-          depth = len(linebins[4])
+          depth = int(linebins[3]) - linebins[4].count('N')
                                                         
     #skip lines that do not meet filtering criteria
           if    (
                 depth < o.mindepth
                 or
-                ((float(max(linebins[4].count('T'),linebins[4].count('C'),linebins[4].count('G'),linebins[4].count('A'),max(ins),max(dels))) / float(depth)) > o.clonal_max)
+                ((float(max(linebins[4].count('T'),linebins[4].count('C'),linebins[4].count('G'),linebins[4].count('A'), (max(newIns.count(n) for n in list(set(newIns))) if newIns != [] else 0), (max(newDels.count(m) for m in list(set(newDels))) if newDels != [] else 0))) / float(depth)) > o.clonal_max)
                 or
-                ((float(max(linebins[4].count('T'),linebins[4].count('C'),linebins[4].count('G'),linebins[4].count('A'),max(ins),max(dels))) / float(depth)) < o.clonal_min)
+                ((float(max(linebins[4].count('T'),linebins[4].count('C'),linebins[4].count('G'),linebins[4].count('A'), (max(newIns.count(n) for n in list(set(newIns))) if newIns != [] else 0), (max(newDels.count(m) for m in list(set(newDels))) if newDels != [] else 0))) / float(depth)) < o.clonal_min)
                 or    
-                (max(float(linebins[4].count('T')),float(linebins[4].count('C')),float(linebins[4].count('G')),float(linebins[4].count('A')),float(max(ins)),float(max(dels))) < o.num_muts)
+                (max(float(linebins[4].count('T')),float(linebins[4].count('C')),float(linebins[4].count('G')),float(linebins[4].count('A')),(max(newIns.count(n) for n in list(set(newIns))) if newIns != [] else 0), (max(newDels.count(m) for m in list(set(newDels))) if newDels != [] else 0)) < o.num_muts)
                 ):
                 pass
                                                         
@@ -98,8 +89,8 @@ def MutPos(o, f, fOut):
                 Gcount.append(linebins[4].count('G'))
                 Acount.append(linebins[4].count('A'))
                 Ncount.append(linebins[4].count('N'))
-                inscount.append(sum(ins))
-                delcount.append(sum(dels))
+                inscount.append(len(newIns))
+                delcount.append(len(newDels))
                 chrom.append(linebins[0])
                 pos.append(linebins[1])
                 template.append(linebins[2])
@@ -114,16 +105,16 @@ def MutPos(o, f, fOut):
 
 def main():
     parser = ArgumentParser()
-    parser.add_argument('-i', '--infile', action ='store', dest = 'inFile', help = 'An imput file. If None, defaults to stdin. [None]', default = None)
-    parser.add_argument('-o', '--outfile', action = 'store', dest = 'outFile', help = 'A filename for the output file.  If None, outputs to stdout.  [None]', default = None)
+    parser.add_argument('-i', '--infile', action ='store', dest = 'inFile', help = 'An imput file. If None, defaults to stdin. [%(default)s]', default = None)
+    parser.add_argument('-o', '--outfile', action = 'store', dest = 'outFile', help = 'A filename for the output file.  If None, outputs to stdout.  [%(default)s]', default = None)
     parser.add_argument("-d", "--depth", action="store", type=int, dest="mindepth", 
-                      help="Minimum depth for counting mutations at a site [20]", default=20)
+                      help="Minimum depth for counting mutations at a site [%(default)s]", default=20)
     parser.add_argument("-c", "--min_clonality", action="store", type=float, dest="clonal_min",
-                      help="Cutoff of mutant reads for scoring a clonal mutation [0]", default=0)
+                      help="Cutoff of mutant reads for scoring a clonal mutation [%(default)s]", default=0)
     parser.add_argument("-C", "--max_clonality", action="store", type=float, dest="clonal_max",
-                      help="Cutoff of mutant reads for scoring a clonal mutation [1]", default=1)
+                      help="Cutoff of mutant reads for scoring a clonal mutation [%(default)s]", default=1)
     parser.add_argument("-n", "--num_muts", action="store", type=int, dest="num_muts",
-                      help="Minimum number of mutations for scoring a site [0]", default=0)
+                      help="Minimum number of mutations for scoring a site [%(default)s]", default=0)
     o = parser.parse_args()
     if o.inFile != None:
         f = open(o.inFile, 'r')
