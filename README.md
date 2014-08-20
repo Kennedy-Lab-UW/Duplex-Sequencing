@@ -49,7 +49,7 @@ Several steps are based on prior work by Joe Hiatt
 
     Run *PE_BASH_MAKER.py*, making sure to input the correct read length (option --rlength), using the syntax shown below. Although it is recommended that all non-optional inputs be provided, the only inputs that are truely required are --ref, --r1src, --r2src, and --runIdentifier.  Note that read_type s will not work with the default bash template.  
 
-    ```bash   
+    ```  
     usage: PE_BASH_MAKER.py [-h] --ref REF --r1src R1SRC --r2src R2SRC  
                             [--min MINMEM] [--max MAXMEM] [--cut CUTOFF]  
                             [--Ncut NCUT] [--rlength RLENGTH] [--blength BLENGTH]  
