@@ -105,8 +105,7 @@ def CountMutations(o, f, fOut):
           depth = int(linebins[3]) - linebins[4].count('N')
           
       #count and remove insertions
-          newIns = map(int, re.findall(r'\+\d+', linebins[4]))
-          print(newIns)
+          newIns = map(int, re.findall(r'\+\d+', linebins[4]))  
           if o.unique:
               newIns = list(set(newIns))
           for length in newIns:
