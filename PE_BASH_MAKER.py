@@ -41,32 +41,32 @@ def main():
     parser.add_argument("--min", 
             action = "store", 
             dest = "minMem", 
-            help = "Minimum members for SSCS consensus [3]"
+            help = "Minimum members for SSCS consensus"
             )
     parser.add_argument("--max", 
             action = "store", 
             dest = "maxMem", 
-            help = "Maximum members for SSCS consensus [1000]"
+            help = "Maximum members for SSCS consensus"
             )
     parser.add_argument("--cut", 
             action = "store", 
             dest = "cutOff", 
-            help = "Mimimum percent matching for base choice in SSCS consensus [0.8]"
+            help = "Mimimum percent matching for base choice in SSCS consensus "
             )
     parser.add_argument("--Ncut", 
             action = "store", 
             dest = "Ncut", 
-            help = "Maxumum percent N's allowed [0.1]"
+            help = "Maxumum percent N's allowed"
             )
     parser.add_argument("--rlength", 
             action = "store", 
             dest = "rlength", 
-            help = "Length of a single read [101]"
+            help = "Length of a single read"
             )
     parser.add_argument("--blength", 
             action = "store", 
             dest = "blength", 
-            help = "Length of the barcode sequence on a unprocessed single read. [12]"
+            help = "Length of the barcode sequence on a unprocessed single read. "
             )
     parser.add_argument("--slength",  
             action = "store", 
@@ -76,7 +76,7 @@ def main():
     parser.add_argument("--progInd", 
             action = "store", 
             dest = "progInd", 
-            help = "How often you want to be told what a program is doing [1000000]"
+            help = "How often you want to be told what a program is doing"
             )
     parser.add_argument("--read_type", 
             type = str, 
@@ -93,7 +93,7 @@ def main():
     parser.add_argument("--isize",
             action = "store", 
             dest="isize", 
-            help="Optional: Maximum distance between read pairs [-1]"
+            help="Optional: Maximum distance between read pairs"
             )
     parser.add_argument("--filt",
             action="store", 
