@@ -11,7 +11,7 @@ Several steps are based on prior work by Joe Hiatt
 
 1. Glossery  
     -Single Stranded Consensus Sequence (SSCS):  
-        A construct created by comparing multiple reads and deciding ambiguities by simple majority.  SSCSs are created by ConsensusMaker.py.  Quality scores attached to SSCSs are meaningless. although the cigar strings still have meaning. 
+        A construct created by comparing multiple reads and deciding ambiguities by simple majority.  SSCSs are created by *ConsensusMaker.py*.  Quality scores attached to SSCSs are meaningless. although the cigar strings still have meaning. 
     -Duplex Consensus Sequence (DCS):  
         A construct created by comparing two SSCSs.  Quality scores and cigar strings attached to DCS sequences are meaningless, though cigar strings regain meaning after reallignment.  
         
@@ -43,11 +43,11 @@ Several steps are based on prior work by Joe Hiatt
 	read-2-raw-data.fq  
  
 5. Usage  
-    Create a folder with both your fastq files in it.
+   Create a folder with both your fastq files in it.
 
-    *PE_BASH_MAKER.py* is a script that outputs a bash script that will execute, in order, all the steps in the data processing pipeline that are needed to obtain the final DCS reads.  
+   *PE_BASH_MAKER.py* is a script that outputs a bash script that will execute, in order, all the steps in the data processing pipeline that are needed to obtain the final DCS reads.  
 
-    Run *PE_BASH_MAKER.py*, making sure to input the correct read length (option --rlength), using the syntax shown below. Although it is recommended that all non-optional inputs be provided, the only inputs that are truely required are --ref, --r1src, --r2src, and --runIdentifier.  Note that read_type s will not work with the default bash template.  
+   Run *PE_BASH_MAKER.py*, making sure to input the correct read length (option --rlength), using the syntax shown below. Although it is recommended that all non-optional inputs be provided, the only inputs that are truely required are --ref, --r1src, --r2src, and --runIdentifier.  Note that read_type s will not work with the default bash template.  If you want to write your own template, consult section 9.  
 
     ```  
     usage: PE_BASH_MAKER.py [-h] --ref REF --r1src R1SRC --r2src R2SRC  
@@ -56,37 +56,36 @@ Several steps are based on prior work by Joe Hiatt
                             [--slength SLENGTH] [--progInd PROGIND]  
                             [--read_type READ_TYPE] [--isize ISIZE] [--filt FILT]  
                             --runIdentifier RUNID [--repFilt REPFILT]  
-                            [--template TEMPLATE]  
-  
+                            [--template TEMPLATE]
+                            
     optional arguments:  
       -h, --help            show this help message and exit  
       --ref REF             .FASTA file containing the reference genome  
       --r1src R1SRC         .fq file containing the raw read1 data  
       --r2src R2SRC         .fq file containing the raw read2 data  
-      --min MINMEM          Minimum members for SSCS consensus [3]  
-      --max MAXMEM          Maximum members for SSCS consensus [1000]  
+      --min MINMEM          Minimum members for SSCS consensus  
+      --max MAXMEM          Maximum members for SSCS consensus  
       --cut CUTOFF          Mimimum percent matching for base choice in SSCS  
-                            consensus [0.8]  
-      --Ncut NCUT           Maxumum percent N's allowed [0.1]  
-      --rlength RLENGTH     Length of a single read [101]  
+                            consensus  
+      --Ncut NCUT           Maxumum percent N's allowed  
+      --rlength RLENGTH     Length of a single read  
       --blength BLENGTH     Length of the barcode sequence on a unprocessed single  
-                            read. [12]  
+                            read.  
       --slength SLENGTH     Length of the spacer sequence in a unprocessed single  
                             read.  
       --progInd PROGIND     How often you want to be told what a program is doing  
-                            [1000000]  
       --read_type READ_TYPE  
                             A string specifying which types of read to consider.  
                             Read types: n: Neither read 1 or read 2 mapped. m:  
                             Either read 1 or read 2 mapped, but not both. p: Both  
                             read 1 and read 2 mapped, not a propper pair. d: Both  
                             read 1 and read 2 mapped, propper pair. s: Single  
-                            ended reads. ['dpm']  
-      --isize ISIZE         Optional: Maximum distance between read pairs [-1]  
+                            ended reads.   
+      --isize ISIZE         Optional: Maximum distance between read pairs   
       --filt FILT           A string indicating which filters should be  
                             implemented. Filters: s: Filter out softclipped reads.  
                             o: Filter out overlapping reads. n: Filter out reads  
-                            with too many Ns. ['osn']  
+                            with too many Ns.   
       --runIdentifier RUNID  
                             An identifier for this particular sample and  
                             sequencing run.  
@@ -96,6 +95,10 @@ Several steps are based on prior work by Joe Hiatt
                             defaults to bash_template.sh.  
     ```  
     
+    The default parameters in the provided BASH script are:
+    
+      --min 3 --max 1000 --cut 0.7 --rlength 100 --blength 12 --slength 5 --progInd 1000000 --read_type dpm  --isize -1 --filt os --repFilt 9 
+      
     Run the bash script from the command line with:  
 
     ```bash
@@ -103,31 +106,65 @@ Several steps are based on prior work by Joe Hiatt
     ```
 
     where runIdentifier is the run identifier you fed to the bash maker.  This should run the rest of the process through to an output paired-end BAM file, copying the contents of stderr to a log file for documentation and reporting purposes.  
-
-    Note: Do not run the bash script in a folder containing pre-existing SAM files, as it will delete them.  
-
+    
     It is strongly sugested that the final sorted BAM file undergo post-processing with picard-tools-1.70/AddOrReplaceReadGroups.jar and GATK/GenomeAnalysisTK.jar, before generating statistics.  
 
-7. Data Outputs:  
-    These are only valid when using the *PE_BASH_MAKER.py* script
-    \* indicates a custom string representing one of the input files.  
+6. Data Outputs:  
+    These are only valid when using the *PE_BASH_MAKER.py* script with the default template
+    \* indicates the run identifier you gave *PE_BASH_MAKER.py*.  
     
     File Description                                               | File name
     -------------------------------------------------------------- | ---------------------------------
-    BAM file containing position-sorted paired-end reads:          | PE.\*.\*.bam
-    BAM file containing paired-end SSCSs:                          | SSCS.\*.\*.bam
-    BAM file containing unpaired SSCSs:                            | SSCS.\*.\*\_UP.bam
-    BAM file containing non-mapping or otherwise bad reads:        | SSCS.\*.\*\_NM.bam
-    BAM file containing good reads with less common cigar scores:  | SSCS.\*.\*\_LCC.bam
-    tagcounts file:                                                | PE.\*.\*.tagcounts
-    Tagstats file:                                                 | PE.\*.\*.tagstats
+    BAM file containing position-sorted paired-end reads:          | \*.pe.bam
+    BAM file containing paired-end SSCSs:                          | \*.sscs.bam
+    BAM file containing unpaired SSCSs:                            | \*.sscs\_UP.bam
+    BAM file containing non-mapping or otherwise bad reads:        | \*.sscs\_NM.bam
+    BAM file containing good reads with less common cigar scores:  | \*.sscs\_LCC.bam
+    tagcounts file:                                                | \*.pe.tagcounts
+    Tagstats file:                                                 | \*.pe.tagstats
     Fastq files containing DCSs:                                   | DCS.\*.\*.r1.fq and PE.\*.\*.r2.fq
     BAM file containing paired-end, sorted, alligned DCSs          | DCS.\*.\*.aln.sort.bam  
 
-8. Live Outputs  
+7. Live Outputs  
 
     The file Duplex-Process-Numbers.txt describes the number of reads in each file and the live outputs from each step.    
 
-9. Program Details (Advanced Users)
+8. Program Details (Advanced Users)
    
-   Details of the individual programs in order of use can be found in the file ProgramOptions.html.  
+   Details of the individual programs can be found by running that program with the -h or --help options.   
+
+9. Creating a Custom Template (Advanced Users)
+   
+   In order to work with the provided bash maker, all custom templates must contain the following lines before any commands are executed.  Feel free to change the default values; the bash maker just needs to have the variable names stay the same.  :  
+
+   ```bash
+    #DEFAULTS
+	  DSpath=''
+		alignRef=''
+		runIdentifier=''
+		read1in=seq1.fq
+		read2in=seq2.fq
+		iSize=-1
+		minMem=3
+		maxMem=1000
+		cutOff=0.7
+		nCutOff=1
+		readLength=100
+		barcodeLength=12
+		spacerLength=5
+		filtersSet='os'
+		readTypes='dpm'
+		repFilt=9
+		readOut=1000000
+		
+		#NONDEFAULTS
+		
+		#FINAL_READ_LENGTH
+		readLength=$((readLength-barcodeLength-spacerLength))
+```
+   
+   Following this, the programs should be executed in the following order:  
+   
+   *tag_to_header.py*, *bwa*, *samtools sort*, *ConsensusMaker.py*, *samtools sort*, *DuplexMaker.py*, *bwa*  
+   
+   
