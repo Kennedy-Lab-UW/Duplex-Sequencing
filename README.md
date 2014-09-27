@@ -47,15 +47,15 @@ Several steps are based on prior work by Joe Hiatt
 
    *PE_BASH_MAKER.py* is a script that outputs a bash script that will execute, in order, all the steps in the data processing pipeline that are needed to obtain the final DCS reads.  
 
-   Run *PE_BASH_MAKER.py*, making sure to input the correct read length (option --rlength), using the syntax shown below. Although it is recommended that all non-optional inputs be provided, the only inputs that are truely required are --ref, --r1src, --r2src, and --runIdentifier.  Note that read_type s will not work with the default bash template.  If you want to write your own template, consult section 9.  
+   Run *PE_BASH_MAKER.py*, making sure to input the correct read length (option --rlength), using the syntax shown below. Although it is recommended that all non-optional inputs be provided, the only inputs that are truely required are --ref, --r1src, --r2src, --rlength, and --runIdentifier.  Note that read_type s will not work with the default bash template.  If you want to write your own template, consult section 9.  
 
     ```  
-    usage: PE_BASH_MAKER.py [-h] --ref REF --r1src R1SRC --r2src R2SRC  
-                            [--min MINMEM] [--max MAXMEM] [--cut CUTOFF]  
-                            [--Ncut NCUT] [--rlength RLENGTH] [--blength BLENGTH]  
+    usage: PE_BASH_MAKER.py [-h] --ref REF --r1src R1SRC --r2src R2SRC --rlength RLENGTH  
+                            --runIdentifier RUNID [--min MINMEM] [--max MAXMEM]  
+                            [--cut CUTOFF] [--Ncut NCUT] [--blength BLENGTH]  
                             [--slength SLENGTH] [--progInd PROGIND]  
                             [--read_type READ_TYPE] [--isize ISIZE] [--filt FILT]  
-                            --runIdentifier RUNID [--repFilt REPFILT]  
+                            [--repFilt REPFILT]  
                             [--template TEMPLATE]
                             
     optional arguments:  
@@ -97,7 +97,7 @@ Several steps are based on prior work by Joe Hiatt
     
     The default parameters in the provided BASH script are:
     
-      --min 3 --max 1000 --cut 0.7 --rlength 100 --blength 12 --slength 5 --progInd 1000000 --read_type dpm  --isize -1 --filt os --repFilt 9 
+      --min 3 --max 1000 --cut 0.7 --blength 12 --slength 5 --progInd 1000000 --read_type dpm  --isize -1 --filt os --repFilt 9 
       
     Run the bash script from the command line with:  
 
