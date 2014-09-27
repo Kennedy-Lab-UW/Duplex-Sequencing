@@ -61,7 +61,8 @@ def main():
     parser.add_argument("--rlength", 
             action = "store", 
             dest = "rlength", 
-            help = "Length of a single read"
+            help = "Length of a single read",
+            required = True
             )
     parser.add_argument("--blength", 
             action = "store", 
@@ -125,8 +126,8 @@ def main():
     if o.template:
         inBash = open(o.template, "r")
     else:
-        spath = repr(sys.argv[0]).replace("'", "").replace("PE_BASH_MAKER.py", "")
         inBash = open(spath + "bash_template.sh", "r")
+    spath = repr(sys.argv[0]).replace("'", "").replace("/PE_BASH_MAKER.py", "")
     
     for line in inBash:
         if line.strip() != "#NONDEFAULTS":
