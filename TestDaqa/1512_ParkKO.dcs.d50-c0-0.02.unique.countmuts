@@ -1,0 +1,41 @@
+
+Minimum depth: 50
+Clonality: 0.0 - 0.02
+Unique Counts
+
+A's sequenced: 3309120
+A to T:	38	1.15e-05	1.58e-05	8.37e-06
+A to C:	6	1.81e-06	3.96e-06	8.31e-07
+A to G:	87	2.63e-05	3.24e-05	2.13e-05
+
+T's sequenced: 2779085
+T to A:	17	6.12e-06	9.80e-06	3.82e-06
+T to C:	106	3.81e-05	4.61e-05	3.15e-05
+T to G:	12	4.32e-06	7.55e-06	2.47e-06
+
+C's sequenced: 2384501
+C to A:	10	4.19e-06	7.72e-06	2.28e-06
+C to T:	65	2.73e-05	3.47e-05	2.14e-05
+C to G:	2	8.39e-07	3.06e-06	2.30e-07
+
+G's sequenced: 1268373
+G to A:	28	2.21e-05	3.19e-05	1.53e-05
+G to T:	3	2.37e-06	6.95e-06	8.04e-07
+G to C:	7	5.52e-06	1.14e-05	2.67e-06
+
+Total nucleotides sequenced: 9741079
+Total point mutations: 381
+Overall point mutation frequency:	3.91e-05	4.32e-05	3.54e-05
+
++1 insertions: 13	1.33e-06	2.28e-06	7.80e-07
+
+-1 deletions: 16	1.64e-06	2.67e-06	1.01e-06
+-2 deletions: 2	2.05e-07	7.49e-07	5.63e-08
+-3 deletions: 1	1.03e-07	5.82e-07	1.81e-08
+-4 deletions: 1	1.03e-07	5.82e-07	1.81e-08
+
+Total insertion events: 13
+Overall insert frequency:	1.33e-06	2.28e-06	7.80e-07
+
+Total deletion events: 20
+Overall deletion frequency:	2.05e-06	3.17e-06	1.33e-06
