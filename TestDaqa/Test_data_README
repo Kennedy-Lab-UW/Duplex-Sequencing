@@ -1,0 +1,22 @@
+Test data can be downloaded from the NIH Small Reads Archive at:
+http://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?run=SRR1613972
+
+The settings that were used for PE_BASH_MAKER.py are as follows:
+
+Read length --rlength 101 
+Minimum family size  --min 3
+Maximum family size  --max 1000
+Consensus cutoff=0.7  --cut 0.7
+N Cutoff  --Ncut 0.3
+read Types used in consensus making  --read_type dpm
+Filters used  --filt os
+
+This is a mouse sample.  The reference was the mm10.fasta from UCSC
+
+The peak family size plot can be derived from the resulting *.tagstat
+file.
+Plot the first column as the X-axis vs the 2nd column on the y-axis. The
+final plot for the test data can be seen in PeakFamilySize.png
+
+The countmuts file was generated with a minimum depth of 50, a minimum 
+clonality of 0 and a maximum clonality of .02.
