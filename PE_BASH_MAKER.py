@@ -123,11 +123,11 @@ def main():
     o = parser.parse_args()
     outBash = open(o.runID + ".script.sh", "w")
     
+    spath = repr(sys.argv[0]).replace("'", "").replace("/PE_BASH_MAKER.py", "")
     if o.template:
         inBash = open(o.template, "r")
     else:
         inBash = open(spath + "bash_template.sh", "r")
-    spath = repr(sys.argv[0]).replace("'", "").replace("/PE_BASH_MAKER.py", "")
     
     for line in inBash:
         if line.strip() != "#NONDEFAULTS":
