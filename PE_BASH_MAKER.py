@@ -127,7 +127,7 @@ def main():
     if o.template:
         inBash = open(o.template, "r")
     else:
-        inBash = open(spath + "bash_template.sh", "r")
+        inBash = open(spath + "/bash_template.sh", "r")
     
     for line in inBash:
         if line.strip() != "#NONDEFAULTS":
