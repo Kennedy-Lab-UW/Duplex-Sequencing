@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Original version by Brendan Kohrn
 # Edited by Mike Schmitt 2/7/14 to add clonality filter
 

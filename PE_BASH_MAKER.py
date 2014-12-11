@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 PE Bash Maker V 1.11
 by Brendan Kohrn
