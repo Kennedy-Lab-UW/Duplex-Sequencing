@@ -152,15 +152,15 @@ template \* indicates the run identifier you gave *PE_BASH_MAKER.py*.
 
 File Description                                               | File name
 -------------------------------------------------------------- | ---------------------------------
-BAM file containing position-sorted paired-end reads:          | \*.pe.bam
-BAM file containing paired-end SSCSs:                          | \*.sscs.bam
+BAM file containing position-sorted paired-end reads:          | \*.pe.sort.bam
+BAM file containing position-sorted paired-end SSCSs:          | \*.sscs.sort.bam
 BAM file containing unpaired SSCSs:                            | \*.sscs\_UP.bam
 BAM file containing non-mapping or otherwise bad reads:        | \*.sscs\_NM.bam
 BAM file containing good reads with less common cigar scores:  | \*.sscs\_LCC.bam
 tagcounts file:                                                | \*.pe.tagcounts
 Tagstats file:                                                 | \*.pe.tagstats
-Fastq files containing DCSs:                                   | DCS.\*.\*.r1.fq and PE.\*.\*.r2.fq
-BAM file containing paired-end, sorted, alligned DCSs          | DCS.\*.\*.aln.sort.bam
+Fastq files containing DCSs:                                   | \*.dcs.r1.fq and \*.dcs.r2.fq
+BAM file containing paired-end, sorted, alligned DCSs          | \*.dcs.aln.sort.bam
 
 ## Live Outputs
 
