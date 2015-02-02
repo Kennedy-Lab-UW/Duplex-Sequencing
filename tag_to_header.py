@@ -40,7 +40,7 @@ class fastQRead:
     def __init__(self, in1, in2, in3, in4):
         '''This class is meant to hold a single fastQ read.
         '''
-        self.name=in1.strip().strip("@").replace(' ', '_')
+        self.name=in1.strip().strip("@")
         self.seq=in2.strip()
         self.spacer="+"
         self.qual=in4.strip()
@@ -115,10 +115,24 @@ def tagExtractFxn(x, blen):
 
 def hdrRenameFxn(x, y, z):
     '''this function renames the header with the formatting of 
-    *header coordinates,etc*, *index seq*, *tag from read1*, *tag from read2*, *spacer from this read*
-    *read designation from original header*
+    *header coordinates,etc*, *tag from read1*, *tag from read2*,
+    *read designation from original header (for paired reads)*
     '''
-    return("%s|%s%s/%s" % (x.split("/")[0], y, z,  x.split("/")[1]))
+    illumina = x.split(" ")[0].split(":")
+    if len(illumina) == 7:
+        # Illumina CASAVA >= 1.8
+        #   e.g. @EAS139:136:FC706VJ:2:2104:15343:197393 1:Y:18:ATCACG
+        readnum = x.split(" ")[1].split(":")[0]
+        return("%s|%s%s/%s" % (x.replace(' ', '_'), y, z, readnum))
+
+    elif len(illumina) == 5:
+        # Illumina CASAVA < 1.8 (and perhaps >= 1.4?)
+        #   e.g. @HWUSI-EAS100R:6:73:941:1973#ATCGAT/1
+        x = x.replace(' ', '_')
+        return("%s|%s%s/%s" % (x.split("/")[0], y, z, x.split("/")[1]))
+
+    else:
+        raise ValueError("Unknown read name format: %s" % x)
 
 def main():
     parser = ArgumentParser()
