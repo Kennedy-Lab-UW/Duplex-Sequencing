@@ -85,17 +85,12 @@ class fastQItterator:
 class fastqWriter:
     def __init__(self, outFile):
         self.file=outFile
-        self.firstLine=True
     
     def write(self, read):
-        if self.firstLine==True:
-            self.file.write("@" + read.name)
-            self.firstLine=False
-        else:
-            self.file.write("\n@" + read.name)
-        self.file.write("\n" + read.seq)
-        self.file.write("\n" + read.spacer)
-        self.file.write("\n" + read.qual)
+        self.file.write("@" + read.name + "\n")
+        self.file.write(read.seq + "\n")
+        self.file.write(read.spacer + "\n")
+        self.file.write(read.qual + "\n")
         return(True)
     
     def close(self):
