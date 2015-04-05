@@ -2,7 +2,7 @@
 '''
 DCS Filter
 Version 2.0
-By Brendan Kohrn and Scott Kennedy(1)
+By Brendan Kohrn, Scott Kennedy(1), and Mike Schmitt(1)
 (1) Department of Pathology, University of Washington School of Medicine, Seattle, WA 98195 
 Based on work by Scott Kennedy, Mike Schmitt
 December 17, 2013
@@ -16,7 +16,7 @@ Inputs:
 Outputs: 
     1: A paired-end BAM file containing DCSs
     2: A single-end BAM file containing unpaired DCSs
-    3: A pair of fastq files containing DCSs for use in realligning.
+    3: A pair of fastq files containing DCSs for use in realigning.
     
     Note: Quality scores and cigar strings in these files are meaningless. 
 
@@ -51,7 +51,7 @@ def printRead(readIn):
     sys.stderr.write("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (readIn.qname, readIn.flag, readIn.tid, readIn.pos, readIn.mapq, readIn.cigar, readIn.mrnm, readIn.mpos, readIn.isize, readIn.seq, readIn.qual, readIn.tags))
 
 def DSCMaker (groupedReadsList,  readLength) :
-    '''The Duplex maker substitutes an N if the two input sequeces are not identical at a position.  '''
+    '''The Duplex maker substitutes an N if the two input sequences are not identical at a position.  '''
     consensusRead = ''
     for i in xrange(readLength) :#rebuild consensus read taking into account the cutoff percentage
         if groupedReadsList[0][i]==groupedReadsList[1][i]:
