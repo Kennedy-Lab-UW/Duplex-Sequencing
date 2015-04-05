@@ -9,11 +9,11 @@ Programs by Scott Kennedy(1), Brendan Kohrn, and Mike Schmitt(1)
 Several steps are based on prior work by Joe Hiatt  
 (1) Department of Pathology, University of Washington School of Medicine, Seattle, WA 98195
 
-1. Glossery  
+1. Glossary  
     -Single Stranded Consensus Sequence (SSCS):  
-        A construct created by comparing multiple reads and deciding ambiguities by simple majority.  SSCSs are created by *ConsensusMaker.py*.  Quality scores attached to SSCSs are meaningless. although the cigar strings still have meaning. 
+        A construct created by comparing multiple reads and deciding ambiguities by simple majority.  SSCSs are created by *ConsensusMaker.py*.  Quality scores attached to SSCSs are meaningless, although the cigar strings still have meaning. 
     -Duplex Consensus Sequence (DCS):  
-        A construct created by comparing two SSCSs.  Quality scores and cigar strings attached to DCS sequences are meaningless, though cigar strings regain meaning after reallignment.  
+        A construct created by comparing two SSCSs.  Quality scores and cigar strings attached to DCS sequences are meaningless, though cigar strings regain meaning after realignment.  
         
     -Duplex tag:  
         A random sequence of nucleotides that enables the identification of sequences resulting from the same starting molecule.  
@@ -27,7 +27,7 @@ Several steps are based on prior work by Joe Hiatt
      
 
 2. Summary of process  
-    These programs are meant to be run in order and result in the transformation of two input FASTQ files from an Illumina sequencing run into a paired-end BAM file containing the final DCS reads.  This workflow will also generate a file containing a list of every tag that is present and how many times it occured, as well as file containing SSCSs that didn't have a mate and were unable to make a DCS (extraConsensus.bam ).  
+    These programs are meant to be run in order and result in the transformation of two input FASTQ files from an Illumina sequencing run into a paired-end BAM file containing the final DCS reads.  This workflow will also generate a file containing a list of every tag that is present and how many times it occurred, as well as a file containing SSCSs that didn't have a mate and were unable to make a DCS (extraConsensus.bam ).  
 
 3. Dependencies  
     The following programs and packages must be installed on your computer.  
@@ -107,7 +107,7 @@ Several steps are based on prior work by Joe Hiatt
 
     where runIdentifier is the run identifier you fed to the bash maker.  This should run the rest of the process through to an output paired-end BAM file, copying the contents of stderr to a log file for documentation and reporting purposes.  
     
-    It is strongly sugested that the final sorted BAM file undergo post-processing with picard-tools-1.70/AddOrReplaceReadGroups.jar and GATK/GenomeAnalysisTK.jar, before generating statistics.  
+    It is strongly sugested that the final sorted BAM file undergo end-clipping with picard-tools-1.70/AddOrReplaceReadGroups.jar and GATK/GenomeAnalysisTK.jar, before generating statistics.  Please see the Nature Protocols paper for details on how this is done.
 
 6. Data Outputs:  
     These are only valid when using the *PE_BASH_MAKER.py* script with the default template
