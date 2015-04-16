@@ -118,7 +118,7 @@ def hdrRenameFxn(x, y, z):
         # Illumina CASAVA >= 1.8
         #   e.g. @EAS139:136:FC706VJ:2:2104:15343:197393 1:Y:18:ATCACG
         readnum = x.split(" ")[1].split(":")[0]
-        return("%s|%s%s/%s" % (x.replace(' ', '_'), y, z, readnum))
+        return("%s|%s%s/%s" % (x.split(" ")[0].replace(' ', '_'), y, z, readnum))
 
     elif len(illumina) == 5:
         # Illumina CASAVA < 1.8 (and perhaps >= 1.4?)
