@@ -139,5 +139,5 @@ date | tee -a ${logFile}
 
 samtools index ${runIdentifier}.dcs.aln.sort.bam
 
-echo "Finised with run " $runIdentifier | tee -a ${logFile}
+echo "Finished with run " $runIdentifier | tee -a ${logFile}
 date | tee -a ${logFile}
