@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/usr/bin/env python
 
 #By Mike Schmitt and Brendan Kohrn
 #Version 1.31
