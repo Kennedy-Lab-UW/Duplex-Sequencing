@@ -10,24 +10,24 @@
 #
 # usage: tag_to_header.py [-h] [--infile1 INFILE1] [--infile2 INFILE2]
 #                        [--outfile1 OUTFILE1] [--outfile2 OUTFILE2]
-#                        [--barcode_length BLENGTH] [--spacer_length SLENGTH]
-#                        [--read_out ROUT] [--adapter ADAPTERSEQ]
+#                        [--taglen BLENGTH] [--spacerlen SLENGTH]
+#                        [--read_out ROUT] [--filt_spacer ADAPTERSEQ] --tagstats
 #
 # Optional arguments:
-#  -h, --help            show this help message and exit
-#  --infile1 INFILE1     First input raw fastq file.
-#  --infile2 INFILE2     Second input raw fastq file.
-#  --outfile1 OUTFILE1   Output file for first fastq reads.
-#  --outfile2 OUTFILE2   Output file for second fastq reads.
-#  --barcode_length BLENGTH
-#                        Length of the duplex tag sequence. [12]
-#  --spacer_length SLENGTH
-#                        Length of the spacer sequences used. [5]
-#  --read_out ROUT       How often you want to be told what the program is
-#                        doing. [1000000]
-#  --adapter ADAPTERSEQ  Optional: Spacer sequence for filtering on the
-#                        presence of the spacer. This could be thrown off by
-#                        low quality scores.
+#  -h, --help            		show this help message and exit
+#  --infile1 INFILE1     		First input raw fastq file.
+#  --infile2 INFILE2     		Second input raw fastq file.
+#  --outfile1 OUTFILE1  		Output file for first fastq reads.
+#  --outfile2 OUTFILE2   		Output file for second fastq reads.
+#  --taglen BLENGTH				Length of the duplex tag sequence. [12]
+#  --spacerlen SLENGTH				Length of the spacer sequences used. [5]
+#  --read_out ROUT       		How often you want to be told what the program is
+#                        		doing. [1000000]
+#  --filt_spacer ADAPTERSEQ  	Optional: Spacer sequence for filtering on the
+#                        	       		  presence of the spacer. This could be thrown off by
+#                        		   		  low quality scores.
+#  --tagstats 			 		Optional: Output tagstats file and make distribution plot of tag family sizes.
+#								   		  Requires matplotlib to be installed
 
 
 import sys
