@@ -132,8 +132,12 @@ def tag_stats(barcode_counts, outfile):
 	for value in barcode_counts:
 		family_size_dict[value] += 1
 
-	for size in family_size_dict.keys():
-		tagstat_file.write("%s\t%s\n" % (size, float(family_size_dict[size])/float(total_tags)))
+	for family_size in family_size_dict.keys():
+		family_size_dict[family_size] *= int(family_size)
+		total_tags += int(family_size_dict[family_size])
+
+	for family_size in sorted(family_size_dict.keys()):
+		tagstat_file.write("%s\t%s\n" % (family_size, float(family_size_dict[family_size])/float(total_tags)))
 
 	tagstat_file.close()
 	return family_size_dict, total_tags
