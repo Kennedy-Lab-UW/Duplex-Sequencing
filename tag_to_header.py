@@ -157,7 +157,7 @@ def main():
 	parser.add_argument('--filtspacer', dest='spacer_seq', type=str, default=None,
 						help='Optional: Filter out sequences lacking the inputed spacer sequence. \
 						Not recommended due to significant base calling issues with the invariant spacer sequence')
-	parser.add_argument('--tagstats', dest="tagfile", action="store_true",
+	parser.add_argument('--tagstats', dest="tagstats", action="store_true",
 						help='Optional: Output tagstats file and make distribution plot of tag family sizes.  \
 						Requires matplotlib to be installed.')
 	o = parser.parse_args()
@@ -189,8 +189,9 @@ def main():
 				read2_output.write('@%s\n%s\n+\n%s\n' % (renamed_read2_title, read2_seq[o.taglen+o.spclen:], read2_qual[o.taglen + o.spclen:]))
 				goodreads += 1
 
-				if o.tagfile:
+				if o.tagstats:
 					barcode_dict[tag1 + tag2] += 1
+
 			else:
 				badtag += 1
 
@@ -213,8 +214,23 @@ def main():
 	sys.stderr.write("Missing spacers: %s\n" % nospacer)
 	sys.stderr.write("Bad tags: %s\n" % badtag)
 
-	if o.tagfile:
+	if o.tagstats:
+		read_data_file = open(o.outfile +'_data.txt', 'w')
+		sscs_count = 0
+		dcs_count = 0
 		family_size_dict, total_tags = tag_stats(barcode_dict.values(), o.outfile)
+
+		for tag in barcode_dict.keys():
+
+			if barcode_dict[tag] >= 3 :
+				sscs_count += 1
+
+				if tag[12:]+tag[:12] in barcode_dict and barcode_dict[tag[12:] + tag[:12]] >= 3:
+					dcs_count += 1
+
+		read_data_file.write('# Passing Reads\t# SSCS Reads\t# DCS Reads\tSSCS:DCS\n%d\t%d\t%d\t%f\n'
+							 % (goodreads, sscs_count, dcs_count, float(sscs_count)/float(dcs_count)))
+		read_data_file.close()
 
 		try:
 			import matplotlib.pyplot as plt
@@ -231,7 +247,7 @@ def main():
 		plt.bar(x_value, y_value)
 		plt.xlabel('Family Size')
 		plt.ylabel('Proportion of Total Reads')
-		plt.savefig(o.outfile + 'png', bbox_inches='tight')
+		plt.savefig(o.outfile + '.png', bbox_inches='tight')
 
 if __name__ == "__main__":
 	main()
