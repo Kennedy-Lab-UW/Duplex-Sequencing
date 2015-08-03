@@ -55,8 +55,8 @@ optional arguments:
                         A string specifying which types of read to consider.
                         Read types: n: Neither read 1 or read 2 mapped. m:
                         Either read 1 or read 2 mapped, but not both. p: Both
-                        read 1 and read 2 mapped, not a propper pair. d: Both
-                        read 1 and read 2 mapped, propper pair. s: Single
+                        read 1 and read 2 mapped, not a proper pair. d: Both
+                        read 1 and read 2 mapped, proper pair. s: Single
                         ended reads ['dpm']
   --isize ISIZE         maximum distance between read pairs
   --read_out ROUT       How often you want to be told what the program is
@@ -150,7 +150,7 @@ def consensusMaker (groupedReadsList,  cutoff,  readLength) :
         except:
             consensusRead += 'N'
         nucIdentityList=[0, 0, 0, 0, 0, 0] # Reset for the next nucleotide position
-    return consensusRead
+    return consensusRead, len(groupedReadsList)
 
 def tagStats(tagCountsFile):
     familySizeCounts=defaultdict( lambda: 0 )
@@ -202,6 +202,8 @@ def main():
         goodFlag.extend((141, 77, 4))
     if 's' in o.read_type:
         goodFlag.extend((0, 16))
+    if 'u' in o.read_type:
+        goodFlag.extend((103, 167))
 
 
     inBam = pysam.Samfile( o.infile, "rb" ) # Open the input BAM file
@@ -325,16 +327,16 @@ def main():
                 if cigComp[maxCig] >= o.minmem:
                     if cigComp[maxCig] <= o.maxmem:
                         ConMade += 1
-                        consensus = consensusMaker( readDict[dictTag][6][maxCig][2:],  o.cutoff,  o.read_length )
+                        consensus, fam_size = consensusMaker( readDict[dictTag][6][maxCig][2:],  o.cutoff,  o.read_length )
                     else:
                         ConMade += 1
-                        consensus = consensusMaker(random.sample(readDict[dictTag][6][maxCig][2:], o.maxmem), o.cutoff, o.read_length)
+                        consensus, fam_size = consensusMaker(random.sample(readDict[dictTag][6][maxCig][2:], o.maxmem), o.cutoff, o.read_length)
                     
                     for cigStr in readDict[dictTag][6].keys():
                         if cigStr != maxCig:
                             for n in xrange(2, len(readDict[dictTag][6][cigStr][2:])):
                                 a = pysam.AlignedRead()
-                                a.qname = dictTag
+                                a.qname = dictTag + ':' + str(fam_size)
                                 a.flag = readDict[dictTag][0]
                                 a.seq = readDict[dictTag][6][cigStr][n]
                                 a.rname = readDict[dictTag][1]
@@ -354,7 +356,7 @@ def main():
                     if (consensus.count("N" )/ len(consensus) <= o.Ncutoff and 'n' in o.filt) or ('n' not in o.filt):
                         # Write a line to the consensusDictionary
                         a = pysam.AlignedRead()
-                        a.qname = dictTag
+                        a.qname = dictTag + ":" + str(fam_size)
                         a.flag = readDict[dictTag][0]
                         a.seq = consensus
                         a.rname = readDict[dictTag][1]

@@ -53,6 +53,7 @@ def fastq_general_iterator(read1_fastq, read2_fastq):
 	while read1_line and read2_line:
 
 		if read1_line[0] != '@' or read2_line[0] != '@':
+			print read1_line, read2_line
 			raise ValueError("Records in FASTQ files should start with a '@' character. Files may be malformed or out of synch.")
 
 		title_read1_line = read1_line[1:].rstrip()
@@ -66,7 +67,7 @@ def fastq_general_iterator(read1_fastq, read2_fastq):
 			read2_line = read2_readline()
 
 			if not read1_line and read2_line:
-				raise ValueError("End of file without qulaity information. Files may be malformed or out of synch")
+				raise ValueError("End of file without quality information. Files may be malformed or out of synch")
 			if read1_line[0] == '+' and read2_line[0] == '+':
 				break
 
@@ -157,15 +158,20 @@ def main():
 	parser.add_argument('--filtspacer', dest='spacer_seq', type=str, default=None,
 						help='Optional: Filter out sequences lacking the inputed spacer sequence. \
 						Not recommended due to significant base calling issues with the invariant spacer sequence')
-	parser.add_argument('--tagstats', dest="tagstats", action="store_true",
+	parser.add_argument('--tagstats', dest='tagstats', action="store_true",
 						help='Optional: Output tagstats file and make distribution plot of tag family sizes.  \
 						Requires matplotlib to be installed.')
+	parser.add_argument('--reduce', dest='reduce', action="store_true", help='Optional: Only output reads that will make \
+						a final DCS read.  Will only work when the --tagstats option is invoked.')
 	o = parser.parse_args()
+
+	if o.reduce and not o.tagstats:
+		raise ValueError("--reduce option must be invoked with the --tagstats option.")
 
 	read1_fastq = open(o.infile1, 'r')
 	read2_fastq = open(o.infile2, 'r')
-	read1_output =  open(o.outfile + '.seq1.fq.smi', 'w')
-	read2_output =  open(o.outfile + '.seq2.fq.smi', 'w')
+	read1_output =  open(o.outfile + '.seq1.smi.fq', 'w')
+	read2_output =  open(o.outfile + '.seq2.smi.fq', 'w')
 
 	readctr = 0
 	nospacer = 0
@@ -215,18 +221,23 @@ def main():
 	sys.stderr.write("Bad tags: %s\n" % badtag)
 
 	if o.tagstats:
-		read_data_file = open(o.outfile +'_data.txt', 'w')
+		read_data_file = open(o.outfile + '_data.txt', 'w')
 		sscs_count = 0
 		dcs_count = 0
+		dcs_tags_list = []
 		family_size_dict, total_tags = tag_stats(barcode_dict.values(), o.outfile)
 
 		for tag in barcode_dict.keys():
 
-			if barcode_dict[tag] >= 3 :
+			if barcode_dict[tag] >= 3:
 				sscs_count += 1
 
-				if tag[12:]+tag[:12] in barcode_dict and barcode_dict[tag[12:] + tag[:12]] >= 3:
+				if tag[12:] + tag[:12] in barcode_dict and barcode_dict[tag[12:] + tag[:12]] >= 3:
 					dcs_count += 1
+
+					if o.reduce and tag not in dcs_tags_list:
+						dcs_tags_list.append(tag)
+						dcs_tags_list.append(tag[12:] + tag[:12])
 
 		read_data_file.write('# Passing Reads\t# SSCS Reads\t# DCS Reads\tSSCS:DCS\n%d\t%d\t%d\t%f\n'
 							 % (goodreads, sscs_count, dcs_count, float(sscs_count)/float(dcs_count)))
@@ -234,20 +245,39 @@ def main():
 
 		try:
 			import matplotlib.pyplot as plt
+
+			x_value = []
+			y_value = []
+
+			for family_size in sorted(family_size_dict.keys()):
+				x_value.append(family_size)
+				y_value.append(float(family_size_dict[family_size]) / float(total_tags))
+
+			plt.bar(x_value, y_value)
+			plt.xlabel('Family Size')
+			plt.ylabel('Proportion of Total Reads')
+			plt.savefig(o.outfile + '.png', bbox_inches='tight')
+
 		except ImportError:
-			sys.stderr.write('matplotlib no present. Only tagstats file will be generated')
+			sys.stderr.write('matplotlib not present. Only tagstats file will be generated.')
 
-		x_value = []
-		y_value = []
+		if o.reduce:
 
-		for family_size in sorted(family_size_dict.keys()):
-			x_value.append(family_size)
-			y_value.append(float(family_size_dict[family_size]) / float(total_tags))
+			read1_fastq = open(o.outfile + '.seq1.smi.fq', 'r')
+			read2_fastq = open(o.outfile + '.seq2.smi.fq', 'r')
+			read1_output = open(o.outfile + '.seq1.reduced.fq', 'w')
+			read2_output = open(o.outfile + '.seq2.reduced.fq', 'w')
 
-		plt.bar(x_value, y_value)
-		plt.xlabel('Family Size')
-		plt.ylabel('Proportion of Total Reads')
-		plt.savefig(o.outfile + '.png', bbox_inches='tight')
+			for read1_title, read2_title, read1_seq, read2_seq, read1_qual, read2_qual in fastq_general_iterator(read1_fastq, read2_fastq):
+
+				if read1_title.split('|')[1].split('/')[0] in dcs_tags_list and read2_title.split('|')[1].split('/')[0] in dcs_tags_list:
+					read1_output.write('@%s\n%s\n+\n%s\n' % (read1_title, read1_seq, read1_qual))
+					read2_output.write('@%s\n%s\n+\n%s\n' % (read2_title, read2_seq, read2_qual))
+
+			read1_fastq.close()
+			read2_fastq.close()
+			read1_output.close()
+			read2_output.close()
 
 if __name__ == "__main__":
 	main()
