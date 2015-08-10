@@ -113,9 +113,9 @@ def hdr_rename_fxn(read_title, read1_tag, read2_tag):
 
 	if len(illumina) == 7:
 		#Illumina CASAVA >=1.8
-		#e.g. @EAS139:136:FC706VJ:2:2104:15343:197393 1:Y:18:ATCACG
+		#e.g. @EAS139:136:FC706VJ:2:2104:15343:197393 1:Y:18:ATCACGcd
 		readnum = read_title.split(" ")[1].split(":")[0]
-		return "%s|%s%s/%s" % (read_title.split(" ")[0].replace(' ', '_'), read1_tag, read2_tag, readnum)
+		return "%s|%s%s/%s" % (read_title.split(" ")[0], read1_tag, read2_tag, readnum)
 	elif len(illumina) == 5:
 		#Illumina CASAVA >=1.4?
 		#e.g. @HWUSI-EAS100R:6:73:941:1973#ATCGAT/1
