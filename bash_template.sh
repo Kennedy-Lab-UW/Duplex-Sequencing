@@ -92,8 +92,8 @@ echo "Aligning with BWA" | tee -a ${logFile}
 date | tee -a ${logFile}
 
 bwa aln $alignRef ${runIdentifier}.seq1.smi.fq > ${runIdentifier}.seq1.aln
-bwa aln $alignRef ${runIdentifier}.seq2.smi.fqfq > ${runIdentifier}.seq2.aln
-bwa sampe -s $alignRef ${runIdentifier}.seq1.aln ${runIdentifier}.seq2.aln ${runIdentifier}.seq1.smi.fq ${runIdentifier}.seq2.smi.fq > ${runIdentifier}.pe.sam
+bwa aln $alignRef ${runIdentifier}.seq2.smi.fq > ${runIdentifier}.seq2.aln
+bwa sampe -s $alignRef ${runIdentifier}.seq1.aln ${runIdentifier}.seq2.aln ${runIdentifier}.seq1.smi.fq ${runIdentifier}.seq2.smi.fqqq > ${runIdentifier}.pe.sam
 
 # Step 4: Sort aligned sequences
 echo "Sorting aligned sequences" | tee -a ${logFile}
