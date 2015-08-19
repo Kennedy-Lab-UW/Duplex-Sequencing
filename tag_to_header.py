@@ -232,12 +232,12 @@ def main():
 			if barcode_dict[tag] >= 3:
 				sscs_count += 1
 
-				if tag[12:] + tag[:12] in barcode_dict and barcode_dict[tag[12:] + tag[:12]] >= 3:
+				if tag[o.taglen:] + tag[:o.taglen] in barcode_dict and barcode_dict[tag[o.taglen:] + tag[:o.taglen]] >= 3:
 					dcs_count += 1
 
 					if o.reduce and tag not in dcs_tags_list:
 						dcs_tags_list.append(tag)
-						dcs_tags_list.append(tag[12:] + tag[:12])
+						dcs_tags_list.append(tag[o.taglen:] + tag[:o.taglen])
 
 		read_data_file.write('# Passing Reads\t# SSCS Reads\t# DCS Reads\tSSCS:DCS\n%d\t%d\t%d\t%f\n'
 							 % (goodreads, sscs_count, dcs_count, float(sscs_count)/float(dcs_count)))
