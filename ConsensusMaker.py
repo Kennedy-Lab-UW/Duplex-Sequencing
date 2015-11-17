@@ -156,7 +156,7 @@ def tagStats(tagCountsFile):
     familySizeCounts=defaultdict( lambda: 0 )
 
     fIn = open(tagCountsFile, 'r')
-    fOut = open(tagCountsFile.replace('.tagcounts', '.tagstats'), 'w')
+    fOut = open("tagstats.txt", 'w')
     for line in fIn:
         familySizeCounts[int(line.strip().split()[1].split(":")[0])] += 1
     fIn.close()
