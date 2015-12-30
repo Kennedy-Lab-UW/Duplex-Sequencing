@@ -121,6 +121,11 @@ def main():
             dest="template",
             help="Template to use with bash maker.  If not specified, defaults to bash_template.sh."
             )
+    parser.add_argument("--Ncores",
+            action = "store",
+            dest="Ncores",
+            help="Number of cores to use for bwa alnr.  If not specified, defaults to bash_template.sh."
+            )
     o = parser.parse_args()
     outBash = open(o.runID + ".script.sh", "w")
     
