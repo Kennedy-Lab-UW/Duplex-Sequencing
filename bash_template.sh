@@ -151,9 +151,7 @@ date | tee -a ${logFile}
 samtools index ${runIdentifier}.dcs.aln.sort.bam
 
 # Step 11: Clean up
-echo "Cleaning" | tee -a ${logFile}
+echo "Finishing with run.. " $runIdentifier | tee -a ${logFile}
+echo "Cleaning.." | tee -a ${logFile}
 date | tee -a ${logFile} 
 python ${DSpath}/clean.py --scripts_folder $(pwd) --output_folder ${output_folder} 
-
-echo "Finished with run " $runIdentifier | tee -a ${logFile}
-date | tee -a ${logFile}
