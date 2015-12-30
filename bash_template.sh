@@ -32,6 +32,7 @@ filtersSet='os'
 readTypes='dpm'
 repFilt=9
 readOut=1000000
+Ncores=18
 
 #NONDEFAULTS
 
@@ -59,6 +60,11 @@ export filtersSet
 export readTypes
 export repFilt
 export readOut
+
+# Load required software into path using the Environment Modules Project (http://modules.sourceforge.net)
+module load Python
+module load BWA
+module load SAMtools
 
 # Print out options used to log file
 touch $logFile
@@ -91,8 +97,8 @@ python ${DSpath}/tag_to_header.py --infile1 $read1in --infile2 $read2in --outpre
 echo "Aligning with BWA" | tee -a ${logFile}
 date | tee -a ${logFile}
 
-bwa aln $alignRef ${runIdentifier}.seq1.smi.fq > ${runIdentifier}.seq1.aln
-bwa aln $alignRef ${runIdentifier}.seq2.smi.fq > ${runIdentifier}.seq2.aln
+bwa aln -t ${Ncores} $alignRef ${runIdentifier}.seq1.smi.fq > ${runIdentifier}.seq1.aln
+bwa aln -t ${Ncores} $alignRef ${runIdentifier}.seq2.smi.fq > ${runIdentifier}.seq2.aln
 bwa sampe -s $alignRef ${runIdentifier}.seq1.aln ${runIdentifier}.seq2.aln ${runIdentifier}.seq1.smi.fq ${runIdentifier}.seq2.smi.fq > ${runIdentifier}.pe.sam
 
 # Step 4: Sort aligned sequences
@@ -123,8 +129,8 @@ python ${DSpath}/DuplexMaker.py --infile ${runIdentifier}.sscs.sort.bam --outfil
 echo "Aligning DCSs" | tee -a ${logFile}
 date | tee -a ${logFile}
 
-bwa aln $alignRef ${runIdentifier}.dcs.r1.fq > ${runIdentifier}.dcs.r1.aln
-bwa aln $alignRef ${runIdentifier}.dcs.r2.fq > ${runIdentifier}.dcs.r2.aln
+bwa aln -t ${Ncores}  $alignRef ${runIdentifier}.dcs.r1.fq > ${runIdentifier}.dcs.r1.aln
+bwa aln -t ${Ncores} $alignRef ${runIdentifier}.dcs.r2.fq > ${runIdentifier}.dcs.r2.aln
 bwa sampe -s $alignRef ${runIdentifier}.dcs.r1.aln ${runIdentifier}.dcs.r2.aln ${runIdentifier}.dcs.r1.fq ${runIdentifier}.dcs.r2.fq > ${runIdentifier}.dcs.sam
 
 # Step 9: Sort aligned DCSs
