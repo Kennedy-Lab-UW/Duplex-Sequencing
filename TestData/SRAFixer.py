@@ -1,7 +1,7 @@
 #!/bin/env python
 # SRAFixer.py
 # by Brendan Kohrn, January 15, 2015
-# edited by Jorge Bou√as, December 30, 2015
+# edited by Jorge Boucas, December 30, 2015
 # 
 # This program is meant to refomat reads downladed from the SRA
 # (http://www.ncbi.nlm.nih.gov/sra/), including the example data set 
