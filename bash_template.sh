@@ -42,6 +42,9 @@ readLength=$((readLength-barcodeLength-spacerLength))
 #LOG_FILE_NAME
 logFile=${runIdentifier}.log.txt
 
+#Output folder
+output_folder=${runIdentifier}
+
 #Export all variables
 export DSpath
 export alignRef
@@ -60,6 +63,8 @@ export filtersSet
 export readTypes
 export repFilt
 export readOut
+export Ncores
+export output_folder
 
 # Load required software into path using the Environment Modules Project (http://modules.sourceforge.net)
 module load Python
@@ -144,6 +149,11 @@ echo "Indexing sorted DCSs" | tee -a ${logFile}
 date | tee -a ${logFile}
 
 samtools index ${runIdentifier}.dcs.aln.sort.bam
+
+# Step 11: Clean up
+echo "Cleaning" | tee -a ${logFile}
+date | tee -a ${logFile} 
+python ${DSpath}/clean.py --scripts_folder $(pwd) --output_folder ${output_folder} 
 
 echo "Finished with run " $runIdentifier | tee -a ${logFile}
 date | tee -a ${logFile}
