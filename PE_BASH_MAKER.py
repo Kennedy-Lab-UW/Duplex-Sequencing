@@ -124,7 +124,12 @@ def main():
     parser.add_argument("--Ncores",
             action = "store",
             dest="Ncores",
-            help="Number of cores to use for bwa alnr.  If not specified, defaults to bash_template.sh."
+            help="Number of cores to use for bwa aln.  If not specified, defaults to bash_template.sh."
+            )
+    parser.add_argument("--output_folder",
+            action = "store",
+            dest="output_folder",
+            help="Output folder.  If not specified, defaults to bash_template.sh."
             )
     o = parser.parse_args()
     outBash = open(o.runID + ".script.sh", "w")
