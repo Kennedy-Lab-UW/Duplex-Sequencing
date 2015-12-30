@@ -95,7 +95,7 @@ echo "tag_to_header starting"  | tee -a ${logFile}
 date | tee -a ${logFile}
 echo "" | tee -a ${logFile}
 
-python ${DSpath}/tag_to_header.py --infile1 $read1in --infile2 $read2in --outprefix ${runIdentifier} --tagstats
+python ${DSpath}/tag_to_header.py --infile1 $read1in --infile2 $read2in --outprefix ${runIdentifier} --tagstats --spacerlen ${spacerLength} --taglen ${barcodeLength}
 
 # Step 3: Align sequences
 
