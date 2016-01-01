@@ -218,9 +218,11 @@ def CountMutations(o, f, fOut):
     print(("G to C:\t%s" % GtoC) + ('\t%.2e\t%.2e\t%.2e' % Wilson(GtoC,   max(Gseq, 1))), file = fOut)
     print("\nTotal nucleotides sequenced: %s" % totalseq, file = fOut)
     print("Total point mutations: %s" % totalptmut, file = fOut)
+    print("\tFrequency\t95% positive CI\t95% negative CI", file = fOut)
     print('Overall point mutation frequency:\t%.2e\t%.2e\t%.2e\n' % Wilson(totalptmut, max(totalseq, 1)), file = fOut)
     
     insKeys = sorted(ins.items(), key=lambda x: x[0])
+    print("Mutation type\t#\tFrequency\t95% positive CI\t95% negative CI", file = fOut)
     for n in insKeys:
         print(('+%s insertions: %s' % (n[0], n[1])) + ('\t%.2e\t%.2e\t%.2e' % Wilson(n[1], max(totalseq,1))), file = fOut)
     if dels != {}:
@@ -229,8 +231,10 @@ def CountMutations(o, f, fOut):
     for n in delsKeys:
         print(('-%s deletions: %s' % (n[0], n[1])) + ('\t%.2e\t%.2e\t%.2e' % Wilson(n[1], max(totalseq,1))), file = fOut)   
     print("\nTotal insertion events: %s" % totalins, file = fOut)
+    print("\tFrequency\t95% positive CI\t95% negative CI", file = fOut)
     print("Overall insert frequency:\t%.2e\t%.2e\t%.2e" % Wilson(totalins, max(totalseq, 1)), file = fOut)
     print("\nTotal deletion events: %s" % totaldels, file = fOut)
+    print("\tFrequency\t95% positive CI\t95% negative CI", file = fOut)
     print("Overall deletion frequency:\t%.2e\t%.2e\t%.2e" % Wilson(totaldels, max(totalseq, 1)), file = fOut)
 
 def main():
