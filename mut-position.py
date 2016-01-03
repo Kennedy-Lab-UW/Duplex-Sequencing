@@ -124,7 +124,7 @@ def main():
         fOut = open(o.outFile, 'wb')
     else:
         fOut = sys.stdout
-    
+    fOut.write("Chrom\tTemplate\tPos\tDepths\tMuts\tTcount\tCcount\tGcount\tAcount\tinscount\tdelcount\tNcount\n")
     MutPos(o, f, fOut)
         
 

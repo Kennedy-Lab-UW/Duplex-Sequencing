@@ -32,6 +32,7 @@ filtersSet='os'
 readTypes='dpm'
 repFilt=9
 readOut=1000000
+Ncores=18
 
 #NONDEFAULTS
 
@@ -40,6 +41,9 @@ readLength=$((readLength-barcodeLength-spacerLength))
 
 #LOG_FILE_NAME
 logFile=${runIdentifier}.log.txt
+
+#Output folder
+output_folder=${runIdentifier}
 
 #Export all variables
 export DSpath
@@ -59,6 +63,13 @@ export filtersSet
 export readTypes
 export repFilt
 export readOut
+export Ncores
+export output_folder
+
+# Load required software into path using the Environment Modules Project (http://modules.sourceforge.net)
+module load Python
+module load BWA
+module load SAMtools
 
 # Print out options used to log file
 touch $logFile
@@ -84,15 +95,15 @@ echo "tag_to_header starting"  | tee -a ${logFile}
 date | tee -a ${logFile}
 echo "" | tee -a ${logFile}
 
-python ${DSpath}/tag_to_header.py --infile1 $read1in --infile2 $read2in --outprefix ${runIdentifier} --tagstats
+python ${DSpath}/tag_to_header.py --infile1 $read1in --infile2 $read2in --outprefix ${runIdentifier} --tagstats --spacerlen ${spacerLength} --taglen ${barcodeLength}
 
 # Step 3: Align sequences
 
 echo "Aligning with BWA" | tee -a ${logFile}
 date | tee -a ${logFile}
 
-bwa aln $alignRef ${runIdentifier}.seq1.smi.fq > ${runIdentifier}.seq1.aln
-bwa aln $alignRef ${runIdentifier}.seq2.smi.fq > ${runIdentifier}.seq2.aln
+bwa aln -t ${Ncores} $alignRef ${runIdentifier}.seq1.smi.fq > ${runIdentifier}.seq1.aln
+bwa aln -t ${Ncores} $alignRef ${runIdentifier}.seq2.smi.fq > ${runIdentifier}.seq2.aln
 bwa sampe -s $alignRef ${runIdentifier}.seq1.aln ${runIdentifier}.seq2.aln ${runIdentifier}.seq1.smi.fq ${runIdentifier}.seq2.smi.fq > ${runIdentifier}.pe.sam
 
 # Step 4: Sort aligned sequences
@@ -123,8 +134,8 @@ python ${DSpath}/DuplexMaker.py --infile ${runIdentifier}.sscs.sort.bam --outfil
 echo "Aligning DCSs" | tee -a ${logFile}
 date | tee -a ${logFile}
 
-bwa aln $alignRef ${runIdentifier}.dcs.r1.fq > ${runIdentifier}.dcs.r1.aln
-bwa aln $alignRef ${runIdentifier}.dcs.r2.fq > ${runIdentifier}.dcs.r2.aln
+bwa aln -t ${Ncores}  $alignRef ${runIdentifier}.dcs.r1.fq > ${runIdentifier}.dcs.r1.aln
+bwa aln -t ${Ncores} $alignRef ${runIdentifier}.dcs.r2.fq > ${runIdentifier}.dcs.r2.aln
 bwa sampe -s $alignRef ${runIdentifier}.dcs.r1.aln ${runIdentifier}.dcs.r2.aln ${runIdentifier}.dcs.r1.fq ${runIdentifier}.dcs.r2.fq > ${runIdentifier}.dcs.sam
 
 # Step 9: Sort aligned DCSs
@@ -139,5 +150,8 @@ date | tee -a ${logFile}
 
 samtools index ${runIdentifier}.dcs.aln.sort.bam
 
-echo "Finished with run " $runIdentifier | tee -a ${logFile}
-date | tee -a ${logFile}
+# Step 11: Clean up
+echo "Finishing with run.. " $runIdentifier | tee -a ${logFile}
+echo "Cleaning.." | tee -a ${logFile}
+date | tee -a ${logFile} 
+python ${DSpath}/clean.py --scripts_folder $(pwd) --output_folder ${output_folder} 

@@ -123,6 +123,8 @@ optional arguments:
                         length x.
   --template TEMPLATE   Template to use with bash maker. If not specified,
                         defaults to bash_template.sh.
+  --Ncores NCORES       Number of cores to use for bwa aln. If not specified, 
+                        defaults to bash_template.sh.       
 ```
 
 The default parameters in the provided BASH script are:

@@ -1,6 +1,9 @@
 Test data can be downloaded from the NIH Small Reads Archive at:
 http://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?run=SRR1613972
 
+Using the SRA Toolkit:
+fastq-dump --split-files SRR1613972
+
 The settings that were used for PE_BASH_MAKER.py are as follows:
 
 Read length --rlength 101 

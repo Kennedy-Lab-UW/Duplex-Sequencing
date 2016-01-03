@@ -197,26 +197,32 @@ def CountMutations(o, f, fOut):
     if o.unique:
         print('Unique Counts', file = fOut)
     print("\nA's sequenced: %s" % Aseq, file = fOut)
+    print("Mutation type\t#\tFrequency\t95% positive CI\t95% negative CI", file = fOut)
     print(("A to T:\t%s" % AtoT) + ('\t%.2e\t%.2e\t%.2e' % Wilson(AtoT,  max(Aseq, 1))), file = fOut) #Output is in the form: Mutation type, number of times mutation is oberseved, frequency, 95% positive CI, 95% negative CI (Confidence Intervals are based on the Wilson Confidence Interval)
     print(("A to C:\t%s" % AtoC) + ('\t%.2e\t%.2e\t%.2e' % Wilson(AtoC,  max(Aseq, 1))), file = fOut)
     print(("A to G:\t%s" % AtoG) + ('\t%.2e\t%.2e\t%.2e' % Wilson(AtoG,  max(Aseq, 1))), file = fOut)
     print("\nT's sequenced: %s" % Tseq, file = fOut)
+    print("Mutation type\t#\tFrequency\t95% positive CI\t95% negative CI", file = fOut)
     print(("T to A:\t%s" % TtoA) + ('\t%.2e\t%.2e\t%.2e' % Wilson(TtoA,   max(Tseq, 1))), file = fOut)
     print(("T to C:\t%s" % TtoC) + ('\t%.2e\t%.2e\t%.2e' % Wilson(TtoC,  max(Tseq, 1))), file = fOut)
     print(("T to G:\t%s" % TtoG) + ('\t%.2e\t%.2e\t%.2e' % Wilson(TtoG,   max(Tseq, 1))), file = fOut)
     print("\nC's sequenced: %s" % Cseq, file = fOut)
+    print("Mutation type\t#\tFrequency\t95% positive CI\t95% negative CI", file = fOut)
     print(("C to A:\t%s" % CtoA) + ('\t%.2e\t%.2e\t%.2e' % Wilson(CtoA,  max(Cseq, 1))), file = fOut)
     print(("C to T:\t%s" % CtoT) + ('\t%.2e\t%.2e\t%.2e' % Wilson(CtoT,   max(Cseq, 1))), file = fOut)
     print(("C to G:\t%s" % CtoG) + ('\t%.2e\t%.2e\t%.2e' % Wilson(CtoG,   max(Cseq, 1))), file = fOut)
     print("\nG's sequenced: %s" % Gseq, file = fOut)
+    print("Mutation type\t#\tFrequency\t95% positive CI\t95% negative CI", file = fOut)
     print(("G to A:\t%s" % GtoA) + ('\t%.2e\t%.2e\t%.2e' % Wilson(GtoA,   max(Gseq, 1))), file = fOut)
     print(("G to T:\t%s" % GtoT) + ('\t%.2e\t%.2e\t%.2e' % Wilson(GtoT,   max(Gseq, 1))), file = fOut)
     print(("G to C:\t%s" % GtoC) + ('\t%.2e\t%.2e\t%.2e' % Wilson(GtoC,   max(Gseq, 1))), file = fOut)
     print("\nTotal nucleotides sequenced: %s" % totalseq, file = fOut)
     print("Total point mutations: %s" % totalptmut, file = fOut)
+    print("\tFrequency\t95% positive CI\t95% negative CI", file = fOut)
     print('Overall point mutation frequency:\t%.2e\t%.2e\t%.2e\n' % Wilson(totalptmut, max(totalseq, 1)), file = fOut)
     
     insKeys = sorted(ins.items(), key=lambda x: x[0])
+    print("Mutation type\t#\tFrequency\t95% positive CI\t95% negative CI", file = fOut)
     for n in insKeys:
         print(('+%s insertions: %s' % (n[0], n[1])) + ('\t%.2e\t%.2e\t%.2e' % Wilson(n[1], max(totalseq,1))), file = fOut)
     if dels != {}:
@@ -225,8 +231,10 @@ def CountMutations(o, f, fOut):
     for n in delsKeys:
         print(('-%s deletions: %s' % (n[0], n[1])) + ('\t%.2e\t%.2e\t%.2e' % Wilson(n[1], max(totalseq,1))), file = fOut)   
     print("\nTotal insertion events: %s" % totalins, file = fOut)
+    print("\tFrequency\t95% positive CI\t95% negative CI", file = fOut)
     print("Overall insert frequency:\t%.2e\t%.2e\t%.2e" % Wilson(totalins, max(totalseq, 1)), file = fOut)
     print("\nTotal deletion events: %s" % totaldels, file = fOut)
+    print("\tFrequency\t95% positive CI\t95% negative CI", file = fOut)
     print("Overall deletion frequency:\t%.2e\t%.2e\t%.2e" % Wilson(totaldels, max(totalseq, 1)), file = fOut)
 
 def main():
