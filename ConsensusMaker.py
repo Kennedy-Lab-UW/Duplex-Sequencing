@@ -26,7 +26,7 @@ The program starts at the position of the first good read, determined by the typ
 
 In the future, this program may be able to autodetect read length.  
 
-usage: ConsensusMaker.py [-h] [--infile INFILE] [--tagfile TAGFILE]
+usage: ConsensusMaker.py [-h] [--infile INFILE] [--tagfile TAGFILE] [--tagstats TAGSTATS]
                          [--outfile OUTFILE] [--rep_filt REP_FILT]
                          [--minmem MINMEM] [--maxmem MAXMEM] [--cutoff CUTOFF]
                          [--Ncutoff NCUTOFF] [--readlength READ_LENGTH]
@@ -37,6 +37,7 @@ optional arguments:
   -h, --help            show this help message and exit
   --infile INFILE       input BAM file
   --tagfile TAGFILE     output tagcounts file
+  --tagstats TAGSTATS   output tagstats file
   --outfile OUTFILE     output BAM file
   --rep_filt REP_FILT   Remove tags with homomeric runs of nucleotides of
                         length x. [9]
@@ -152,11 +153,11 @@ def consensusMaker (groupedReadsList,  cutoff,  readLength) :
         nucIdentityList=[0, 0, 0, 0, 0, 0] # Reset for the next nucleotide position
     return consensusRead, len(groupedReadsList)
 
-def tagStats(tagCountsFile):
+def tagStats(tagCountsFile, tagStatsFile):
     familySizeCounts=defaultdict( lambda: 0 )
 
     fIn = open(tagCountsFile, 'r')
-    fOut = open("tagstats.txt", 'w')
+    fOut = open(tagStatsFile, 'w')
     for line in fIn:
         familySizeCounts[int(line.strip().split()[1].split(":")[0])] += 1
     fIn.close()
@@ -177,6 +178,7 @@ def main():
     parser=ArgumentParser()
     parser.add_argument("--infile", action="store", dest="infile", help="input BAM file", required=True)
     parser.add_argument("--tagfile",  action="store",  dest="tagfile", help="output tagcounts file",  default='sys.stdout', required=True)
+    parser.add_argument("--tagstats",  action="store",  dest="tagstats", help="output tagstats file",  default='tagstats.txt', required=True)
     parser.add_argument("--outfile",  action="store", dest="outfile", help="output BAM file", required=True)
     parser.add_argument("--rep_filt", action="store",  type=int, dest='rep_filt', help="Remove tags with homomeric runs of nucleotides of length x. [9]", default=9 )
     parser.add_argument('--minmem', type=int, default=3, dest='minmem', help="Minimum number of reads allowed to comprise a consensus. [3] ")
@@ -424,7 +426,7 @@ def main():
     tagFile = open( o.tagfile, "w" )
     tagFile.write ( "\n".join( [ "%s\t%d" % ( SMI, tagDict[SMI] ) for SMI in sorted( tagDict.keys(), key=lambda x: tagDict[x], reverse=True ) ] ))
     tagFile.close()
-    tagStats(o.tagfile)
+    tagStats(o.tagfile, o.tagstats)
 
 if __name__ == "__main__":
     main()

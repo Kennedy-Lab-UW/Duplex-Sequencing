@@ -31,6 +31,7 @@
 
 
 import sys
+import gzip
 from argparse import ArgumentParser
 from collections import defaultdict
 
@@ -143,6 +144,14 @@ def tag_stats(barcode_counts, outfile):
 	tagstat_file.close()
 	return family_size_dict, total_tags
 
+def open_fastq(infile, outfile):
+    if infile.endswith(".gz"):
+        in_fh = gzip.open(infile, 'rb')
+        out_fh = gzip.open(outfile + ".gz", 'wb')
+    else:
+        in_fh = open(infile, 'r')
+        out_fh = open(outfile, 'w')
+    return (in_fh, out_fh)
 
 def main():
 	parser =  ArgumentParser()
@@ -168,10 +177,8 @@ def main():
 	if o.reduce and not o.tagstats:
 		raise ValueError("--reduce option must be invoked with the --tagstats option.")
 
-	read1_fastq = open(o.infile1, 'r')
-	read2_fastq = open(o.infile2, 'r')
-	read1_output =  open(o.outfile + '.seq1.smi.fq', 'w')
-	read2_output =  open(o.outfile + '.seq2.smi.fq', 'w')
+	(read1_fastq, read1_output) = open_fastq(o.infile1, o.outfile + '.seq1.smi.fq')
+	(read2_fastq, read2_output) = open_fastq(o.infile2, o.outfile + '.seq2.smi.fq')
 
 	readctr = 0
 	nospacer = 0
