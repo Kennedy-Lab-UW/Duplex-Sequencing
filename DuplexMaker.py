@@ -25,6 +25,7 @@ This program goes through the input file by position, making DCSs as it goes and
 usage: DuplexMaker.py [-h] [--infile INFILE] [--outfile OUTFILE]
                       [--Ncutoff NCUTOFF] [--readlength READ_LENGTH]
                       [--barcode_length BLENGTH] [--read_out ROUT]
+                      [--gzip-fqs]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -37,11 +38,13 @@ optional arguments:
                         Length of the duplex tag sequence. Should match the value in tag_to_header.  [12]
   --read_out ROUT       How often you want to be told what the program is
                         doing. [1000000]
+  --gzip-fqs            Output gzipped fastqs [False]
 '''
 
 import sys
 import pysam
 import re
+import gzip
 from Bio.Seq import Seq
 from Bio.Alphabet import IUPAC
 from collections import defaultdict
@@ -61,6 +64,14 @@ def DSCMaker (groupedReadsList,  readLength) :
     
     return consensusRead
 
+    
+def fastq_open(outfile, gzip_fastq, end):
+    fn = o.outfile.replace('.bam','')+"."+end+".fq"
+    if gzip_fastq:
+        fn = fn + ".gz"
+        return gzip.open(fn, 'wb')
+    else:
+        return open(fn, 'w')
 
 def main():
     # Parameters to be input.
@@ -71,13 +82,14 @@ def main():
     parser.add_argument('--readlength', type=int, default=84, dest='read_length', help="Length of the input read that is being used. [84]")
     parser.add_argument('--barcode_length', type = int, default = 12, dest = 'blength', help = 'Length of the duplex tag sequence. Should match the value in tag_to_header.  [12]')
     parser.add_argument('--read_out', type = int, default = 1000000, dest = 'rOut', help = 'How often you want to be told what the program is doing. [1000000]')
+    parser.add_argument('--gzip-fqs', action="store_true", default = False, dest = 'gzip_fastqs', help = 'Output gzipped fastqs [False]')
     o = parser.parse_args()
 
     # Initialization of all global variables, main input/output files, and main iterator and dictionaries.
     inBam = pysam.Samfile(o.infile, "rb") # Open the input BAM file
     outBam = pysam.Samfile(o.outfile, "wb", template = inBam) # Open the output BAM file
-    fastqFile1 = open(o.outfile.replace('.bam','')+".r1.fq",'w')
-    fastqFile2 = open(o.outfile.replace('.bam','')+".r2.fq",'w')
+    fastqFile1 = fastq_open(o.outfile, o.gzip_fastqs, 'r1')
+    fastqFile2 = fastq_open(o.outfile, o.gzip_fastqs, 'r2')
 
     readNum = 0
     duplexMade = 0
