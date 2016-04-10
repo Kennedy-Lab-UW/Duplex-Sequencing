@@ -31,7 +31,7 @@ usage: ConsensusMaker.py [-h] [--infile INFILE] [--tagfile TAGFILE] [--tagstats 
                          [--minmem MINMEM] [--maxmem MAXMEM] [--cutoff CUTOFF]
                          [--Ncutoff NCUTOFF] [--readlength READ_LENGTH]
                          [--read_type READ_TYPE] [--isize ISIZE]
-                         [--read_out ROUT] [--filt FILT]
+                         [--read_out ROUT] [--filt FILT] [--sam_tag SAM_TAG]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -65,6 +65,9 @@ optional arguments:
   --filt FILT           A string indicating which filters should be
                         implemented. Filters: s: Softclipping filter. o:
                         Overlap filter. n: N filter. ['osn']
+  --sam_tag SAM_TAG     The SAM tag that store the duplex tag sequence (can 
+                        be set one more times).  Otherwise use the sequence 
+                        in the read name."
 
 
 Details of different arguments:
@@ -190,6 +193,7 @@ def main():
     parser.add_argument('--isize', type = int, default=-1, dest='isize', help="maximum distance between read pairs")
     parser.add_argument('--read_out', type = int, default = 1000000, dest = 'rOut', help = 'How often you want to be told what the program is doing. [1000000]')
     parser.add_argument('--filt', type=str, default='osn', dest='filt', help="A string indicating which filters should be implemented.  Filters: s: Softclipping filter.  o: Overlap filter.  n: N filter.  ['osn']")
+    parser.add_argument('--sam_tag', action='append', type=str, dest='samtags', help="The SAM tag that store the duplex tag sequence (can be set one more times).  Otherwise use the sequence in the read name.", default=list())
     o = parser.parse_args()
 
     # Initialization of all global variables, main input/output files, and main iterator and dictionaries.
@@ -214,6 +218,7 @@ def main():
     nonMap = pysam.Samfile( o.outfile.replace(".bam","_NM.bam"), "wb", template = inBam ) # File for reads with strange flags
     if o.read_type == 'd':
         extraBam = pysam.Samfile(o.outfile.replace(".bam","_UP.bam"), "wb", template = inBam)
+    samtags = o.samtags
 
     readNum = 0
     nM = 0
@@ -243,7 +248,6 @@ def main():
 
     consensusDict={}
 
-
 #Start going through the input BAM file, one position at a time.
     for line in bamEntry:
         winPos += 1
@@ -254,9 +258,11 @@ def main():
         while (readWin[winPos%2].pos == readWin[(winPos-1)%2].pos and fileDone==False and readOne==False) or readOne == True:
             if readNum % o.rOut == 0:
                 sys.stderr.write("Reads processed:" + str(readNum) + "\n")
-            
             try:
-                tag = readWin[winPos%2].qname.split('|')[1].split('/')[0] + (":1" if readWin[winPos%2].is_read1 == True else (":2" if readWin[winPos%2].is_read2 == True else ":se"))
+                if 0 < len(samtags):
+                    tag = "".join([tagtuple[1] for tagtuple in readWin[winPos%2].tags if tagtuple[0] in samtags])
+                else:
+                    tag = readWin[winPos%2].qname.split('|')[1].split('/')[0] + (":1" if readWin[winPos%2].is_read1 == True else (":2" if readWin[winPos%2].is_read2 == True else ":se"))
                 tagDict[tag] += 1
             except:
                 print readNum
