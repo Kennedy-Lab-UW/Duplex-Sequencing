@@ -66,7 +66,7 @@ def DSCMaker (groupedReadsList,  readLength) :
 
     
 def fastq_open(outfile, gzip_fastq, end):
-    fn = o.outfile.replace('.bam','')+"."+end+".fq"
+    fn = outfile.replace('.bam','')+"."+end+".fq"
     if gzip_fastq:
         fn = fn + ".gz"
         return gzip.open(fn, 'wb')
