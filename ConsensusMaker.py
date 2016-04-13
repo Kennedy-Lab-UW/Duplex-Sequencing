@@ -262,7 +262,8 @@ def main():
                 if 0 < len(samtags):
                     tag = "".join([tagtuple[1] for tagtuple in readWin[winPos%2].tags if tagtuple[0] in samtags])
                 else:
-                    tag = readWin[winPos%2].qname.split('|')[1].split('/')[0] + (":1" if readWin[winPos%2].is_read1 == True else (":2" if readWin[winPos%2].is_read2 == True else ":se"))
+                    tag = readWin[winPos%2].qname.split('|')[1].split('/')[0] 
+                tag = tag + (":1" if readWin[winPos%2].is_read1 == True else (":2" if readWin[winPos%2].is_read2 == True else ":se"))
                 tagDict[tag] += 1
             except:
                 print readNum
