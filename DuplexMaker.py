@@ -135,7 +135,7 @@ def main():
         else:
             # Send reads to DCSMaker
             firstRead = line # Store the present line for the next group of lines
-            firstTag = firstRead.qname.split(":")[0]
+            firstTag = firstRead.qname
             readOne=True
             dictKeys = readDict.keys()
             
