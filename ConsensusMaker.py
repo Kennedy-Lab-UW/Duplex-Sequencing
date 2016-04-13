@@ -355,7 +355,7 @@ def main():
                     cigComp={}
 
                     # Filter out consensuses with too many Ns in them
-                    if (consensus.count("N" )/ len(consensus) <= o.Ncutoff and 'n' in o.filt) or ('n' not in o.filt):
+                    if (consensus.count("N" )/ float(len(consensus)) <= o.Ncutoff and 'n' in o.filt) or ('n' not in o.filt):
                         # Write a line to the consensusDictionary
                         a = pysam.AlignedRead()
                         a.qname = dictTag + ":" + str(fam_size)
