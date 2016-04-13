@@ -106,7 +106,7 @@ def main():
     firstTag=firstRead.qname.split(":")[0]
     qualScore = firstRead.qual # Set a dummy quality score
     consensusDict={}
-    cigDum = "%dM" % o.read_length #set a dummy cigar score
+    cigDum = firstRead.cigar #set a dummy cigar score
 
     # Start going through the input BAM file, one position at a time.
     for line in bamEntry:
@@ -200,15 +200,14 @@ def main():
     for consTag in consensusDict.keys():
         a = pysam.AlignedRead()
         a.qname = consTag
-        a.flag = 1 + 4 # paired but this end not mapped
+        a.flag = 4
         a.seq = '.' * o.read_length
-        # Set the coordinates of this end to the coordinates of its mate
         a.rname = consensusDict[consTag].rname
         a.pos = consensusDict[consTag].pos
         a.mapq = 255
         a.cigar = cigDum
         a.mrnm = consensusDict[consTag].mrnm
-        a.mpos = consensusDict[consTag].pos
+        a.mpos=consensusDict[consTag].pos
         a.isize = consensusDict[consTag].isize
         a.qual = qualScore
         if consensusDict[consTag].is_read1 == False:
