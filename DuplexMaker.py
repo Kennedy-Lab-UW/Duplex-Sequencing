@@ -200,7 +200,7 @@ def main():
     for consTag in consensusDict.keys():
         a = pysam.AlignedRead()
         a.qname = consTag
-        a.flag = 4
+        a.flag = 5
         a.seq = '.' * o.read_length
         a.rname = consensusDict[consTag].rname
         a.pos = consensusDict[consTag].pos
