@@ -67,7 +67,7 @@ optional arguments:
                         Overlap filter. n: N filter. ['osn']
   --sam_tag SAM_TAG     The SAM tag that store the duplex tag sequence (can 
                         be set one more times).  Otherwise use the sequence 
-                        in the read name.
+                        in the read name."
 
 
 Details of different arguments:
@@ -245,7 +245,6 @@ def main():
 
     readDict = {} # Initialize the read dictionary
     tagDict = defaultdict( lambda: 0 ) # Initialize the tag dictionary
-    outputReadNum = 1
 
     consensusDict={}
 
@@ -382,15 +381,11 @@ def main():
                         altTag=dictTag.replace(("1" if "1" in dictTag else "2"),("2" if "1" in dictTag else "1"))
 
                         if altTag in consensusDict:
-                            a.qname = outputReadNum + ":" + a.qname
-                            b = consensusDict.pop(altTag)
-                            b.qname = outputReadNum + ":" + b.qname
-                            outputReadNum += 1
                             if a.is_read1 == True:
                                 outBam.write(a)
-                                outBam.write(b)
+                                outBam.write(consensusDict.pop(altTag))
                             else:
-                                outBam.write(b)
+                                outBam.write(consensusDict.pop(altTag))
                                 outBam.write(a)
                         else:
                             consensusDict[dictTag]=a
@@ -410,10 +405,7 @@ def main():
             extraBam.write(consensusDict.pop(consTag))
             UP += 1
         else:
-            b = consensusDict.pop(consTag)
-            b.qname = outputReadNum + ":" + b.qname
-            outputReadNum += 1
-            outBam.write(b)
+            outBam.write(consensusDict.pop(consTag))
 
     # Close BAM files
     inBam.close()
