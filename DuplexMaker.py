@@ -86,6 +86,7 @@ def main():
     fastqFile2 = fastq_open(o.outfile, o.gzip_fastqs, 'r2')
 
     readNum = 0
+    outputReadNum = 1
     duplexMade = 0
     uP = 0
     nC = 0
@@ -145,19 +146,18 @@ def main():
                         # Write a line to the consensusDictionary
                         a = pysam.AlignedRead()
                         a.qname = dictTag
-                        
                         if a.is_reverse == True:
                             tmpSeq=Seq(consensus,IUPAC.unambiguous_dna)
                             a.seq=str(tmpSeq.reverse_complement())
                         else:
                             a.seq = consensus
-                        
                         a.qual = qualScore
                         
                         # Write DCSs to output FASTQ files
                         if dictTag in consensusDict:
-                            line1 = '@:%s\n%s\n+\n%s\n' % (a.qname, a.seq, a.qual)
-                            line2 = '@:%s\n%s\n+\n%s\n' % (consensusDict[dictTag].qname, consensusDict[dictTag].seq, consensusDict[dictTag].qual))
+                            line1 = '@%d:%s\n%s\n+\n%s\n' % (outputReadNum, a.qname, a.seq, a.qual)
+                            line2 = '@%d:%s\n%s\n+\n%s\n' % (outputReadNum, consensusDict[dictTag].qname, consensusDict[dictTag].seq, consensusDict[dictTag].qual))
+                            outputReadNum += 1
                             if a.is_read1 == True:
                                 fastqFile1.write(line1)
                                 fastqFile2.write(line2)
@@ -185,12 +185,15 @@ def main():
         a.qname = consTag
         a.seq = '.' * o.read_length
         a.qual = qualScore
+        line1 = '@%d:%s\n%s\n+\n%s\n' % (outputReadNum, a.qname, a.seq, a.qual)
+        line2 = '@%d:%s\n%s\n+\n%s\n' % (outputReadNum, consensusDict[consTag].qname, consensusDict[consTag].seq, consensusDict[consTag].qual))
+        outputReadNum += 1
         if consensusDict[consTag].is_read1 == False:
-            fastqFile1.write('@:%s\n%s\n+\n%s\n' %(a.qname, a.seq, a.qual))
-            fastqFile2.write('@:%s\n%s\n+\n%s\n' %(consensusDict[consTag].qname, consensusDict[consTag].seq, consensusDict[consTag].qual))
+            fastqFile1.write(line1)
+            fastqFile2.write(line2)
         else:
-            fastqFile1.write('@:%s\n%s\n+\n%s\n' %(consensusDict[consTag].qname, consensusDict[consTag].seq, consensusDict[consTag].qual))
-            fastqFile2.write('@:%s\n%s\n+\n%s\n' %(a.qname, a.seq, a.qual))
+            fastqFile1.write(line2)
+            fastqFile2.write(line1)
         uP += 1
     fastqFile1.close()
     fastqFile2.close()
