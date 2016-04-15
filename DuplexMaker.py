@@ -98,7 +98,7 @@ def main():
     bamEntry = inBam.fetch( until_eof = True ) # Initialize the iterator
     firstRead = bamEntry.next() # Get the first read
     readDict = {} # Initialize the read dictionary
-    firstTag=firstRead.qname.split(":")[0]
+    firstTag=firstRead.qname.split(":")[1]
     qualScore = firstRead.qual # Set a dummy quality score
     consensusDict={}
 
@@ -112,7 +112,7 @@ def main():
                 readOne=False
         
         while line.pos == firstRead.pos and fileDone==False:
-            tag = line.qname.split(":")[0] # Extract the barcode
+            tag = line.qname.split(":")[1] # Extract the barcode
             # Add the sequence to the read dictionary
 
             if line.is_unmapped == False:
@@ -130,6 +130,7 @@ def main():
             # Send reads to DCSMaker
             firstRead = line # Store the present line for the next group of lines
             firstTag = firstRead.qname
+            firstTag=firstRead.qname.split(":")[1]
             readOne=True
             dictKeys = readDict.keys()
             
