@@ -67,7 +67,7 @@ optional arguments:
                         Overlap filter. n: N filter. ['osn']
   --sam_tag SAM_TAG     The SAM tag that store the duplex tag sequence (can 
                         be set one more times).  Otherwise use the sequence 
-                        in the read name."
+                        in the read name.
 
 
 Details of different arguments:

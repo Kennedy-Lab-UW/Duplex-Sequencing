@@ -94,6 +94,11 @@
     <td width="390" colspan="7" valign="top"><p>Run    alignments in parallel.&nbsp; Not currently    supported.&nbsp; </p></td>
   </tr>
   <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--sam_tag</p></td>
+	<td width="390" colspan="7" valign="top"><p>The SAM tag that store the duplex tag sequence (can be set one more times).  Otherwise use the sequence in the read name. </p></td>
+  </tr>
+  <tr>
     <td width="583" colspan="9" valign="top"><p><strong><u>&nbsp;</u></strong></p></td>
   </tr>
   <tr>
@@ -158,7 +163,7 @@
   </tr>
   <tr>
     <td width="67" valign="top"><p><em>Usage: </em></p></td>
-    <td width="516" colspan="8" valign="top"><p>ConsensusMaker.py    --infile INFILE --tagfile TAGFILE --outfile OUTFILE&nbsp; --minmem MINMEM --maxmem MAXMEM --cutoff    CUTOFF --Ncutoff NCUTOFF --readlength READ_LENGTH --read_type READ_TYPE    --filt FILT [--isize ISIZE] [--read_out ROUT] [--rep_filt REP_FILT]</p></td>
+    <td width="516" colspan="8" valign="top"><p>ConsensusMaker.py    --infile INFILE --tagfile TAGFILE --outfile OUTFILE&nbsp; --minmem MINMEM --maxmem MAXMEM --cutoff    CUTOFF --Ncutoff NCUTOFF --readlength READ_LENGTH --read_type READ_TYPE    --filt FILT [--isize ISIZE] [--read_out ROUT] [--rep_filt REP_FILT] [--sam_tag SAM_TAG]</p></td>
   </tr>
   <tr>
     <td width="583" colspan="9" valign="top"><p><em>Required arguments:</em></p></td>
@@ -427,7 +432,7 @@
   </tr>
   <tr>
     <td width="67" valign="top"><p><em>Usage: </em></p></td>
-    <td width="516" colspan="8" valign="top"><p>DuplexMaker.py    --infile INFILE --outfile OUTFILE --Ncutoff NCUTOFF --readlength READ_LENGTH    --barcode_length BLENGTH [--read_out ROUT]</p></td>
+    <td width="516" colspan="8" valign="top"><p>DuplexMaker.py    --infile INFILE --outfile OUTFILE --Ncutoff NCUTOFF --readlength READ_LENGTH    --barcode_length BLENGTH [--read_out ROUT] [--gzip-fqs]</p></td>
   </tr>
   <tr>
     <td width="583" colspan="9" valign="top"><p><em>Required arguments:</em></p></td>
@@ -440,7 +445,7 @@
   <tr>
     <td width="67" valign="top"><p>&nbsp;</p></td>
     <td width="126" valign="top"><p>--outfile </p></td>
-    <td width="390" colspan="7" valign="top"><p>Output    .bam file.</p></td>
+    <td width="390" colspan="7" valign="top"><p>Output    output file name prefix (output FASTQS will be prefix.r1.fq and prefix.r2.fq).</p></td>
   </tr>
   <tr>
     <td width="67" valign="top"><p>&nbsp;</p></td>
@@ -496,6 +501,11 @@
     <td width="67" valign="top"><p>&nbsp;</p></td>
     <td width="126" valign="top"><p>--read_out</p></td>
     <td width="390" colspan="7" valign="top"><p>How    often you want to be told what the program is doing. Defaults to    1000000.&nbsp; In most cases, this is higher    than the number of SSCS reads.&nbsp; </p></td>
+  </tr>
+  <tr>
+    <td width="67" valign="top"><p>&nbsp;</p></td>
+    <td width="126" valign="top"><p>--gzip-fqs</p></td>
+	<td width="390" colspan="7" valign="top"><p>Output gzipped fastqs (.gz will be added to the output FASTQs).&nbsp; </p></td>
   </tr>
   <tr>
     <td width="583" colspan="9" valign="top"><p><strong><u>CountMuts.py</u></strong></p></td>

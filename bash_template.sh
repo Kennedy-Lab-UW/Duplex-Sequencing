@@ -128,7 +128,7 @@ samtools view -bu ${runIdentifier}.sscs.bam | samtools sort - ${runIdentifier}.s
 echo "Starting Duplex Maker" | tee -a ${logFile}
 date  | tee -a ${logFile}
 
-python ${DSpath}/DuplexMaker.py --infile ${runIdentifier}.sscs.sort.bam --outfile ${runIdentifier}.dcs.bam --Ncutoff $nCutOff --readlength $readLength
+python ${DSpath}/DuplexMaker.py --infile ${runIdentifier}.sscs.sort.bam --outfile ${runIdentifier}.dcs --Ncutoff $nCutOff --readlength $readLength
 
 # Step 8: Align DCSs
 echo "Aligning DCSs" | tee -a ${logFile}
