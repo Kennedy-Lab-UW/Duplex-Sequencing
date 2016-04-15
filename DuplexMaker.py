@@ -156,7 +156,7 @@ def main():
                         # Write DCSs to output FASTQ files
                         if dictTag in consensusDict:
                             line1 = '@%d:%s\n%s\n+\n%s\n' % (outputReadNum, a.qname, a.seq, a.qual)
-                            line2 = '@%d:%s\n%s\n+\n%s\n' % (outputReadNum, consensusDict[dictTag].qname, consensusDict[dictTag].seq, consensusDict[dictTag].qual))
+                            line2 = '@%d:%s\n%s\n+\n%s\n' % (outputReadNum, consensusDict[dictTag].qname, consensusDict[dictTag].seq, consensusDict[dictTag].qual)
                             outputReadNum += 1
                             if a.is_read1 == True:
                                 fastqFile1.write(line1)
@@ -186,7 +186,7 @@ def main():
         a.seq = '.' * o.read_length
         a.qual = qualScore
         line1 = '@%d:%s\n%s\n+\n%s\n' % (outputReadNum, a.qname, a.seq, a.qual)
-        line2 = '@%d:%s\n%s\n+\n%s\n' % (outputReadNum, consensusDict[consTag].qname, consensusDict[consTag].seq, consensusDict[consTag].qual))
+        line2 = '@%d:%s\n%s\n+\n%s\n' % (outputReadNum, consensusDict[consTag].qname, consensusDict[consTag].seq, consensusDict[consTag].qual)
         outputReadNum += 1
         if consensusDict[consTag].is_read1 == False:
             fastqFile1.write(line1)
