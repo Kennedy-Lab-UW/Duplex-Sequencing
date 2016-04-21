@@ -100,7 +100,7 @@ def main():
 	putting the tag with the "lesser" value in front of the tag with the "higher" value. The original tag orientation is
 	denoted by appending #ab or #ba to the end of the tag. After conversion, the resulting temporary bam file is then
 	sorted by read name.'''
-	'''
+
 	for line in in_bam_file.fetch(until_eof=True):
 
 		if paired_end_count % 2 == 1:
@@ -144,7 +144,7 @@ def main():
 
 	pysam.sort("-n", "temp.bam", "-o temp.sort.bam")  # Sort by read name, which will be the tag sequence in this case.
 	os.remove("temp.bam")
-	'''
+	
 	'''Extracting tags and sorting based on tag sequence is complete. This block of code now performs the consensus
 	calling on the tag families in the temporary name sorted bam file.'''
 	seq_dict = {'ab:1': [], 'ab:2': [], 'ba:1': [], 'ba:2': []}
