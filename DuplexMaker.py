@@ -135,15 +135,15 @@ def main():
         else:
             # Send reads to DCSMaker
             firstRead = line # Store the present line for the next group of lines
-            firstTag = firstRead.qname
+            firstTag = firstRead.qname.split(":")[0]
             readOne=True
             dictKeys = readDict.keys()
             
             for dictTag in readDict.keys(): # Extract sequences to send to the DCSmaker
-                switchtag = dictTag[o.blength:]+dictTag[:o.blength]
+                switchTag = dictTag[o.blength:]+dictTag[:o.blength]
                 
                 try:
-                    consensus = DSCMaker( [readDict[dictTag][6], readDict[switchtag][6]],  o.read_length )
+                    consensus = DSCMaker( [readDict[dictTag][6], readDict[switchTag][6]],  o.read_length )
                     duplexMade += 1
                     # Filter out consensuses with too many Ns in them
                     if consensus.count("N")/ len(consensus) > o.Ncutoff:
@@ -168,24 +168,27 @@ def main():
                         a.mpos=readDict[dictTag][4]
                         a.isize = readDict[dictTag][5]
                         a.qual = qualScore
-                        
-            # Write SSCSs to output BAM file in read pairs.
+                        consTag = None 
                         if dictTag in consensusDict:
+                            consTag = dictTag
+                        elif switchTag in consensusDict:
+                            consTag = switchTag  
+                        if consTag != None:
                             if a.is_read1 == True:
                                 fastqFile1.write('@:%s\n%s\n+\n%s\n' %(a.qname, a.seq, a.qual))
                                 outBam.write(a)
-                                fastqFile2.write('@:%s\n%s\n+\n%s\n' %(consensusDict[dictTag].qname, consensusDict[dictTag].seq, consensusDict[dictTag].qual))
-                                outBam.write(consensusDict.pop(dictTag))
+                                fastqFile2.write('@:%s\n%s\n+\n%s\n' %(consensusDict[consTag].qname, consensusDict[consTag].seq, consensusDict[consTag].qual))
+                                outBam.write(consensusDict.pop(consTag))
                             else:
-                                fastqFile1.write('@:%s\n%s\n+\n%s\n' %(consensusDict[dictTag].qname, consensusDict[dictTag].seq, consensusDict[dictTag].qual))
-                                outBam.write(consensusDict.pop(dictTag))
+                                fastqFile1.write('@:%s\n%s\n+\n%s\n' %(consensusDict[consTag].qname, consensusDict[consTag].seq, consensusDict[consTag].qual))
+                                outBam.write(consensusDict.pop(consTag))
                                 fastqFile2.write('@:%s\n%s\n+\n%s\n' %(a.qname, a.seq, a.qual))
                                 outBam.write(a)
                         else:
                             consensusDict[dictTag]=a
 
                     del readDict[dictTag]
-                    del readDict[switchtag]
+                    del readDict[switchTag]
                 
                 except:
                     pass
