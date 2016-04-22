@@ -124,7 +124,7 @@ def main():
             if line.is_unmapped == False:
                 readDict[tag] = [line.flag, line.rname, line.pos, line.mrnm, line.mpos, line.isize, line.seq]
             try: # Keep StopIteration error from happening
-                line = bamEntry.next() # Itterate the line
+                line = bamEntry.next() # Iterate the line
                 readNum += 1
             except:
                 fileDone = True # Tell the program that it has reached the end of the file
@@ -135,7 +135,7 @@ def main():
         else:
             # Send reads to DCSMaker
             firstRead = line # Store the present line for the next group of lines
-            firstTag = firstRead.qname
+            firstTag = firstRead.qname.split(":")[0]
             readOne=True
             dictKeys = readDict.keys()
             
