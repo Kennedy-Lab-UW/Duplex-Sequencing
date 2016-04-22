@@ -20,7 +20,8 @@ Outputs:
     
     Note: Quality scores and cigar strings in these files are meaningless. 
 
-This program goes through the input file by position, making DCSs as it goes and writing them to file.  At the end of the run, any unpaired DCSs are written to a file ending in _UP.bam.  
+This program goes through the input file by position, making DCSs as it goes and writing them to file.  At the end of
+the run, any unpaired DCSs are written to a file ending in _UP.bam.
 
 usage: DuplexMaker.py [-h] [--infile INFILE] [--outfile OUTFILE]
                       [--Ncutoff NCUTOFF] [--readlength READ_LENGTH]
@@ -50,187 +51,206 @@ from Bio.Alphabet import IUPAC
 from collections import defaultdict
 from argparse import ArgumentParser
 
-def printRead(readIn):
-    sys.stderr.write("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (readIn.qname, readIn.flag, readIn.tid, readIn.pos, readIn.mapq, readIn.cigar, readIn.mrnm, readIn.mpos, readIn.isize, readIn.seq, readIn.qual, readIn.tags))
 
-def DSCMaker (groupedReadsList,  readLength) :
-    '''The Duplex maker substitutes an N if the two input sequences are not identical at a position.  '''
-    consensusRead = ''
-    for i in xrange(readLength) :#rebuild consensus read taking into account the cutoff percentage
-        if groupedReadsList[0][i]==groupedReadsList[1][i]:
-            consensusRead += groupedReadsList[0][i]
-        else:
-            consensusRead += "N"
-    
-    return consensusRead
+def print_read(read_in):
+	sys.stderr.write("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n" % (read_in.qname, read_in.flag, read_in.tid,
+																		read_in.pos, read_in.mapq, read_in.cigar,
+																		read_in.mrnm, read_in.mpos, read_in.isize,
+																		read_in.seq, read_in.qual, read_in.tags))
+	return
 
-    
+def dcs_maker(grouped_reads_list,  read_length):
+	# The Duplex maker substitutes an N if the two input sequences are not identical at a position.
+	consensus_read = ''
+	for i in xrange(read_length):  # rebuild consensus read taking into account the cutoff percentage
+		if grouped_reads_list[0][i] == grouped_reads_list[1][i]:
+			consensus_read += grouped_reads_list[0][i]
+		else:
+			consensus_read += "N"
+	return consensus_read
+
+
 def fastq_open(outfile, gzip_fastq, end):
-    fn = outfile.replace('.bam','')+"."+end+".fq"
-    if gzip_fastq:
-        fn = fn + ".gz"
-        return gzip.open(fn, 'wb')
-    else:
-        return open(fn, 'w')
+	fn = outfile.replace('.bam', '') + "." + end + ".fq"
+	if gzip_fastq:
+		fn += ".gz"
+		return gzip.open(fn, 'wb')
+	else:
+		return open(fn, 'w')
+
 
 def main():
-    # Parameters to be input.
-    parser=ArgumentParser()
-    parser.add_argument("--infile", action="store", dest="infile", help="input BAM file", required=True)
-    parser.add_argument("--outfile",  action="store", dest="outfile", help="output BAM file",  required=True)
-    parser.add_argument('--Ncutoff', type=float, default=1.0, dest='Ncutoff', help="Maximum percentage of Ns allowed in a consensus [1.0]")
-    parser.add_argument('--readlength', type=int, default=84, dest='read_length', help="Length of the input read that is being used. [84]")
-    parser.add_argument('--barcode_length', type = int, default = 12, dest = 'blength', help = 'Length of the duplex tag sequence. Should match the value in tag_to_header.  [12]')
-    parser.add_argument('--read_out', type = int, default = 1000000, dest = 'rOut', help = 'How often you want to be told what the program is doing. [1000000]')
-    parser.add_argument('--gzip-fqs', action="store_true", default = False, dest = 'gzip_fastqs', help = 'Output gzipped fastqs [False]')
-    o = parser.parse_args()
+	# Parameters to be input.
+	parser = ArgumentParser()
+	parser.add_argument("--infile", action="store", dest="infile", help="input BAM file", required=True)
+	parser.add_argument("--outfile",  action="store", dest="outfile", help="output BAM file",  required=True)
+	parser.add_argument('--Ncutoff', type=float, default=1.0, dest='Ncutoff',
+						help="Maximum percentage of Ns allowed in a consensus [1.0]")
+	parser.add_argument('--readlength', type=int, default=84, dest='read_length',
+						help="Length of the input read that is being used. [84]")
+	parser.add_argument('--barcode_length', type=int, default=12, dest='blength',
+						help='Length of the duplex tag sequence. Should match the value in tag_to_header.[12]')
+	parser.add_argument('--read_out', type=int, default=1000000, dest='rOut',
+						help='How often you want to be told what the program is doing. [1000000]')
+	parser.add_argument('--gzip-fqs', action="store_true", default=False, dest='gzip_fastqs',
+						help='Output gzipped fastqs [False]')
+	o = parser.parse_args()
 
-    # Initialization of all global variables, main input/output files, and main iterator and dictionaries.
-    inBam = pysam.Samfile(o.infile, "rb") # Open the input BAM file
-    outBam = pysam.Samfile(o.outfile, "wb", template = inBam) # Open the output BAM file
-    fastqFile1 = fastq_open(o.outfile, o.gzip_fastqs, 'r1')
-    fastqFile2 = fastq_open(o.outfile, o.gzip_fastqs, 'r2')
+	# Initialization of all global variables, main input/output files, and main iterator and dictionaries.
+	in_bam = pysam.Samfile(o.infile, "rb")  # Open the input BAM file
+	out_bam = pysam.Samfile(o.outfile, "wb", template=in_bam)  # Open the output BAM file
+	fastq_file1 = fastq_open(o.outfile, o.gzip_fastqs, 'r1')
+	fastq_file2 = fastq_open(o.outfile, o.gzip_fastqs, 'r2')
 
-    readNum = 0
-    duplexMade = 0
-    uP = 0
-    nC = 0
+	read_num = 0
+	duplexes_made = 0
+	uP = 0
+	nC = 0
 
-    fileDone=False # Initialize end of file bool
-    finished=False
-    readOne=True
+	file_done = False  # Initialize end of file bool
+	finished = False
+	read_one = True
 
-    bamEntry = inBam.fetch( until_eof = True ) # Initialize the iterator
-    firstRead = bamEntry.next() # Get the first read
-    readDict = {} # Initialize the read dictionary
-    firstTag=firstRead.qname.split(":")[0]
-    qualScore = firstRead.qual # Set a dummy quality score
-    consensusDict={}
-    cigDum = firstRead.cigar #set a dummy cigar score
+	bam_entry = in_bam.fetch(until_eof=True)  # Initialize the iterator
+	first_read = bam_entry.next()  # Get the first read
+	read_dict = {}  # Initialize the read dictionary
+	first_tag = first_read.qname.split(":")[0]
+	qual_score = first_read.qual  # Set a dummy quality score
+	consensus_dict = {}
+	cig_dum = first_read.cigar  # set a dummy cigar score
 
-    # Start going through the input BAM file, one position at a time.
-    for line in bamEntry:
-        # Reinitialize first line
-        readNum += 1
-        if readOne==True:
-            if firstRead.is_unmapped == False:
-                readDict[firstTag] = [firstRead.flag, firstRead.rname, firstRead.pos, firstRead.mrnm, firstRead.mpos, firstRead.isize, firstRead.seq]
-                readOne=False
-        
-        while line.pos == firstRead.pos and fileDone==False:
-            tag = line.qname.split(":")[0] # Extract the barcode
-            # Add the sequence to the read dictionary
+	# Start going through the input BAM file, one position at a time.
+	for line in bam_entry:
+		# Reinitialize first line
+		read_num += 1
+		if read_one is True and first_read.is_unmapped is False:
 
-            if line.is_unmapped == False:
-                readDict[tag] = [line.flag, line.rname, line.pos, line.mrnm, line.mpos, line.isize, line.seq]
-            try: # Keep StopIteration error from happening
-                line = bamEntry.next() # Iterate the line
-                readNum += 1
-            except:
-                fileDone = True # Tell the program that it has reached the end of the file
-                readNum += 1
-            
-            if readNum % o.rOut == 0:
-                sys.stderr.write("%s reads processed\n" % readNum)
-        else:
-            # Send reads to DCSMaker
-            firstRead = line # Store the present line for the next group of lines
-            firstTag = firstRead.qname.split(":")[0]
-            readOne=True
-            dictKeys = readDict.keys()
-            
-            for dictTag in readDict.keys(): # Extract sequences to send to the DCSmaker
-                switchtag = dictTag[o.blength:]+dictTag[:o.blength]
-                
-                try:
-                    consensus = DSCMaker( [readDict[dictTag][6], readDict[switchtag][6]],  o.read_length )
-                    duplexMade += 1
-                    # Filter out consensuses with too many Ns in them
-                    if consensus.count("N")/ len(consensus) > o.Ncutoff:
-                        nC += 1
-                    else:
-                        # Write a line to the consensusDictionary
-                        a = pysam.AlignedRead()
-                        a.qname = dictTag
-                        a.flag = readDict[dictTag][0]
-                        
-                        if a.is_reverse == True:
-                            tmpSeq=Seq(consensus,IUPAC.unambiguous_dna)
-                            a.seq=str(tmpSeq.reverse_complement())
-                        else:
-                            a.seq = consensus
-                        
-                        a.rname = readDict[dictTag][1]
-                        a.pos = readDict[dictTag][2]
-                        a.mapq = 255
-                        a.cigar = cigDum
-                        a.mrnm = readDict[dictTag][3]
-                        a.mpos=readDict[dictTag][4]
-                        a.isize = readDict[dictTag][5]
-                        a.qual = qualScore
-                        
-            # Write SSCSs to output BAM file in read pairs.
-                        if dictTag in consensusDict:
-                            if a.is_read1 == True:
-                                fastqFile1.write('@:%s\n%s\n+\n%s\n' %(a.qname, a.seq, a.qual))
-                                outBam.write(a)
-                                fastqFile2.write('@:%s\n%s\n+\n%s\n' %(consensusDict[dictTag].qname, consensusDict[dictTag].seq, consensusDict[dictTag].qual))
-                                outBam.write(consensusDict.pop(dictTag))
-                            else:
-                                fastqFile1.write('@:%s\n%s\n+\n%s\n' %(consensusDict[dictTag].qname, consensusDict[dictTag].seq, consensusDict[dictTag].qual))
-                                outBam.write(consensusDict.pop(dictTag))
-                                fastqFile2.write('@:%s\n%s\n+\n%s\n' %(a.qname, a.seq, a.qual))
-                                outBam.write(a)
-                        else:
-                            consensusDict[dictTag]=a
+			read_dict[first_tag] = [first_read.flag, first_read.rname, first_read.pos, first_read.mrnm,
+									first_read.mpos, first_read.isize, first_read.seq]
+			read_one = False
 
-                    del readDict[dictTag]
-                    del readDict[switchtag]
-                
-                except:
-                    pass
+		while line.pos == first_read.pos and file_done is False:
+			tag = line.qname.split(":")[0]  # Extract the barcode
+			# Add the sequence to the read dictionary
 
-        readDict={} # Reset the read dictionary
+			if line.is_unmapped is False:
+				read_dict[tag] = [line.flag, line.rname, line.pos, line.mrnm, line.mpos, line.isize, line.seq]
+			try:  # Keep StopIteration error from happening
+				line = bam_entry.next()  # Iterate the line
+				read_num += 1
+			except:
+				file_done = True  # Tell the program that it has reached the end of the file
+				read_num += 1
 
-    
-    # Close BAM files
-    inBam.close()
+			if read_num % o.rOut == 0:
+				sys.stderr.write("%s reads processed\n" % read_num)
+		else:
+			# Send reads to dcs_maker
+			first_read = line  # Store the present line for the next group of lines
+			first_tag = first_read.qname.split(":")[0]
+			read_one = True
+			dict_keys = read_dict.keys()
 
-    # Write unpaired DCSs
-    for consTag in consensusDict.keys():
-        a = pysam.AlignedRead()
-        a.qname = consTag
-        a.flag = 5
-        a.seq = '.' * o.read_length
-        a.rname = consensusDict[consTag].rname
-        a.pos = consensusDict[consTag].pos
-        a.mapq = 255
-        a.cigar = cigDum
-        a.mrnm = consensusDict[consTag].mrnm
-        a.mpos=consensusDict[consTag].pos
-        a.isize = consensusDict[consTag].isize
-        a.qual = qualScore
-        if consensusDict[consTag].is_read1 == False:
-            fastqFile1.write('@:%s\n%s\n+\n%s\n' %(a.qname, a.seq, a.qual))
-            outBam.write(a)
-            fastqFile2.write('@:%s\n%s\n+\n%s\n' %(consensusDict[consTag].qname, consensusDict[consTag].seq, consensusDict[consTag].qual))
-            outBam.write(consensusDict.pop(consTag))
-        else:
-            fastqFile1.write('@:%s\n%s\n+\n%s\n' %(consensusDict[consTag].qname, consensusDict[consTag].seq, consensusDict[consTag].qual))
-            outBam.write(consensusDict.pop(consTag))
-            fastqFile2.write('@:%s\n%s\n+\n%s\n' %(a.qname, a.seq, a.qual))
-            outBam.write(a)
-        uP += 1
-    fastqFile1.close()
-    fastqFile2.close()
-    outBam.close()
+			for dict_tag in read_dict.keys():  # Extract sequences to send to the dcs_maker
+				switch_tag = dict_tag[o.blength:] + dict_tag[:o.blength]
 
-    # Write summary statistics.  Duplexes made includes unpaired duplexes    
-    sys.stderr.write("Summary Statistics: \n")
-    sys.stderr.write("Reads Processed: %s\n" % readNum)
-    sys.stderr.write("Duplexes Made: %s\n" % duplexMade)
-    sys.stderr.write("Unpaired Duplexes: %s\n" % uP)
-    sys.stderr.write("N-clipped Duplexes: %s\n" % nC)
+				try:
+					consensus = dcs_maker([read_dict[dict_tag][6], read_dict[switch_tag][6]],  o.read_length)
+					duplexes_made += 1
+					# Filter out consensuses with too many Ns in them
+					if consensus.count("N")/len(consensus) > o.Ncutoff:
+						nC += 1
+					else:
+						# Write a line to the consensus_dictionary
+						a = pysam.AlignedRead()
+						a.qname = dict_tag
+						a.flag = read_dict[dict_tag][0]
+
+						if a.is_reverse is True:
+							tmp_seq = Seq(consensus, IUPAC.unambiguous_dna)
+							a.seq = str(tmp_seq.reverse_complement())
+						else:
+							a.seq = consensus
+
+						a.rname = read_dict[dict_tag][1]
+						a.pos = read_dict[dict_tag][2]
+						a.mapq = 255
+						a.cigar = cig_dum
+						a.mrnm = read_dict[dict_tag][3]
+						a.mpos = read_dict[dict_tag][4]
+						a.isize = read_dict[dict_tag][5]
+						a.qual = qual_score
+
+			# Write DCSs to output BAM file in read pairs.
+						if dict_tag in consensus_dict:
+							if a.is_read1 is True:
+								fastq_file1.write('@:%s\n%s\n+\n%s\n' % (a.qname, a.seq, a.qual))
+								out_bam.write(a)
+								fastq_file2.write('@:%s\n%s\n+\n%s\n' % (consensus_dict[dict_tag].qname,
+																		consensus_dict[dict_tag].seq,
+																		consensus_dict[dict_tag].qual))
+								out_bam.write(consensus_dict.pop(dict_tag))
+							else:
+								fastq_file1.write('@:%s\n%s\n+\n%s\n' % (consensus_dict[dict_tag].qname,
+																		consensus_dict[dict_tag].seq,
+																		consensus_dict[dict_tag].qual))
+								out_bam.write(consensus_dict.pop(dict_tag))
+								fastq_file2.write('@:%s\n%s\n+\n%s\n' % (a.qname, a.seq, a.qual))
+								out_bam.write(a)
+						else:
+							consensus_dict[dict_tag] = a
+
+					del read_dict[dict_tag]
+					del read_dict[switch_tag]
+
+				except:
+					pass
+
+		read_dict = {}  # Reset the read dictionary
+
+	# Close BAM files
+	in_bam.close()
+
+	# Write unpaired DCSs
+	for consTag in consensus_dict.keys():
+		a = pysam.AlignedRead()
+		a.qname = consTag
+		a.flag = 5
+		a.seq = '.' * o.read_length
+		a.rname = consensus_dict[consTag].rname
+		a.pos = consensus_dict[consTag].pos
+		a.mapq = 255
+		a.cigar = cig_dum
+		a.mrnm = consensus_dict[consTag].mrnm
+		a.mpos = consensus_dict[consTag].pos
+		a.isize = consensus_dict[consTag].isize
+		a.qual = qual_score
+
+		if consensus_dict[consTag].is_read1 is False:
+			fastq_file1.write('@:%s\n%s\n+\n%s\n' % (a.qname, a.seq, a.qual))
+			out_bam.write(a)
+			fastq_file2.write('@:%s\n%s\n+\n%s\n' % (consensus_dict[consTag].qname, consensus_dict[consTag].seq,
+													consensus_dict[consTag].qual))
+			out_bam.write(consensus_dict.pop(consTag))
+		else:
+			fastq_file1.write('@:%s\n%s\n+\n%s\n' % (consensus_dict[consTag].qname, consensus_dict[consTag].seq,
+													consensus_dict[consTag].qual))
+			out_bam.write(consensus_dict.pop(consTag))
+			fastq_file2.write('@:%s\n%s\n+\n%s\n' % (a.qname, a.seq, a.qual))
+			out_bam.write(a)
+
+		uP += 1
+
+	fastq_file1.close()
+	fastq_file2.close()
+	out_bam.close()
+
+	# Write summary statistics.  Duplexes made includes unpaired duplexes
+	sys.stderr.write("Summary Statistics: \n")
+	sys.stderr.write("Reads Processed: %s\n" % read_num)
+	sys.stderr.write("Duplexes Made: %s\n" % duplexes_made)
+	sys.stderr.write("Unpaired Duplexes: %s\n" % uP)
+	sys.stderr.write("N-clipped Duplexes: %s\n" % nC)
 
 if __name__ == "__main__":
-    main()
+	main()
