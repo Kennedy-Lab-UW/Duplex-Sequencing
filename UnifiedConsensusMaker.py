@@ -211,8 +211,8 @@ def main():
 					read1_dcs_fq_file.write('@%s/1\n%s\n+\n%s\n' % (tag, dcs_read_1, read1_dcs_len * 'J'))
 					read2_dcs_fq_file.write('@%s/2\n%s\n+\n%s\n' % (tag, dcs_read_2, read2_dcs_len * 'J'))
 
-
-			first_line = line  # reset conditions for next tag family
+			# reset conditions for next tag family
+			first_line = line
 			tag_family_count = 1
 			seq_dict = {'ab:1': [], 'ab:2': [], 'ba:1': [], 'ba:2': []}
 			qual_dict = {'ab:1': [], 'ab:2': [], 'ba:1': [], 'ba:2': []}
@@ -256,19 +256,3 @@ def main():
 
 if __name__ == "__main__":
 	main()
-
-
-'''
-iif len(seq_dict['ab:1']) == 0 and len(seq_dict['ba:2']) == 0 and len(seq_dict['ba:1']) == 0 and \
-					len(seq_dict['ab:2']) == 0:
-					dcs_read_1 = ''
-					dcs_read_2 = ''
-'''
-"""
-				if read1_dcs_len != 0 and read2_dcs_len == 0:
-					read1_dcs_fq_file.write('@%s/1\n%s\n+\n%s\n' % (tag, dcs_read_1, read1_dcs_len * 'J'))
-					read2_dcs_fq_file.write('@%s/2\n%s\n+\n%s\n' % (tag, read1_dcs_len * 'N', read2_dcs_len * '#'))
-				elif read2_dcs_len != 0 and read1_dcs_len == 0:
-					read1_dcs_fq_file.write('@%s/1\n%s\n+\n%s\n' % (tag, read2_dcs_len * 'N', read2_dcs_len * '#'))
-					read2_dcs_fq_file.write('@%s/2\n%s\n+\n%s\n' % (tag,  dcs_read_2, read1_dcs_len * 'J'))
-"""
