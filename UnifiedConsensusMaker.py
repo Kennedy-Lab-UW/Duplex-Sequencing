@@ -7,7 +7,6 @@ from argparse import ArgumentParser
 from collections import defaultdict
 
 
-
 def consensus_caller(input_reads, cutoff, tag, len_check):
 
 	nuc_identity_list = [0, 0, 0, 0, 0, 0]  # In the order of T, C, G, A, N, Total
@@ -49,9 +48,10 @@ def consensus_caller(input_reads, cutoff, tag, len_check):
 					consensus_seq += 'N'
 		except:
 			consensus_seq += 'N'
-		nuc_identity_list=[0, 0, 0, 0, 0, 0]  # Reset for the next nucleotide position
+		nuc_identity_list = [0, 0, 0, 0, 0, 0]  # Reset for the next nucleotide position
 
 	return consensus_seq
+
 
 def main():
 	parser = ArgumentParser()
@@ -83,7 +83,7 @@ def main():
 
 	dummy_header = {'HD': {'VN': '1.0'}, 'SQ': [{'LN': 1575, 'SN': 'chr1'}, {'LN': 1584, 'SN': 'chr2'}]}
 	in_bam_file = pysam.AlignmentFile(o.in_bam, "rb", check_sq=False)
-	temp_bam = pysam.AlignmentFile("temp.bam", 'wb', header=dummy_header)
+	temp_bam = pysam.AlignmentFile(o.prefix + ".temp.bam", 'wb', header=dummy_header)
 	paired_end_count = 1
 
 	if o.write_sscs is True:
@@ -139,19 +139,21 @@ def main():
 			temp_bam.write(temp_bam_entry)
 
 		paired_end_count += 1
+
 	in_bam_file.close()
 	temp_bam.close()
 
-	pysam.sort("-n", "temp.bam", "-o temp.sort.bam")  # Sort by read name, which will be the tag sequence in this case.
-	os.remove("temp.bam")
-	
+	pysam.sort("-n", o.prefix + ".temp.bam", "-o", o.prefix + "temp.sort.bam")  # Sort by read name, which will be the
+	# tag sequence in this case.
+	os.remove(o.prefix + ".temp.bam")
+
 	'''Extracting tags and sorting based on tag sequence is complete. This block of code now performs the consensus
 	calling on the tag families in the temporary name sorted bam file.'''
 	seq_dict = {'ab:1': [], 'ab:2': [], 'ba:1': [], 'ba:2': []}
 	qual_dict = {'ab:1': [], 'ab:2': [], 'ba:1': [], 'ba:2': []}
 	read1_dcs_len = 0
 	read2_dcs_len = 0
-	in_bam_file = pysam.AlignmentFile(' temp.sort.bam', "rb", check_sq=False)
+	in_bam_file = pysam.AlignmentFile(o.prefix + 'temp.sort.bam', "rb", check_sq=False)
 	first_line = in_bam_file.next()
 
 	seq_dict[first_line.query_name.split('#')[1]].append(first_line.query_sequence)
@@ -170,7 +172,6 @@ def main():
 		else:
 			tag_count_dict[tag_family_count] += 1
 
-
 			if len(seq_dict['ab:1']) != len(seq_dict['ab:2']) or len(seq_dict['ba:1']) != len(seq_dict['ba:2']):
 				raise Exception('ERROR: Read counts for Read1 and Read 2 do not match for tag %s' % tag)
 
@@ -181,10 +182,10 @@ def main():
 				elif o.minmem <= len(seq_dict[tag_subtype]) < o.maxmem:  # Tag types w/o reads should not be submitted
 					#  as long as minmem is > 0
 					seq_dict[tag_subtype] = consensus_caller(seq_dict[tag_subtype], o.cutoff, tag, True)
-					#qual_dict[tag_subtype] = qual_calculator(list(qual_dict[tag_subtype]))
+					# qual_dict[tag_subtype] = qual_calculator(list(qual_dict[tag_subtype]))
 				elif len(seq_dict[tag_subtype]) > o.maxmem:
 					seq_dict[tag_subtype] = consensus_caller(seq_dict[tag_subtype][:o.maxmem], o.cutoff, tag, True)
-					#qual_dict[tag_subtype] = qual_calculator(list(qual_dict[tag_subtype]))
+					# qual_dict[tag_subtype] = qual_calculator(list(qual_dict[tag_subtype]))
 
 			if o.write_sscs is True:
 
@@ -204,15 +205,12 @@ def main():
 					dcs_read_2 = consensus_caller([seq_dict['ba:1'], seq_dict['ab:2']], 1, tag, False)
 					read2_dcs_len = len(dcs_read_2)
 
-				if read1_dcs_len != 0 and read2_dcs_len != 0:
+				if read1_dcs_len != 0 and read2_dcs_len != 0 and tag.count('N') == 0 and \
+										'A' * o.rep_filt not in tag and 'C' * o.rep_filt not in tag and \
+										'G' * o.rep_filt not in tag and 'T' * o.rep_filt not in tag:
 					read1_dcs_fq_file.write('@%s/1\n%s\n+\n%s\n' % (tag, dcs_read_1, read1_dcs_len * 'J'))
 					read2_dcs_fq_file.write('@%s/2\n%s\n+\n%s\n' % (tag, dcs_read_2, read2_dcs_len * 'J'))
-				if read1_dcs_len != 0 and read2_dcs_len == 0:
-					read1_dcs_fq_file.write('@%s/1\n%s\n+\n%s\n' % (tag, dcs_read_1, read1_dcs_len * 'J'))
-					read2_dcs_fq_file.write('@%s/2\n%s\n+\n%s\n' % (tag, read1_dcs_len * 'N', read2_dcs_len * '#'))
-				elif read2_dcs_len != 0 and read1_dcs_len == 0:
-					read1_dcs_fq_file.write('@%s/1\n%s\n+\n%s\n' % (tag, read2_dcs_len * 'N', read2_dcs_len * '#'))
-					read2_dcs_fq_file.write('@%s/2\n%s\n+\n%s\n' % (tag,  dcs_read_2, read1_dcs_len * 'J'))
+
 
 			first_line = line  # reset conditions for next tag family
 			tag_family_count = 1
@@ -233,6 +231,7 @@ def main():
 		read1_dcs_fq_file.close()
 		read2_dcs_fq_file.close()
 	counter += 1
+
 # Try to plot the tag family sizes
 	if o.tagstats is True:
 		try:
@@ -258,10 +257,6 @@ def main():
 if __name__ == "__main__":
 	main()
 
-'''and tag.count('N') == 0 and \
-					'A'*o.rep_filt not in tag and 'C'*o.rep_filt not in tag and 'G'*o.rep_filt not in tag and \
-					'T'*o.rep_filt not in tag:'''
-
 
 '''
 iif len(seq_dict['ab:1']) == 0 and len(seq_dict['ba:2']) == 0 and len(seq_dict['ba:1']) == 0 and \
@@ -269,3 +264,11 @@ iif len(seq_dict['ab:1']) == 0 and len(seq_dict['ba:2']) == 0 and len(seq_dict['
 					dcs_read_1 = ''
 					dcs_read_2 = ''
 '''
+"""
+				if read1_dcs_len != 0 and read2_dcs_len == 0:
+					read1_dcs_fq_file.write('@%s/1\n%s\n+\n%s\n' % (tag, dcs_read_1, read1_dcs_len * 'J'))
+					read2_dcs_fq_file.write('@%s/2\n%s\n+\n%s\n' % (tag, read1_dcs_len * 'N', read2_dcs_len * '#'))
+				elif read2_dcs_len != 0 and read1_dcs_len == 0:
+					read1_dcs_fq_file.write('@%s/1\n%s\n+\n%s\n' % (tag, read2_dcs_len * 'N', read2_dcs_len * '#'))
+					read2_dcs_fq_file.write('@%s/2\n%s\n+\n%s\n' % (tag,  dcs_read_2, read1_dcs_len * 'J'))
+"""
