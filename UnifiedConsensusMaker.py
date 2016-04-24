@@ -3,17 +3,18 @@
 import sys
 import os
 import pysam
+import gzip
 from argparse import ArgumentParser
 from collections import defaultdict
 
 
-def consensus_caller(input_reads, cutoff, tag, len_check):
+def consensus_caller(input_reads, cutoff, tag, length_check):
 
 	nuc_identity_list = [0, 0, 0, 0, 0, 0]  # In the order of T, C, G, A, N, Total
 	nuc_key_dict = {0: 'T', 1: 'C', 2: 'G', 3: 'A', 4: 'N'}
 	consensus_seq = ''
 
-	if len_check is True:
+	if length_check is True:
 
 		for read in input_reads[1:]:
 			if len(read) != len(input_reads[0]):
@@ -75,7 +76,7 @@ def main():
 	parser.add_argument('--write-sscs', dest='write_sscs', action="store_true",
 						help="Print the SSCS reads to file in FASTQ format")
 	parser.add_argument('--without-dcs', dest='without_dcs', action="store_true",
-						help="Print the SSCS reads to file in FASTQ format")
+						help="Don't print final DCS reads")
 	parser.add_argument("--rep_filt", action="store",  type=int, dest='rep_filt',
 						help="Remove tags with homomeric runs of nucleotides of length x. [9]", default=9)
 	parser.add_argument('--prefix', dest='prefix', type=str, default='')
@@ -88,18 +89,20 @@ def main():
 
 	if o.write_sscs is True:
 
-		read1_sscs_fq_file = open('read1_sscs.fq', 'w')
-		read2_sscs_fq_file = open('read2_sscs.fq', 'w')
+		read1_sscs_fq_file = gzip.open('read1_sscs.fq.gz', 'wb')
+		read2_sscs_fq_file = gzip.open('read2_sscs.fq.gz', 'wb')
 
 	if o.without_dcs is False:
-		read1_dcs_fq_file = open('read1_dcs.fq', 'w')
-		read2_dcs_fq_file = open('read2_dcs.fq', 'w')
+		read1_dcs_fq_file = gzip.open('read1_dcs.fq.gz', 'wb')
+		read2_dcs_fq_file = gzip.open('read2_dcs.fq.gz', 'wb')
 
 	'''This block of code takes an unaligned bam file, extracts the tag sequences from the reads, and converts them to
 	to "ab/ba" format where 'a' and 'b' are the tag sequences from Read 1 and Read 2, respectively. Conversion occurs by
 	putting the tag with the "lesser" value in front of the tag with the "higher" value. The original tag orientation is
 	denoted by appending #ab or #ba to the end of the tag. After conversion, the resulting temporary bam file is then
 	sorted by read name.'''
+
+	print "Parsing tags..."
 
 	for line in in_bam_file.fetch(until_eof=True):
 
@@ -117,9 +120,11 @@ def main():
 			if temp_read1_entry.query_sequence[:o.tag_len] > line.query_alignment_sequence[:o.tag_len]:
 				temp_bam_entry.query_name = temp_read1_entry.query_sequence[:o.tag_len] + \
 										line.query_alignment_sequence[:o.tag_len] + '#ab'
+
 			elif temp_read1_entry.query_sequence[:o.tag_len] < line.query_alignment_sequence[:o.tag_len]:
 				temp_bam_entry.query_name = line.query_alignment_sequence[:o.tag_len] + \
 											temp_read1_entry.query_sequence[:o.tag_len] + '#ba'
+
 			elif temp_read1_entry.query_sequence[:o.tag_len] == line.query_alignment_sequence[:o.tag_len]:
 				paired_end_count += 1
 				continue
@@ -143,6 +148,8 @@ def main():
 	in_bam_file.close()
 	temp_bam.close()
 
+	print "Sorting bam file on tag sequence..."
+
 	pysam.sort("-n", o.prefix + ".temp.bam", "-o", o.prefix + "temp.sort.bam")  # Sort by read name, which will be the
 	# tag sequence in this case.
 	os.remove(o.prefix + ".temp.bam")
@@ -162,6 +169,8 @@ def main():
 	tag_count_dict = defaultdict(lambda: 0)
 	counter = 0
 
+	print "Creating consensus reads..."
+
 	for line in in_bam_file.fetch(until_eof=True):
 		tag = first_line.query_name.split('#')[0]
 
@@ -169,6 +178,7 @@ def main():
 			seq_dict[line.query_name.split('#')[1]].append(line.query_sequence)
 			qual_dict[line.query_name.split('#')[1]].append(line.query_qualities)
 			tag_family_count += 1
+
 		else:
 			tag_count_dict[tag_family_count] += 1
 
@@ -179,10 +189,12 @@ def main():
 
 				if len(seq_dict[tag_subtype]) < o.minmem:
 					seq_dict[tag_subtype] = ''
+
 				elif o.minmem <= len(seq_dict[tag_subtype]) < o.maxmem:  # Tag types w/o reads should not be submitted
 					#  as long as minmem is > 0
 					seq_dict[tag_subtype] = consensus_caller(seq_dict[tag_subtype], o.cutoff, tag, True)
 					# qual_dict[tag_subtype] = qual_calculator(list(qual_dict[tag_subtype]))
+
 				elif len(seq_dict[tag_subtype]) > o.maxmem:
 					seq_dict[tag_subtype] = consensus_caller(seq_dict[tag_subtype][:o.maxmem], o.cutoff, tag, True)
 					# qual_dict[tag_subtype] = qual_calculator(list(qual_dict[tag_subtype]))
@@ -190,8 +202,11 @@ def main():
 			if o.write_sscs is True:
 
 				if len(seq_dict['ab:1']) != 0 and len(seq_dict['ab:2']) != 0:
-					read1_sscs_fq_file.write('@%s#ab:1\n%s\n+\n%s\n' % (tag, seq_dict['ab:1'], len(seq_dict['ab:1']) * 'J'))
-					read2_sscs_fq_file.write('@%s#ab:2\n%s\n+\n%s\n' % (tag, seq_dict['ab:2'], len(seq_dict['ab:2']) * 'J'))
+					read1_sscs_fq_file.write('@%s#ab:1\n%s\n+\n%s\n' %
+											(tag, seq_dict['ab:1'], len(seq_dict['ab:1']) * 'J'))
+					read2_sscs_fq_file.write('@%s#ab:2\n%s\n+\n%s\n' %
+											(tag, seq_dict['ab:2'], len(seq_dict['ab:2']) * 'J'))
+
 				if len(seq_dict['ba:1']) != 0 and len(seq_dict['ba:2']) != 0:
 					read1_sscs_fq_file.write('@%s#ba:1\n%s\n+\n%s' % (tag, seq_dict['ba:1'], len(seq_dict['ab:1']) * 'J'))
 					read2_sscs_fq_file.write('@%s#ba:2\n%s\n+\n%s' % (tag, seq_dict['ba:2'], len(seq_dict['ab:1']) * 'J'))
@@ -201,9 +216,14 @@ def main():
 				if len(seq_dict['ab:1']) != 0 and len(seq_dict['ba:2']) != 0:
 					dcs_read_1 = consensus_caller([seq_dict['ab:1'], seq_dict['ba:2']], 1, tag, False)
 					read1_dcs_len = len(dcs_read_1)
+					if dcs_read_1.count('N')/float(read1_dcs_len) > o.Ncutoff:
+						dcs_read_1 = 'N' * read1_dcs_len
+
 				if len(seq_dict['ba:1']) != 0 and len(seq_dict['ab:2']) != 0:
 					dcs_read_2 = consensus_caller([seq_dict['ba:1'], seq_dict['ab:2']], 1, tag, False)
 					read2_dcs_len = len(dcs_read_2)
+					if dcs_read_2.count('N')/float(read1_dcs_len) > o.Ncutoff:
+						dcs_read_2 = 'N' * read1_dcs_len
 
 				if read1_dcs_len != 0 and read2_dcs_len != 0 and tag.count('N') == 0 and \
 										'A' * o.rep_filt not in tag and 'C' * o.rep_filt not in tag and \
