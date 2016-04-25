@@ -54,6 +54,9 @@ def consensus_caller(input_reads, cutoff, tag, length_check):
 	return consensus_seq
 
 
+def qual_calc(qual_list):
+	return [sum(qual_score) for qual_score in zip(*qual_list)]
+
 def main():
 	parser = ArgumentParser()
 	parser.add_argument('--input', dest='in_bam', required=True,
@@ -70,7 +73,7 @@ def main():
 						help="Maximum number of reads allowed to comprise a consensus. [200]")
 	parser.add_argument('--cutoff', dest='cutoff', type=float, default=.7,
 						help="Percentage of nucleotides at a given position in a read that must be identical in order "
-							"for a consensus to be called at that position. [0.7]")
+						"for a consensus to be called at that position. [0.7]")
 	parser.add_argument('--Ncutoff', dest='Ncutoff', type=float, default=1,
 						help="With --filt 'n', maximum fraction of Ns allowed in a consensus [1.0]")
 	parser.add_argument('--write-sscs', dest='write_sscs', action="store_true",
@@ -89,12 +92,12 @@ def main():
 
 	if o.write_sscs is True:
 
-		read1_sscs_fq_file = gzip.open('read1_sscs.fq.gz', 'wb')
-		read2_sscs_fq_file = gzip.open('read2_sscs.fq.gz', 'wb')
+		read1_sscs_fq_file = gzip.open(o.prefix + 'read1_sscs.fq.gz', 'wb')
+		read2_sscs_fq_file = gzip.open(o.prefix + 'read2_sscs.fq.gz', 'wb')
 
 	if o.without_dcs is False:
-		read1_dcs_fq_file = gzip.open('read1_dcs.fq.gz', 'wb')
-		read2_dcs_fq_file = gzip.open('read2_dcs.fq.gz', 'wb')
+		read1_dcs_fq_file = gzip.open(o.prefix + 'read1_dcs.fq.gz', 'wb')
+		read2_dcs_fq_file = gzip.open(o.prefix + 'read2_dcs.fq.gz', 'wb')
 
 	'''This block of code takes an unaligned bam file, extracts the tag sequences from the reads, and converts them to
 	to "ab/ba" format where 'a' and 'b' are the tag sequences from Read 1 and Read 2, respectively. Conversion occurs by
@@ -164,7 +167,7 @@ def main():
 	first_line = in_bam_file.next()
 
 	seq_dict[first_line.query_name.split('#')[1]].append(first_line.query_sequence)
-	qual_dict[first_line.query_name.split('#')[1]].append(first_line.query_qualities)
+	qual_dict[first_line.query_name.split('#')[1]].append(list(first_line.query_qualities))
 	tag_family_count = 1
 	tag_count_dict = defaultdict(lambda: 0)
 	counter = 0
@@ -176,7 +179,7 @@ def main():
 
 		if line.query_name.split('#')[0] == tag:
 			seq_dict[line.query_name.split('#')[1]].append(line.query_sequence)
-			qual_dict[line.query_name.split('#')[1]].append(line.query_qualities)
+			qual_dict[line.query_name.split('#')[1]].append(list(line.query_qualities))
 			tag_family_count += 1
 
 		else:
@@ -189,47 +192,64 @@ def main():
 
 				if len(seq_dict[tag_subtype]) < o.minmem:
 					seq_dict[tag_subtype] = ''
+					qual_dict[tag_subtype] = []
 
 				elif o.minmem <= len(seq_dict[tag_subtype]) < o.maxmem:  # Tag types w/o reads should not be submitted
 					#  as long as minmem is > 0
 					seq_dict[tag_subtype] = consensus_caller(seq_dict[tag_subtype], o.cutoff, tag, True)
-					# qual_dict[tag_subtype] = qual_calculator(list(qual_dict[tag_subtype]))
+					qual_dict[tag_subtype] = qual_calc(qual_dict[tag_subtype])
 
 				elif len(seq_dict[tag_subtype]) > o.maxmem:
 					seq_dict[tag_subtype] = consensus_caller(seq_dict[tag_subtype][:o.maxmem], o.cutoff, tag, True)
-					# qual_dict[tag_subtype] = qual_calculator(list(qual_dict[tag_subtype]))
+					qual_dict[tag_subtype] = qual_calc(qual_dict[tag_subtype])
 
 			if o.write_sscs is True:
 
 				if len(seq_dict['ab:1']) != 0 and len(seq_dict['ab:2']) != 0:
+					corrected_qual_score = map(lambda x: x if x < 41 else 41, qual_dict['ab:1'])
 					read1_sscs_fq_file.write('@%s#ab:1\n%s\n+\n%s\n' %
-											(tag, seq_dict['ab:1'], len(seq_dict['ab:1']) * 'J'))
+											(tag, seq_dict['ab:1'], "".join(chr(x + 33) for x in corrected_qual_score)))
+
+					corrected_qual_score = map(lambda x: x if x < 41 else 41, qual_dict['ab:2'])
 					read2_sscs_fq_file.write('@%s#ab:2\n%s\n+\n%s\n' %
-											(tag, seq_dict['ab:2'], len(seq_dict['ab:2']) * 'J'))
+											(tag, seq_dict['ab:2'], "".join(chr(x + 33) for x in corrected_qual_score)))
 
 				if len(seq_dict['ba:1']) != 0 and len(seq_dict['ba:2']) != 0:
-					read1_sscs_fq_file.write('@%s#ba:1\n%s\n+\n%s' % (tag, seq_dict['ba:1'], len(seq_dict['ab:1']) * 'J'))
-					read2_sscs_fq_file.write('@%s#ba:2\n%s\n+\n%s' % (tag, seq_dict['ba:2'], len(seq_dict['ab:1']) * 'J'))
+					corrected_qual_score = map(lambda x: x if x < 41 else 41, qual_dict['ba:1'])
+					read1_sscs_fq_file.write('@%s#ba:1\n%s\n+\n%s' %
+											(tag, seq_dict['ba:1'], "".join(chr(x + 33) for x in corrected_qual_score)))
+
+					corrected_qual_score = map(lambda x: x if x < 41 else 41, qual_dict['ba:1'])
+					read2_sscs_fq_file.write('@%s#ba:2\n%s\n+\n%s' %
+											(tag, seq_dict['ba:2'], "".join(chr(x + 33) for x in corrected_qual_score)))
 
 			if o.without_dcs is False:
 
 				if len(seq_dict['ab:1']) != 0 and len(seq_dict['ba:2']) != 0:
 					dcs_read_1 = consensus_caller([seq_dict['ab:1'], seq_dict['ba:2']], 1, tag, False)
+					dcs_read_1_qual = map(lambda x: x if x < 41 else 41, qual_calc([qual_dict['ab:1'], qual_dict['ba:2']]))
 					read1_dcs_len = len(dcs_read_1)
+
 					if dcs_read_1.count('N')/float(read1_dcs_len) > o.Ncutoff:
 						dcs_read_1 = 'N' * read1_dcs_len
+						dcs_read_1_qual = '!' * read1_dcs_len
 
 				if len(seq_dict['ba:1']) != 0 and len(seq_dict['ab:2']) != 0:
 					dcs_read_2 = consensus_caller([seq_dict['ba:1'], seq_dict['ab:2']], 1, tag, False)
+					dcs_read_2_qual = map(lambda x: x if x < 41 else 41, qual_calc([qual_dict['ba:1'], qual_dict['ab:2']]))
 					read2_dcs_len = len(dcs_read_2)
+
 					if dcs_read_2.count('N')/float(read1_dcs_len) > o.Ncutoff:
 						dcs_read_2 = 'N' * read1_dcs_len
+						dcs_read_2_qual = '!' * read2_dcs_len
 
 				if read1_dcs_len != 0 and read2_dcs_len != 0 and tag.count('N') == 0 and \
 										'A' * o.rep_filt not in tag and 'C' * o.rep_filt not in tag and \
 										'G' * o.rep_filt not in tag and 'T' * o.rep_filt not in tag:
-					read1_dcs_fq_file.write('@%s/1\n%s\n+\n%s\n' % (tag, dcs_read_1, read1_dcs_len * 'J'))
-					read2_dcs_fq_file.write('@%s/2\n%s\n+\n%s\n' % (tag, dcs_read_2, read2_dcs_len * 'J'))
+					read1_dcs_fq_file.write('@%s/1\n%s\n+\n%s\n' % (tag, dcs_read_1, "".join(chr(x + 33)
+																							for x in dcs_read_1_qual)))
+					read2_dcs_fq_file.write('@%s/2\n%s\n+\n%s\n' % (tag, dcs_read_2, "".join(chr(x + 33)
+																							for x in dcs_read_2_qual)))
 
 			# reset conditions for next tag family
 			first_line = line
