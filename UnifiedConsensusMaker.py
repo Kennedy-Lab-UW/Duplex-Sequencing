@@ -104,7 +104,7 @@ def main():
 	putting the tag with the "lesser" value in front of the tag with the "higher" value. The original tag orientation is
 	denoted by appending #ab or #ba to the end of the tag. After conversion, the resulting temporary bam file is then
 	sorted by read name.'''
-
+	"""
 	print "Parsing tags..."
 
 	for line in in_bam_file.fetch(until_eof=True):
@@ -151,12 +151,12 @@ def main():
 	in_bam_file.close()
 	temp_bam.close()
 
-	print "Sorting bam file on tag sequence..."
+	print "Sorting reads on tag sequence..."
 
 	pysam.sort("-n", o.prefix + ".temp.bam", "-o", o.prefix + "temp.sort.bam")  # Sort by read name, which will be the
 	# tag sequence in this case.
 	os.remove(o.prefix + ".temp.bam")
-
+	"""
 	'''Extracting tags and sorting based on tag sequence is complete. This block of code now performs the consensus
 	calling on the tag families in the temporary name sorted bam file.'''
 	seq_dict = {'ab:1': [], 'ab:2': [], 'ba:1': [], 'ba:2': []}
@@ -168,27 +168,27 @@ def main():
 
 	seq_dict[first_line.query_name.split('#')[1]].append(first_line.query_sequence)
 	qual_dict[first_line.query_name.split('#')[1]].append(list(first_line.query_qualities))
-	tag_family_count = 1
 	tag_count_dict = defaultdict(lambda: 0)
-	counter = 0
 
 	print "Creating consensus reads..."
 
 	for line in in_bam_file.fetch(until_eof=True):
-		tag = first_line.query_name.split('#')[0]
+		tag, subtag_order = first_line.query_name.split('#')[0], first_line.query_name.split('#')[1]
 
 		if line.query_name.split('#')[0] == tag:
 			seq_dict[line.query_name.split('#')[1]].append(line.query_sequence)
 			qual_dict[line.query_name.split('#')[1]].append(list(line.query_qualities))
-			tag_family_count += 1
 
 		else:
-			tag_count_dict[tag_family_count] += 1
 
 			if len(seq_dict['ab:1']) != len(seq_dict['ab:2']) or len(seq_dict['ba:1']) != len(seq_dict['ba:2']):
 				raise Exception('ERROR: Read counts for Read1 and Read 2 do not match for tag %s' % tag)
 
 			for tag_subtype in seq_dict.keys():
+
+				if (tag_subtype == 'ab:1' and len(seq_dict[tag_subtype]) > 0) \
+						or (tag_subtype == 'ba:1' and len(seq_dict[tag_subtype])):
+					tag_count_dict[len(seq_dict[tag_subtype])] += 1
 
 				if len(seq_dict[tag_subtype]) < o.minmem:
 					seq_dict[tag_subtype] = ''
@@ -253,7 +253,6 @@ def main():
 
 			# reset conditions for next tag family
 			first_line = line
-			tag_family_count = 1
 			seq_dict = {'ab:1': [], 'ab:2': [], 'ba:1': [], 'ba:2': []}
 			qual_dict = {'ab:1': [], 'ab:2': [], 'ba:1': [], 'ba:2': []}
 			read1_dcs_len = 0
@@ -270,21 +269,26 @@ def main():
 	if o.without_dcs is False:
 		read1_dcs_fq_file.close()
 		read2_dcs_fq_file.close()
-	counter += 1
 
 # Try to plot the tag family sizes
 	if o.tagstats is True:
+		tag_stats_file = open(o.prefix + ".tagstats.txt", 'w')
+
+		x_value = []
+		y_value = []
+		total_reads = sum([tag_count_dict[tag_family_size] * tag_family_size for tag_family_size
+							in tag_count_dict.keys()])
+
+		for tag_family_size in sorted(tag_count_dict.keys()):
+			fraction = (tag_count_dict[tag_family_size] * tag_family_size) / float(total_reads)
+			tag_stats_file.write('%d\t%d\t%f\n' % (tag_family_size, tag_count_dict[tag_family_size], fraction))
+			x_value.append(tag_family_size)
+			y_value.append(fraction)
+
 		try:
 			import matplotlib
 			matplotlib.use('Agg')
 			import matplotlib.pyplot as plt
-
-			x_value = []
-			y_value = []
-
-			for tag_family_size in sorted(tag_count_dict.keys()):
-				x_value.append(tag_family_size)
-				y_value.append(float(tag_count_dict[tag_family_size]) / float(counter))
 
 			plt.bar(x_value, y_value)
 			plt.xlabel('Family Size')
@@ -293,6 +297,8 @@ def main():
 
 		except ImportError:
 			sys.stderr.write('matplotlib not present. Only tagstats file will be generated.')
+
+		tag_stats_file.close()
 
 if __name__ == "__main__":
 	main()
