@@ -82,7 +82,8 @@ def main():
 						help="Don't print final DCS reads")
 	parser.add_argument("--rep_filt", action="store",  type=int, dest='rep_filt',
 						help="Remove tags with homomeric runs of nucleotides of length x. [9]", default=9)
-	parser.add_argument('--prefix', dest='prefix', type=str, default='')
+	parser.add_argument('--prefix', dest='prefix', type=str, required=True,
+						help="Sample name to uniquely identify samples")
 	o = parser.parse_args()
 
 	dummy_header = {'HD': {'VN': '1.0'}, 'SQ': [{'LN': 1575, 'SN': 'chr1'}, {'LN': 1584, 'SN': 'chr2'}]}
@@ -104,7 +105,7 @@ def main():
 	putting the tag with the "lesser" value in front of the tag with the "higher" value. The original tag orientation is
 	denoted by appending #ab or #ba to the end of the tag. After conversion, the resulting temporary bam file is then
 	sorted by read name.'''
-	"""
+
 	print "Parsing tags..."
 
 	for line in in_bam_file.fetch(until_eof=True):
@@ -156,7 +157,7 @@ def main():
 	pysam.sort("-n", o.prefix + ".temp.bam", "-o", o.prefix + "temp.sort.bam")  # Sort by read name, which will be the
 	# tag sequence in this case.
 	os.remove(o.prefix + ".temp.bam")
-	"""
+
 	'''Extracting tags and sorting based on tag sequence is complete. This block of code now performs the consensus
 	calling on the tag families in the temporary name sorted bam file.'''
 	seq_dict = {'ab:1': [], 'ab:2': [], 'ba:1': [], 'ba:2': []}
