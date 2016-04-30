@@ -93,12 +93,12 @@ def main():
 
 	if o.write_sscs is True:
 
-		read1_sscs_fq_file = gzip.open(o.prefix + 'read1_sscs.fq.gz', 'wb')
-		read2_sscs_fq_file = gzip.open(o.prefix + 'read2_sscs.fq.gz', 'wb')
+		read1_sscs_fq_file = gzip.open(o.prefix + '_read1_sscs.fq.gz', 'wb')
+		read2_sscs_fq_file = gzip.open(o.prefix + '_read2_sscs.fq.gz', 'wb')
 
 	if o.without_dcs is False:
-		read1_dcs_fq_file = gzip.open(o.prefix + 'read1_dcs.fq.gz', 'wb')
-		read2_dcs_fq_file = gzip.open(o.prefix + 'read2_dcs.fq.gz', 'wb')
+		read1_dcs_fq_file = gzip.open(o.prefix + '_read1_dcs.fq.gz', 'wb')
+		read2_dcs_fq_file = gzip.open(o.prefix + '_read2_dcs.fq.gz', 'wb')
 
 	'''This block of code takes an unaligned bam file, extracts the tag sequences from the reads, and converts them to
 	to "ab/ba" format where 'a' and 'b' are the tag sequences from Read 1 and Read 2, respectively. Conversion occurs by
@@ -162,6 +162,9 @@ def main():
 	calling on the tag families in the temporary name sorted bam file.'''
 	seq_dict = {'ab:1': [], 'ab:2': [], 'ba:1': [], 'ba:2': []}
 	qual_dict = {'ab:1': [], 'ab:2': [], 'ba:1': [], 'ba:2': []}
+	fam_size_x_axis = []
+	fam_size_y_axis = []
+
 	read1_dcs_len = 0
 	read2_dcs_len = 0
 	in_bam_file = pysam.AlignmentFile(o.prefix + 'temp.sort.bam', "rb", check_sq=False)
@@ -187,56 +190,65 @@ def main():
 
 			for tag_subtype in seq_dict.keys():
 
-				if (tag_subtype == 'ab:1' and len(seq_dict[tag_subtype]) > 0) \
-						or (tag_subtype == 'ba:1' and len(seq_dict[tag_subtype])):
+				if len(seq_dict[tag_subtype]) > 0:
 					tag_count_dict[len(seq_dict[tag_subtype])] += 1
 
 				if len(seq_dict[tag_subtype]) < o.minmem:
-					seq_dict[tag_subtype] = ''
+					seq_dict[tag_subtype] = []
 					qual_dict[tag_subtype] = []
 
 				elif o.minmem <= len(seq_dict[tag_subtype]) < o.maxmem:  # Tag types w/o reads should not be submitted
 					#  as long as minmem is > 0
-					seq_dict[tag_subtype] = consensus_caller(seq_dict[tag_subtype], o.cutoff, tag, True)
+					seq_dict[tag_subtype] = [consensus_caller(seq_dict[tag_subtype], o.cutoff, tag, True),
+											str(len(seq_dict[tag_subtype]))]
 					qual_dict[tag_subtype] = qual_calc(qual_dict[tag_subtype])
 
 				elif len(seq_dict[tag_subtype]) > o.maxmem:
-					seq_dict[tag_subtype] = consensus_caller(seq_dict[tag_subtype][:o.maxmem], o.cutoff, tag, True)
+					seq_dict[tag_subtype] = [consensus_caller(seq_dict[tag_subtype][:o.maxmem], o.cutoff, tag, True),
+											str(len(seq_dict[tag_subtype]))]
 					qual_dict[tag_subtype] = qual_calc(qual_dict[tag_subtype])
 
 			if o.write_sscs is True:
 
 				if len(seq_dict['ab:1']) != 0 and len(seq_dict['ab:2']) != 0:
 					corrected_qual_score = map(lambda x: x if x < 41 else 41, qual_dict['ab:1'])
-					read1_sscs_fq_file.write('@%s#ab:1\n%s\n+\n%s\n' %
-											(tag, seq_dict['ab:1'], "".join(chr(x + 33) for x in corrected_qual_score)))
+					read1_sscs_fq_file.write('@%s#ab:1\n%s\n+%s\n%s\n' %
+											(tag, seq_dict['ab:1'][0], seq_dict['ab:1'][1], "".join(chr(x + 33)
+																					for x in corrected_qual_score)))
 
 					corrected_qual_score = map(lambda x: x if x < 41 else 41, qual_dict['ab:2'])
-					read2_sscs_fq_file.write('@%s#ab:2\n%s\n+\n%s\n' %
-											(tag, seq_dict['ab:2'], "".join(chr(x + 33) for x in corrected_qual_score)))
+					read2_sscs_fq_file.write('@%s#ab:2\n%s\n+%s\n%s\n' %
+											(tag, seq_dict['ab:2'][0], seq_dict['ab:2'][1], "".join(chr(x + 33)
+																					for x in corrected_qual_score)))
 
 				if len(seq_dict['ba:1']) != 0 and len(seq_dict['ba:2']) != 0:
 					corrected_qual_score = map(lambda x: x if x < 41 else 41, qual_dict['ba:1'])
-					read1_sscs_fq_file.write('@%s#ba:1\n%s\n+\n%s' %
-											(tag, seq_dict['ba:1'], "".join(chr(x + 33) for x in corrected_qual_score)))
+					read1_sscs_fq_file.write('@%s#ba:1\n%s\n+%s\n%s\n' %
+											(tag, seq_dict['ba:1'][0], seq_dict['ba:1'][1], "".join(chr(x + 33)
+																					for x in corrected_qual_score)))
 
 					corrected_qual_score = map(lambda x: x if x < 41 else 41, qual_dict['ba:1'])
-					read2_sscs_fq_file.write('@%s#ba:2\n%s\n+\n%s' %
-											(tag, seq_dict['ba:2'], "".join(chr(x + 33) for x in corrected_qual_score)))
+					read2_sscs_fq_file.write('@%s#ba:2\n%s\n+%s\n%s' %
+											(tag, seq_dict['ba:2'][0], seq_dict['ba:2'][1], "".join(chr(x + 33)
+																					for x in corrected_qual_score)))
 
 			if o.without_dcs is False:
 
 				if len(seq_dict['ab:1']) != 0 and len(seq_dict['ba:2']) != 0:
-					dcs_read_1 = consensus_caller([seq_dict['ab:1'], seq_dict['ba:2']], 1, tag, False)
+					dcs_read_1 = [consensus_caller([seq_dict['ab:1'][0], seq_dict['ba:2'][0]], 1, tag, False),
+								seq_dict['ab:1'][1], seq_dict['ba:2'][1]]
 					dcs_read_1_qual = map(lambda x: x if x < 41 else 41, qual_calc([qual_dict['ab:1'], qual_dict['ba:2']]))
 					read1_dcs_len = len(dcs_read_1)
+					fam_size_x_axis.append(int(seq_dict['ab:1'][1]))
+					fam_size_y_axis.append(int(seq_dict['ba:2'][1]))
 
 					if dcs_read_1.count('N')/float(read1_dcs_len) > o.Ncutoff:
 						dcs_read_1 = 'N' * read1_dcs_len
 						dcs_read_1_qual = '!' * read1_dcs_len
 
 				if len(seq_dict['ba:1']) != 0 and len(seq_dict['ab:2']) != 0:
-					dcs_read_2 = consensus_caller([seq_dict['ba:1'], seq_dict['ab:2']], 1, tag, False)
+					dcs_read_2 = [consensus_caller([seq_dict['ba:1'][0], seq_dict['ab:2'][0]], 1, tag, False),
+								seq_dict['ba:1'][1], seq_dict['ab:2'][1]]
 					dcs_read_2_qual = map(lambda x: x if x < 41 else 41, qual_calc([qual_dict['ba:1'], qual_dict['ab:2']]))
 					read2_dcs_len = len(dcs_read_2)
 
@@ -247,10 +259,10 @@ def main():
 				if read1_dcs_len != 0 and read2_dcs_len != 0 and tag.count('N') == 0 and \
 										'A' * o.rep_filt not in tag and 'C' * o.rep_filt not in tag and \
 										'G' * o.rep_filt not in tag and 'T' * o.rep_filt not in tag:
-					read1_dcs_fq_file.write('@%s/1\n%s\n+\n%s\n' % (tag, dcs_read_1, "".join(chr(x + 33)
-																							for x in dcs_read_1_qual)))
-					read2_dcs_fq_file.write('@%s/2\n%s\n+\n%s\n' % (tag, dcs_read_2, "".join(chr(x + 33)
-																							for x in dcs_read_2_qual)))
+					read1_dcs_fq_file.write('@%s/1\n%s\n+%s:%s\n%s\n' % (tag, dcs_read_1[0], dcs_read_1[1], dcs_read_1[2],
+																		"".join(chr(x + 33) for x in dcs_read_1_qual)))
+					read2_dcs_fq_file.write('@%s/2\n%s\n+%s:%s\n%s\n' % (tag, dcs_read_2[0], dcs_read_2[1], dcs_read_2[2],
+																		"".join(chr(x + 33) for x in dcs_read_2_qual)))
 
 			# reset conditions for next tag family
 			first_line = line
@@ -291,10 +303,19 @@ def main():
 			matplotlib.use('Agg')
 			import matplotlib.pyplot as plt
 
+			plt.figure(1)
 			plt.bar(x_value, y_value)
 			plt.xlabel('Family Size')
 			plt.ylabel('Proportion of Total Reads')
 			plt.savefig(o.prefix + 'family_size.png', bbox_inches='tight')
+
+			plt.figure(2)
+			plt.scatter(fam_size_x_axis, fam_size_y_axis, alpha=.1)
+			plt.xlabel('Family size for AB:1')
+			plt.ylabel('Family size for BA:2')
+			plt.xlim(0, max(fam_size_x_axis))
+			plt.ylim(0, max(fam_size_y_axis))
+			plt.savefig(o.prefix + 'fam_size_relation.png', bbox_inches='tight')
 
 		except ImportError:
 			sys.stderr.write('matplotlib not present. Only tagstats file will be generated.')
