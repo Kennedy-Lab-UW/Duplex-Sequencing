@@ -154,7 +154,7 @@ def main():
 
 	print "Sorting reads on tag sequence..."
 
-	pysam.sort("-n", o.prefix + ".temp.bam", "-o", o.prefix + "temp.sort.bam")  # Sort by read name, which will be the
+	pysam.sort("-n", o.prefix + ".temp.bam", "-o", o.prefix + ".temp.sort.bam")  # Sort by read name, which will be the
 	# tag sequence in this case.
 	os.remove(o.prefix + ".temp.bam")
 
