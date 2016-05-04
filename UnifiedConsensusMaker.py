@@ -167,7 +167,7 @@ def main():
 
 	read1_dcs_len = 0
 	read2_dcs_len = 0
-	in_bam_file = pysam.AlignmentFile(o.prefix + 'temp.sort.bam', "rb", check_sq=False)
+	in_bam_file = pysam.AlignmentFile(o.prefix + '.temp.sort.bam', "rb", check_sq=False)
 	first_line = in_bam_file.next()
 
 	seq_dict[first_line.query_name.split('#')[1]].append(first_line.query_sequence)
