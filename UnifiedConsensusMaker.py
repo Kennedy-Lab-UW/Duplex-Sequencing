@@ -228,7 +228,7 @@ def main():
 																					for x in corrected_qual_score)))
 
 					corrected_qual_score = map(lambda x: x if x < 41 else 41, qual_dict['ba:1'])
-					read2_sscs_fq_file.write('@%s#ba:2\n%s\n+%s\n%s' %
+					read2_sscs_fq_file.write('@%s#ba:2\n%s\n+%s\n%s\n' %
 											(tag, seq_dict['ba:2'][0], seq_dict['ba:2'][1], "".join(chr(x + 33)
 																					for x in corrected_qual_score)))
 
