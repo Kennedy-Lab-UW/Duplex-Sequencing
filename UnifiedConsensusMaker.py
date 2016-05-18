@@ -212,23 +212,23 @@ def main():
 
 				if len(seq_dict['ab:1']) != 0 and len(seq_dict['ab:2']) != 0:
 					corrected_qual_score = map(lambda x: x if x < 41 else 41, qual_dict['ab:1'])
-					read1_sscs_fq_file.write('@%s#ab:1\n%s\n+%s\n%s\n' %
+					read1_sscs_fq_file.write('@%s#ab/1\n%s\n+%s\n%s\n' %
 											(tag, seq_dict['ab:1'][0], seq_dict['ab:1'][1], "".join(chr(x + 33)
 																					for x in corrected_qual_score)))
 
 					corrected_qual_score = map(lambda x: x if x < 41 else 41, qual_dict['ab:2'])
-					read2_sscs_fq_file.write('@%s#ab:2\n%s\n+%s\n%s\n' %
+					read2_sscs_fq_file.write('@%s#ab/2\n%s\n+%s\n%s\n' %
 											(tag, seq_dict['ab:2'][0], seq_dict['ab:2'][1], "".join(chr(x + 33)
 																					for x in corrected_qual_score)))
 
 				if len(seq_dict['ba:1']) != 0 and len(seq_dict['ba:2']) != 0:
 					corrected_qual_score = map(lambda x: x if x < 41 else 41, qual_dict['ba:1'])
-					read1_sscs_fq_file.write('@%s#ba:1\n%s\n+%s\n%s\n' %
+					read1_sscs_fq_file.write('@%s#ba/1\n%s\n+%s\n%s\n' %
 											(tag, seq_dict['ba:1'][0], seq_dict['ba:1'][1], "".join(chr(x + 33)
 																					for x in corrected_qual_score)))
 
 					corrected_qual_score = map(lambda x: x if x < 41 else 41, qual_dict['ba:1'])
-					read2_sscs_fq_file.write('@%s#ba:2\n%s\n+%s\n%s\n' %
+					read2_sscs_fq_file.write('@%s#ba/2\n%s\n+%s\n%s\n' %
 											(tag, seq_dict['ba:2'][0], seq_dict['ba:2'][1], "".join(chr(x + 33)
 																					for x in corrected_qual_score)))
 
