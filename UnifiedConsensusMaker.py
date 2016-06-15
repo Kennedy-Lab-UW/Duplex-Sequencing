@@ -197,7 +197,7 @@ def main():
 					seq_dict[tag_subtype] = []
 					qual_dict[tag_subtype] = []
 
-				elif o.minmem <= len(seq_dict[tag_subtype]) < o.maxmem:  # Tag types w/o reads should not be submitted
+				elif o.minmem <= len(seq_dict[tag_subtype]) <= o.maxmem:  # Tag types w/o reads should not be submitted
 					#  as long as minmem is > 0
 					seq_dict[tag_subtype] = [consensus_caller(seq_dict[tag_subtype], o.cutoff, tag, True),
 											str(len(seq_dict[tag_subtype]))]
