@@ -103,7 +103,7 @@ Required arguments are --input and --prefix.
 Default output are two fastq files consisting of the final DCS
 with the reads in the read 1 and read 2 fastq files being in register for proper
 paired-end analysis. The header line of each entry consists of the tag in alpha/beta
-or beta/alpha format (see Schmitt et al 2012 and Kennedy et al 2014 for details) 
+or beta/alpha format (see [Schmitt et al 2012](http://www.ncbi.nlm.nih.gov/pubmed/22853953) and [Kennedy et al 2014](http://www.ncbi.nlm.nih.gov/pubmed/25299156) for details) 
 such that the first half of the tag is always alphanumerically "less than" the
 second half. The third line indicates the number of reads that make up the SSCS that
 go on to form the final DCS. UnifiedConsensusMaker.py also calculates the final 
