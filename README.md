@@ -8,7 +8,7 @@ Programs by Scott Kennedy(1)
 (1) Department of Pathology, University of Washington School of Medicine, Seattle, WA 98195  
 
 ####It is strongly recommended to use UnifiedConsensusMaker.py, as it is faster and easier to use.
-####The version outlined in Kennedy et al 2014 can be found in the Nat_Protocols_Version directory
+####The version outlined in [Kennedy et al 2014](http://www.ncbi.nlm.nih.gov/pubmed/25299156) can be found in the Nat_Protocols_Version directory
 
 ## Glossary
 
