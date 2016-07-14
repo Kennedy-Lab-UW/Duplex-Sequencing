@@ -252,8 +252,8 @@ def main():
 
 		try:
 			import matplotlib
-                        matplotlib.use('Agg')
-                        import matplotlib.pyplot as plt
+            matplotlib.use('Agg')
+            import matplotlib.pyplot as plt
 
 			x_value = []
 			y_value = []
@@ -267,11 +267,11 @@ def main():
 			plt.ylabel('Proportion of Total Reads')
 			plt.savefig(o.outfile + '.png', bbox_inches='tight')
                         
-                        plt.bar(x_value, y_value)
-                        plt.xlabel('Family Size')
-                        plt.ylabel('Proportion of Total Reads')
-                        plt.xlim([0,40])
-                        plt.savefig(o.outfile + '.zoom.png', bbox_inches='tight')
+            plt.bar(x_value, y_value)
+            plt.xlabel('Family Size')
+            plt.ylabel('Proportion of Total Reads')
+            plt.xlim([0,40])
+            plt.savefig(o.outfile + '.zoom.png', bbox_inches='tight')
 
 		except ImportError:
 			sys.stderr.write('matplotlib not present. Only tagstats file will be generated.')

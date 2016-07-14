@@ -51,7 +51,7 @@ from math import sqrt
 def Wilson(positive,  total) :
     
         if total == 0:
-            
+            print("Hi")
             return 0
             
         freq = float(positive)/float(total)
@@ -144,7 +144,6 @@ def CountMutations(o, f, fOut):
           elif (float(max(linebins[4].count('T'),linebins[4].count('C'),linebins[4].count('G'),linebins[4].count('A'), (max(newIns.count(n) for n in list(set(newIns))) if newIns != [] else 0), (max(newDels.count(m) for m in list(set(newDels))) if newDels != [] else 0))) / float(depth)) < o.min_clonality:
                 pass
           else:
-            
               #remove N entries
                 #linebins[4] = linebins[4].replace('N','')
               #remove start line and end line markers
@@ -183,9 +182,10 @@ def CountMutations(o, f, fOut):
                 #mpFile.write("%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s" % (linebins[0],linebins[2], linebins[1], depth, linebins[4].count('T') + linebins[4].count('C') + linebins[4].count('G') + linebins[4].count('A'), linebins[4].count('T'), linebins[4].count('C'), linebins[4].count('G'), linebins[4].count('A'), len(newIns), len(newDels), linebins[4].count('N'))) #ADDED
 
     totalseq = Aseq + Tseq + Cseq + Gseq
+
     totalptmut = AtoT + AtoC + AtoG + TtoA + TtoC + TtoG + CtoA + CtoT + CtoG + GtoA + GtoT + GtoC
     totalindel = sum(ins) + sum(dels)
-                                                
+
     totalins = sum(ins[n] for n in ins.keys())
     totaldels = sum(dels[n] for n in dels.keys())
     #mpFile.close() #ADDED
