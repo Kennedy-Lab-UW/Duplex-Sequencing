@@ -62,25 +62,37 @@ Default values are in brackets
 
 Arguments:
   -h, --help            show this help message and exit
+  
   --input IN_BAM        Path to unaligned, paired-end, bam file.
+  
   --taglen TAG_LEN      Length in bases of the duplex tag sequence.[12]
+  
   --spacerlen SPCR_LEN  Length in bases of the spacer sequence between duplex
                         tag and the start of target DNA. [5]
+                        
   --tagstats            output tagstats file
+  
   --minmem MINMEM       Minimum number of reads allowed to comprise a
                         consensus. [3]
+                        
   --maxmem MAXMEM       Maximum number of reads allowed to comprise a
                         consensus. [200]
+                        
   --cutoff CUTOFF       Percentage of nucleotides at a given position in 
                         a read that must be identical in order for a 
                         consensus to be called at that position. [0.7]
+                        
   --Ncutoff NCUTOFF     With --filt 'n', maximum fraction of Ns allowed 
                         in a consensus [1.0]
+                        
   --write-sscs          Print the SSCS reads to file in FASTQ format
                         [False]
+                        
   --without-dcs         Don't print final DCS reads [False]
+  
   --rep_filt REP_FILT   Remove tags with homomeric runs of nucleotides of
                         length x. [9]
+                        
   --prefix PREFIX       Sample name to uniquely identify samples that 
                         will be appended as a prefix to the output files [None]
 
