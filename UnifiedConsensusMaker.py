@@ -7,6 +7,23 @@ import gzip
 from argparse import ArgumentParser
 from collections import defaultdict
 
+class iteratorWrapper:
+	def __init__(self, inIterator, finalValue):
+		self.it = inIterator
+		self.finalValue = finalValue
+		self.endIter = False
+	def __iter__(self):
+		return self
+	def next(self):
+		try:
+			temp = self.it.next()
+		except StopIteration:
+			if self.endIter == False:
+				temp = self.finalValue
+				self.endIter = True
+			else:
+				raise StopIteration
+		return temp
 
 def consensus_caller(input_reads, cutoff, tag, length_check):
 
@@ -169,14 +186,17 @@ def main():
 	read2_dcs_len = 0
 	in_bam_file = pysam.AlignmentFile(o.prefix + '.temp.sort.bam', "rb", check_sq=False)
 	first_line = in_bam_file.next()
-
+	
+	FinalValue = pysam.AlignedSegment()
+	FinalValue.query_name = "FinalValue#ab:1"
+	
 	seq_dict[first_line.query_name.split('#')[1]].append(first_line.query_sequence)
 	qual_dict[first_line.query_name.split('#')[1]].append(list(first_line.query_qualities))
 	tag_count_dict = defaultdict(lambda: 0)
 
 	print "Creating consensus reads..."
-
-	for line in in_bam_file.fetch(until_eof=True):
+	
+	for line in iteratorWrapper(in_bam_file.fetch(until_eof=True), FinalValue):
 		tag, subtag_order = first_line.query_name.split('#')[0], first_line.query_name.split('#')[1]
 
 		if line.query_name.split('#')[0] == tag:
@@ -263,17 +283,18 @@ def main():
 																		"".join(chr(x + 33) for x in dcs_read_1_qual)))
 					read2_dcs_fq_file.write('@%s/2\n%s\n+%s:%s\n%s\n' % (tag, dcs_read_2[0], dcs_read_2[1], dcs_read_2[2],
 																		"".join(chr(x + 33) for x in dcs_read_2_qual)))
+			if line != FinalValue:
+				# reset conditions for next tag family
+				first_line = line
+				seq_dict = {'ab:1': [], 'ab:2': [], 'ba:1': [], 'ba:2': []}
+				qual_dict = {'ab:1': [], 'ab:2': [], 'ba:1': [], 'ba:2': []}
+				read1_dcs_len = 0
+				read2_dcs_len = 0
+				dcs_read_1 = ''
+				dcs_read_2 = ''
 
-			# reset conditions for next tag family
-			first_line = line
-			seq_dict = {'ab:1': [], 'ab:2': [], 'ba:1': [], 'ba:2': []}
-			qual_dict = {'ab:1': [], 'ab:2': [], 'ba:1': [], 'ba:2': []}
-			read1_dcs_len = 0
-			read2_dcs_len = 0
-			dcs_read_1 = ''
-			dcs_read_2 = ''
-
-			seq_dict[line.query_name.split('#')[1]].append(line.query_sequence)  # Now add initializing data for new tag
+				seq_dict[line.query_name.split('#')[1]].append(line.query_sequence)  # Now add initializing data for new tag
+				qual_dict[first_line.query_name.split('#')[1]].append(list(first_line.query_qualities))
 
 	if o.write_sscs is True:
 		read1_sscs_fq_file.close()
