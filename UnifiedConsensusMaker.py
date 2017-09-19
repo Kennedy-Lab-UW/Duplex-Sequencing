@@ -330,13 +330,14 @@ def main():
 			plt.ylabel('Proportion of Total Reads')
 			plt.savefig(o.prefix + 'family_size.png', bbox_inches='tight')
 
-			plt.figure(2)
-			plt.scatter(fam_size_x_axis, fam_size_y_axis, alpha=.1)
-			plt.xlabel('Family size for AB:1')
-			plt.ylabel('Family size for BA:2')
-			plt.xlim(0, max(fam_size_x_axis))
-			plt.ylim(0, max(fam_size_y_axis))
-			plt.savefig(o.prefix + 'fam_size_relation.png', bbox_inches='tight')
+			if o.without_dcs is False:
+				plt.figure(2)
+				plt.scatter(fam_size_x_axis, fam_size_y_axis, alpha=.1)
+				plt.xlabel('Family size for AB:1')
+				plt.ylabel('Family size for BA:2')
+				plt.xlim(0, max(fam_size_x_axis))
+				plt.ylim(0, max(fam_size_y_axis))
+				plt.savefig(o.prefix + 'fam_size_relation.png', bbox_inches='tight')
 
 		except ImportError:
 			sys.stderr.write('matplotlib not present. Only tagstats file will be generated.')
