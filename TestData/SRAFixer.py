@@ -22,6 +22,8 @@
 # @SRR1613972.1.1:1:length=101:1:1/1
 
 import sys
+import gzip
+import os.path
 from argparse import ArgumentParser
 
 parser = ArgumentParser()
@@ -33,21 +35,25 @@ parser.add_argument('--outfile', dest = 'outfile',
                     required=True)
 o = parser.parse_args()
 
-infile = open(o.infile, 'r')
+if os.path.splitext(o.infile)[1] == ".gz":
+    infile = gzip.open(o.infile, 'r')
+else:
+    infile = open(o.infile, 'r')
 outfile = open(o.outfile, 'w')
 readsProcessed = 0
 pair=o.infile.split(".fastq")[0]
 pair=pair[len(pair)-1]
 
 for line in infile:
-    if '@SRR1613972' in line or '+SRR1613972' in line:
+    if '@' in line or '+' in line:
         
         readNum = line.split(' ')[0].split('.')[1]
         repLine = "%s:%s:%s/%s\n" %(line.strip().replace(' ', ':'),readNum,readNum,pair)
         outfile.write(repLine)
-        if '@' in line: readsProcessed += 1
-        if readsProcessed % 1000 == 0:
-            print("Reads Processed: %s" % readsProcessed)
+        if '@' in line: 
+            readsProcessed += 1
+            if readsProcessed % 100000 == 0:
+                print("Reads Processed: %s" % readsProcessed)
     else:
         outfile.write(line)
     
