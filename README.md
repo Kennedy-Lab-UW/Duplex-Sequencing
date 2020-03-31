@@ -1,6 +1,8 @@
 Duplex Sequencing
 =================
 
+####This version is no longer maintained. We encourage you to download the latest version of this software [Here](https://github.com/KennedyLabUW/Duplex-Seq-Pipeline)
+
 Duplex Sequencing software
 Version 3.0
 July 11, 2016
